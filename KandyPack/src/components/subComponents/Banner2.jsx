@@ -1,14 +1,10 @@
 const Banner2 = () => {
   return (
-    <div className="h-[59dvh] mt-0">
-      <div className="h-[59dvh] mx-3.5">
+    <div className="min-h-[59dvh] mt-0 mb-7 w-full">
+      <div className="min-h-[59dvh] mx-3.5">
         <div className="flex flex-row justify-center items-center gap-4 mb-0">
           <div className="flex-1">
-            <img
-              className="size-15"
-              src="./src/assets/banner1Logo.png"
-              alt="logo1"
-            />
+            <img className="size-15" src="./banner1Logo.png" alt="logo1" />
           </div>
           <div className="flex-2">
             <span className="text-[14px] text-shadow-sm text-shadow-gray-300 font-semibold underline decoration-[#F67366] decoration-2 underline-offset-7">
@@ -33,21 +29,21 @@ const Banner2 = () => {
             </p>
             <img
               className="absolute top-20 left-19"
-              src="./src/assets/banner2Vector1.png"
+              src="./banner2Vector1.png"
             />
           </div>
           <div>
-            <img className="size-12/12" src="./src/assets/banner2Logo1.png" />
+            <img className="size-12/12" src="./banner2Logo1.png" />
           </div>
           <div>
-            <img className="size-34 ml-6" src="./src/assets/banner2Logo2.png" />
+            <img className="size-31 ml-6" src="./banner2Logo2.png" />
           </div>
           <div className="relative">
             <h3 className="text-[14px] leading-8 font-bold">
               <span className="px-2 py-1 text-[10px] text-white rounded-[20px] bg-[#2C2D5B]">
                 2
               </span>
-              <span className="mx-2 text-[#F67366]">Selection of Delivery</span>
+              <span className="ml-2 text-[#F67366]">Selection of Delivery</span>
             </h3>
             <p className="text-[9px] text-justify">
               Goods are allocated to railway trips based on cargo capacity The
@@ -59,7 +55,7 @@ const Banner2 = () => {
             </p>
             <img
               className="absolute top-24 right-47 size-8/12"
-              src="./src/assets/banner2Vector2.png"
+              src="./banner2Vector2.png"
             />
           </div>
           <div>
@@ -67,7 +63,7 @@ const Banner2 = () => {
               <span className="px-2 py-1 text-[10px] text-white rounded-[20px] bg-[#2C2D5B]">
                 3
               </span>
-              <span className="mx-2 text-[#F67366]">Last-Mile Delivery</span>
+              <span className="ml-2 text-[#F67366]">Last-Mile Delivery</span>
             </h3>
             <p className="text-[9px] text-justify">
               Trucks deliver from stores to customer addresses via optimized
@@ -76,11 +72,11 @@ const Banner2 = () => {
             </p>
           </div>
           <div className="relative">
-            <h3 className="text-[14px]  font-bold">
+            <h3 className="text-[14px] leading-8 font-bold">
               <span className="px-2 py-1 text-[10px] text-white rounded-[20px] bg-[#2C2D5B]">
                 3
               </span>
-              <span className="mx-2 text-[#F67366]">Rail Scheduling</span>
+              <span className="ml-2 text-[#F67366]">Rail Scheduling</span>
             </h3>
             <p className="text-[9px] text-justify">
               Goods are allocated to railway trips based on cargo capacity and
@@ -89,7 +85,7 @@ const Banner2 = () => {
             </p>
             <img
               className="absolute bottom-13 right-6 size-20"
-              src="./src/assets/banner2Vector3.png"
+              src="./banner2Vector3.png"
             />
           </div>
         </div>

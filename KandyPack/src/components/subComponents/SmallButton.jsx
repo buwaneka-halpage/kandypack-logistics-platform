@@ -6,12 +6,11 @@ const SmallButton = ({
   paddingX,
   paddingY,
   textSize,
-  border,
 }) => {
   return (
     <div>
       <button
-        className="px-7 py-2 mx-4 font-medium rounded-sm cursor-pointer"
+        className="font-medium rounded-sm mx-1 cursor-pointer"
         style={{
           color: `${textColor}`,
           backgroundColor: `${bgColor}`,
@@ -21,7 +20,6 @@ const SmallButton = ({
           paddingLeft: `${paddingX}`,
           paddingRight: `${paddingX}`,
           fontSize: `${textSize}`,
-          border: `${border}`,
         }}
       >
         {name}

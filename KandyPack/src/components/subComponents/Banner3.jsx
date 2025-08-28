@@ -8,9 +8,9 @@ library.add(fas);
 
 const Banner3 = () => {
   return (
-    <div className="h-[44.7dvh]">
-      <div className="h-[44.7dvh]">
-        <img src="./src/assets/banner3Bg.png" />
+    <div className="min-h-[44.7dvh] w-full">
+      <div className="min-h-[44.7dvh]">
+        <img src="./banner3Bg.png" />
       </div>
     </div>
   );

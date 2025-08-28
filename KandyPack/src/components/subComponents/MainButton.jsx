@@ -8,7 +8,6 @@ const MainButton = ({
   paddingX,
   paddingY,
   textSize,
-  border,
 }) => {
   return (
     <div>
@@ -24,7 +23,6 @@ const MainButton = ({
           paddingLeft: `${paddingX}`,
           paddingRight: `${paddingX}`,
           fontSize: `${textSize}`,
-          border: `${border}`,
         }}
       >
         {name}

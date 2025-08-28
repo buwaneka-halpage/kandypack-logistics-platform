@@ -9,10 +9,13 @@ library.add(fas);
 
 const Banner1 = () => {
   return (
-    <div className="h-[32dvh] mt-4" style={{ backgroundColor: "#F8FAFB" }}>
-      <div className="h-[32dvh] mx-3.5">
+    <div
+      className="min-h-[35dvh] mt-4 w-full"
+      style={{ backgroundColor: "#F8FAFB" }}
+    >
+      <div className="mx-3.5">
         <div className="flex flex-col justify-start items-center gap-1">
-          <div className="flex flex-row justify-center items-center gap-52">
+          <div className="flex flex-row justify-center items-center gap-48">
             <div className="flex-2">
               <span className="text-[14px] text-shadow-sm text-shadow-gray-300 font-semibold underline decoration-[#F67366] decoration-2 underline-offset-7">
                 Services
@@ -22,11 +25,7 @@ const Banner1 = () => {
               </span>
             </div>
             <div className="flex-1">
-              <img
-                className="size-15"
-                src="./src/assets/banner1Logo.png"
-                alt="logo1"
-              />
+              <img className="size-15" src="./banner1Logo.png" alt="logo1" />
             </div>
           </div>
           <div className="flex flex-row justify-center items-start gap-8">

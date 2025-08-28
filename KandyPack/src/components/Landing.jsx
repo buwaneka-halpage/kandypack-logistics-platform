@@ -11,7 +11,6 @@ const Landing = () => {
     <div>
       <Header />
       <HeroBanner />
-      <HeroFooter />
       <Banner1 />
       <Banner2 />
       <Banner3 />

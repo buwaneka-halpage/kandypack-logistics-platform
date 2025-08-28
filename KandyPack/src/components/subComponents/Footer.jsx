@@ -1,8 +1,8 @@
 const Footer = () => {
   return (
-    <div className="h-[12dvh] relative bg-[#2C2D5B]">
-      <div className="h-[12dvh] mx-3.5 flex flex-col justify-center items-center">
-        <div className="flex-1 flex flex-row justify-center items-start pt-2 gap-x-8 h-[7.5dvh]">
+    <div className="min-h-[12dvh] relative bg-[#2C2D5B] w-full">
+      <div className="min-h-[12dvh] mx-3.5 flex flex-col justify-center items-center">
+        <div className="flex-1 flex flex-row justify-center items-start pt-2 gap-x-8 min-h-[7.5dvh]">
           <div className="flex-3">
             <h3 className="text-[8px] cursor-default font-semibold">
               <span style={{ color: "white" }}>Kandy</span>
@@ -35,16 +35,16 @@ const Footer = () => {
           <div className="flex-3 text-[8px] cursor-default text-white">
             <h3 className="font-bold">Social Media</h3>
             <div className="flex flex-row justify-start items-center my-1 gap-x-1">
-              <img className="size-5" src="./src/assets/facebookIcon.png" />
-              <img className="size-5" src="./src/assets/twitterIcon.png" />
-              <img className="size-5" src="./src/assets/whatsappIcon.png" />
-              <img className="size-5" src="./src/assets/instagramIcon.png" />
+              <img className="size-5" src="./facebookIcon.png" />
+              <img className="size-5" src="./twitterIcon.png" />
+              <img className="size-5" src="./whatsappIcon.png" />
+              <img className="size-5" src="./instagramIcon.png" />
             </div>
           </div>
         </div>
-        <div className="flex-5 w-full h-[7.5dvh]">
+        <div className="flex-5 w-full min-h-[7.5dvh]">
           <hr style={{ border: "0.5px solid white", marginTop: "8px" }} />
-          <h1 className="font-semibold text-[8px] text-[#F67366] absolute bottom-1 left-[43%]">
+          <h1 className="font-semibold text-[8px] text-[#F67366] absolute bottom-4 left-[43%]">
             KandyPack.lk
           </h1>
         </div>
