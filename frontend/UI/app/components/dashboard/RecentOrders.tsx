@@ -70,7 +70,7 @@ export function RecentOrders() {
           View all
         </a>
       </div>
-      
+
       <div className="space-y-4">
         {recentOrders.map((order) => (
           <div
@@ -79,7 +79,9 @@ export function RecentOrders() {
           >
             <div className="flex-1">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-900">{order.id}</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {order.id}
+                </span>
                 <span
                   className={`${getStatusClass(order.status)} px-2 py-1 rounded-full text-xs font-medium`}
                 >
@@ -89,13 +91,15 @@ export function RecentOrders() {
               <p className="text-sm text-gray-600 mt-1">{order.customer}</p>
               <p className="text-xs text-gray-500">{order.destination}</p>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{order.value}</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {order.value}
+                </p>
                 <p className="text-xs text-gray-500">{order.date}</p>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <button className="p-1 text-gray-400 hover:text-gray-600">
                   <Eye className="h-4 w-4" />
@@ -108,7 +112,7 @@ export function RecentOrders() {
           </div>
         ))}
       </div>
-      
+
       <div className="mt-4 pt-4 border-t border-gray-200">
         <button className="w-full text-center text-sm text-gray-600 hover:text-gray-900 font-medium">
           Load more orders
