@@ -1,13 +1,18 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { redirect } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "KandyPack Logistics Platform" },
+    { name: "description", content: "Modern logistics and supply chain management platform" },
   ];
 }
 
+export function loader() {
+  return redirect("/dashboard");
+}
+
 export default function Home() {
-  return <Welcome />;
+  // This component won't be rendered due to the redirect
+  return null;
 }
