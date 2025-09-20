@@ -1,15 +1,127 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+/* Custom properties for your logistics dashboard */
+:root {
+  /* Core design system colors */
+  --radius: 0.5rem;
+  --background: oklch(1 0 0); /* White background */
+  --foreground: oklch(0.129 0.042 264.695); /* Dark navy text */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: oklch(0.208 0.042 265.755); /* Deep navy for sidebar */
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: oklch(0.129 0.042 264.695);
+  --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(0.72 0.15 25); /* Coral/orange-red accent */
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.929 0.013 255.508);
+  --input: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.129 0.042 264.695);
+  
+  /* Custom colors for your logistics dashboard */
+  --dashboard-sidebar: oklch(0.208 0.042 265.755); /* Deep navy */
+  --dashboard-accent: oklch(0.72 0.15 25); /* Coral/orange-red */
+  --dashboard-chart: oklch(0.65 0.18 260); /* Blue for charts */
+  --dashboard-bg: oklch(0.98 0.005 250); /* Very light blue-gray */
+  --dashboard-success: oklch(0.65 0.15 140); /* Green for success states */
+  --dashboard-warning: oklch(0.75 0.15 60); /* Yellow for warnings */
+  --dashboard-info: oklch(0.65 0.15 220); /* Blue for info */
 }
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
-
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.129 0.042 264.695);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.984 0.003 247.858);
+  --primary-foreground: oklch(0.129 0.042 264.695);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.279 0.041 260.031);
+  --input: oklch(0.279 0.041 260.031);
+  --ring: oklch(0.551 0.027 264.364);
+  
+  /* Dark mode dashboard colors */
+  --dashboard-sidebar: oklch(0.15 0.04 265);
+  --dashboard-accent: oklch(0.65 0.12 25);
+  --dashboard-chart: oklch(0.55 0.15 260);
+  --dashboard-bg: oklch(0.13 0.04 265);
+  --dashboard-success: oklch(0.55 0.12 140);
+  --dashboard-warning: oklch(0.65 0.12 60);
+  --dashboard-info: oklch(0.55 0.12 220);
 }
+
+/* Base styles */
+html, body {
+  background-color: oklch(var(--background));
+  color: oklch(var(--foreground));
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  border-color: oklch(var(--border));
+}
+
+/* Custom utility classes for your logistics dashboard */
+.dashboard-sidebar {
+  background-color: oklch(var(--dashboard-sidebar));
+  color: oklch(var(--primary-foreground));
+}
+
+.dashboard-accent {
+  background-color: oklch(var(--dashboard-accent));
+  color: oklch(var(--accent-foreground));
+}
+
+.dashboard-chart {
+  background-color: oklch(var(--dashboard-chart));
+  color: white;
+}
+
+.dashboard-bg {
+  background-color: oklch(var(--dashboard-bg));
+}
+
+.dashboard-success {
+  background-color: oklch(var(--dashboard-success));
+  color: white;
+}
+
+.dashboard-warning {
+  background-color: oklch(var(--dashboard-warning));
+  color: white;
+}
+
+.dashboard-info {
+  background-color: oklch(var(--dashboard-info));
+  color: white;
+}
+
+/* Card styles for dashboard */
+.dashboard-card {
+  background-color: oklch(var(--card));
+  border: 1px solid oklch(var(--border));
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Status indicator styles */
+.status-shipped { background-color: oklch(var(--dashboard-success)); }
+.status-pending { background-color: oklch(var(--dashboard-warning)); }
+.status-delivered { background-color: oklch(var(--dashboard-info)); }
+.status-cancelled { background-color: oklch(var(--destructive)); }
