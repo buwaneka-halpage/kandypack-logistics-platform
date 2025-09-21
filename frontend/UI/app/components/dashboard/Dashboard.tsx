@@ -11,11 +11,11 @@ import {
 } from 'lucide-react';
 
 // Import your TypeScript components
-import StatsCard from './components/dashboard/StatsCard';
-import WeeklyOrderChart from './components/dashboard/WeeklyOrderChart';
-import DeliveryProgress from './components/dashboard/DeliveryProgress';
-import StoreLocationsMap from './components/dashboard/StoreLocationsMap';
-import AdminOverview from './components/dashboard/AdminOverview';
+import StatsCard from './StatsCard';
+import WeeklyOrderChart from './WeeklyOrderChart';
+import DeliveryProgress from './DeliveryProgress';
+import StoreLocationsMap from './StoreLocationsMap';
+import AdminOverview from './AdminOverview';
 
 const Dashboard: React.FC = () => {
   return (
