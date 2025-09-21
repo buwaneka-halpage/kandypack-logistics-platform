@@ -10,14 +10,14 @@ import {
   Download
 } from 'lucide-react';
 
-// Import your future components (placeholders for now)
-import StatsCard from './components/StatsCard';
-import WeeklyOrderChart from './components/WeeklyOrderChart';
-import DeliveryProgress from './components/DeliveryProgress';
-import StoreLocationsMap from './components/StoreLocationsMap';
-import AdminOverview from './components/AdminOverview';
+// Import your TypeScript components
+import StatsCard from './components/dashboard/StatsCard';
+import WeeklyOrderChart from './components/dashboard/WeeklyOrderChart';
+import DeliveryProgress from './components/dashboard/DeliveryProgress';
+import StoreLocationsMap from './components/dashboard/StoreLocationsMap';
+import AdminOverview from './components/dashboard/AdminOverview';
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen dashboard-bg">
       {/* Header */}
