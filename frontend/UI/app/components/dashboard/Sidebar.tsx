@@ -1,7 +1,7 @@
 import { BarChart3, Calendar, Package, Truck, Users } from "lucide-react";
 
 
-export function Sidebar() {
+export default function Sidebar() {
   return (
     <aside className="w-64 dashboard-sidebar text-white min-h-screen">
           <div className="p-6">

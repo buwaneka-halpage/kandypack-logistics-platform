@@ -8,7 +8,6 @@ import {
   MapPin,
   Users,
   Download,
-  Sidebar
 } from 'lucide-react';
 
 // Import your TypeScript components
@@ -18,6 +17,7 @@ import DeliveryProgress from './DeliveryProgress';
 import StoreLocationsMap from './StoreLocationsMap';
 import AdminOverview from './AdminOverview';
 import { DashboardHeader } from './DashboardHeader';
+import Sidebar from './Sidebar';
 
 const Dashboard: React.FC = () => {
   return (
