@@ -1,74 +1,42 @@
-import { Package, Truck, CheckCircle, Clock, TrendingUp, TrendingDown } from "lucide-react";
+import React from 'react';
 
-const stats = [
-  {
-    name: "Total Orders",
-    value: "1,247",
-    change: "+12%",
-    changeType: "increase",
-    icon: Package,
-    color: "dashboard-info",
-  },
-  {
-    name: "Active Shipments",
-    value: "89",
-    change: "+5",
-    changeType: "increase",
-    icon: Truck,
-    color: "dashboard-warning",
-  },
-  {
-    name: "Delivered Today",
-    value: "156",
-    change: "+23%",
-    changeType: "increase",
-    icon: CheckCircle,
-    color: "dashboard-success",
-  },
-  {
-    name: "Pending Orders",
-    value: "34",
-    change: "-8%",
-    changeType: "decrease",
-    icon: Clock,
-    color: "dashboard-accent",
-  },
-];
+interface StatsCardProps {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  trend?: 'up' | 'down';
+  trendValue?: string;
+}
 
-export function StatsCards() {
+const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, trend, trendValue }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {stats.map((stat) => (
-        <div key={stat.name} className="dashboard-card">
-          <div className="flex items-center">
-            <div className={`flex-shrink-0 ${stat.color} p-3 rounded-lg`}>
-              <stat.icon className="h-6 w-6 text-white" aria-hidden="true" />
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          {trend && trendValue && (
+            <div className={`flex items-center mt-2 text-sm ${
+              trend === 'up' ? 'text-green-600' : 'text-red-600'
+            }`}>
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d={trend === 'up' ? "M7 17l9.2-9.2M17 17V7H7" : "M17 7l-9.2 9.2M7 7h10v10"} 
+                />
+              </svg>
+              <span>{trendValue}</span>
             </div>
-            <div className="ml-4 flex-1">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">{stat.name}</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
-                </div>
-                <div className="flex items-center">
-                  {stat.changeType === "increase" ? (
-                    <TrendingUp className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-red-500" />
-                  )}
-                  <span
-                    className={`ml-1 text-sm font-medium ${
-                      stat.changeType === "increase" ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {stat.change}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
-      ))}
+        <div className="flex-shrink-0 ml-4">
+          {icon}
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default StatsCard;
