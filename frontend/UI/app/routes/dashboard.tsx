@@ -1,5 +1,5 @@
 import type { Route } from "./+types/dashboard";
-import { Dashboard } from "../components/dashboard/Dashboard";
+import Dashboard from "../components/dashboard/Dashboard";
 import { useAuth } from "../hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { ErrorBoundary } from "../components/ErrorBoundary";
