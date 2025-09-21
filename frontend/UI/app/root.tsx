@@ -1,3 +1,4 @@
+import "./app.css";
 import {
   isRouteErrorResponse,
   Links,
@@ -8,7 +9,7 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
-import "./app.css";
+
 import { AuthProvider } from "./hooks/useAuth";
 
 export const links: Route.LinksFunction = () => [
