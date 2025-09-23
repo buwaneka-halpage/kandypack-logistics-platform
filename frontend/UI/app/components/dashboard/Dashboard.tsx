@@ -82,6 +82,12 @@ const Dashboard: React.FC = () => {
               <AdminOverview />
             </div>
           </div>
+
+          {/* Logistics Map */}
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-4">Logistics Map</h2>
+            <LogisticsMap />
+          </div>
         </main>
       </div>
     </div>
