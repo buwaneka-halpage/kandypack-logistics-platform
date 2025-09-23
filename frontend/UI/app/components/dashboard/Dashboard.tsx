@@ -14,7 +14,7 @@ import {
 import StatsCard from './StatsCard';
 import WeeklyOrderChart from './WeeklyOrderChart';
 import DeliveryProgress from './DeliveryProgress';
-import StoreLocationsMap from './StoreLocationsMap';
+import LogisticsMap from './LogisticsMap';
 import AdminOverview from './AdminOverview';
 import { DashboardHeader } from './DashboardHeader';
 import Sidebar from './Sidebar';
@@ -74,7 +74,7 @@ const Dashboard: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Store Locations Map */}
             <div>
-              <StoreLocationsMap />
+              <LogisticsMap />
             </div>
             
             {/* Admin Overview */}
@@ -83,11 +83,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Logistics Map */}
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Logistics Map</h2>
-            <LogisticsMap />
-          </div>
+          
         </main>
       </div>
     </div>
