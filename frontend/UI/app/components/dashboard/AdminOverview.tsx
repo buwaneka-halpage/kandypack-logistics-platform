@@ -1,49 +1,50 @@
 
 import React from 'react';
+import UserAvatar from '../UserAvatar';
 
 interface AdminData {
   name: string;
   role: string;
   id: string;
-  avatar: string;
+  avatar?: string | null;
   status: 'active' | 'offline';
 }
 
 const AdminOverview: React.FC = () => {
   const adminData: AdminData[] = [
     {
-      name: 'Driver Assistant',
-      role: 'Surath Perera',
+      name: 'Surath Perera',
+      role: 'Driver Assistant',
       id: '1234567',
-      avatar: '/api/placeholder/40/40',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', // Sample avatar
       status: 'active'
     },
     {
-      name: 'Driver Assistant',
-      role: 'Aruna Shantha',
-      id: '1234567',
-      avatar: '/api/placeholder/40/40',
+      name: 'Aruna Shantha',
+      role: 'Driver Assistant', 
+      id: '1234568',
+      avatar: null, // Will show initials "AS"
       status: 'active'
     },
     {
-      name: 'Driver Assistant',
-      role: 'Surath Chandralal',
-      id: '1234567',
-      avatar: '/api/placeholder/40/40',
+      name: 'Surath Chandralal',
+      role: 'Driver Assistant',
+      id: '1234569',
+      avatar: null, // Will show initials "SC"
+      status: 'offline'
+    },
+    {
+      name: 'Priya Jayawardena',
+      role: 'Store Manager - Dematagoda',
+      id: '1234570',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face', // Sample avatar
       status: 'active'
     },
     {
-      name: 'Store Manager',
-      role: 'Dematagoda',
-      id: '1234567',
-      avatar: '/api/placeholder/40/40',
-      status: 'active'
-    },
-    {
-      name: 'Store Manager',
-      role: 'Fort',
-      id: '1234567',
-      avatar: '/api/placeholder/40/40',
+      name: 'Kasun Silva',
+      role: 'Store Manager - Fort',
+      id: '1234571',
+      avatar: null, // Will show initials "KS"
       status: 'active'
     }
   ];
@@ -62,10 +63,10 @@ const AdminOverview: React.FC = () => {
         {adminData.map((admin: AdminData, index: number) => (
           <div key={index} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
             <div className="flex items-center space-x-3">
-              <img
+              <UserAvatar
                 src={admin.avatar}
-                alt={admin.role}
-                className="w-10 h-10 rounded-full bg-gray-200"
+                name={admin.name}
+                size="md"
               />
               <div>
                 <p className="text-sm font-medium text-gray-900">{admin.name}</p>

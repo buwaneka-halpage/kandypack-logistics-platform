@@ -20,6 +20,7 @@ interface Locations {
 const LogisticsMap: React.FC = () => {
   const [locations, setLocations] = useState<Locations | null>(null);
   const [LeafletComponents, setLeafletComponents] = useState<any>(null);
+  const [icons, setIcons] = useState<any>(null);
 
   // ---- Load Leaflet dynamically (so it doesn't break SSR) ----
   useEffect(() => {
@@ -29,26 +30,30 @@ const LogisticsMap: React.FC = () => {
         "react-leaflet"
       );
 
-      // Fix default Leaflet marker icons
-      const markerIcon2x = (
-        await import("leaflet/dist/images/marker-icon-2x.png")
-      ).default;
-      const markerIcon = (await import("leaflet/dist/images/marker-icon.png"))
-        .default;
-      const markerShadow = (
-        await import("leaflet/dist/images/marker-shadow.png")
-      ).default;
-
-      const DefaultIcon = L.Icon.Default.extend({
-        options: {
-          iconRetinaUrl: markerIcon2x,
-          iconUrl: markerIcon,
-          shadowUrl: markerShadow,
-        },
+      // Fix default Leaflet marker icons by creating custom icons
+      const DefaultIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
       });
 
-      L.Marker.prototype.options.icon = new DefaultIcon();
+      const TruckIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+
+      // Set default icon for all markers
+      L.Marker.prototype.options.icon = DefaultIcon;
+
       setLeafletComponents({ MapContainer, TileLayer, Marker, Popup });
+      setIcons({ DefaultIcon, TruckIcon });
     })();
 
     // ---- TEMP: Dummy data while backend is not ready ----
@@ -75,7 +80,7 @@ const LogisticsMap: React.FC = () => {
   }, []);
 
   // Show loading state
-  if (!LeafletComponents || !locations) return <p>Loading map...</p>;
+  if (!LeafletComponents || !locations || !icons) return <p>Loading map...</p>;
 
   const { MapContainer, TileLayer, Marker, Popup } = LeafletComponents;
 
@@ -93,14 +98,14 @@ const LogisticsMap: React.FC = () => {
 
       {/* Stores */}
       {locations.stores.map((store, idx) => (
-        <Marker key={`store-${idx}`} position={[store.lat, store.lng]}>
+        <Marker key={`store-${idx}`} position={[store.lat, store.lng]} icon={icons.DefaultIcon}>
           <Popup>{store.name}</Popup>
         </Marker>
       ))}
 
       {/* Trucks */}
       {locations.trucks.map((truck, idx) => (
-        <Marker key={`truck-${idx}`} position={[truck.lat, truck.lng]}>
+        <Marker key={`truck-${idx}`} position={[truck.lat, truck.lng]} icon={icons.TruckIcon}>
           <Popup>
             <strong>Truck ID:</strong> {truck.id} <br />
             <strong>Status:</strong> {truck.status}
