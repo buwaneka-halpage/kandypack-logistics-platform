@@ -50,10 +50,10 @@ const AdminOverview: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Admin Overview</h3>
-        <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+        <h3 className="text-lg font-semibold text-dashboard-text-primary">Admin Overview</h3>
+        <button className="text-sm text-dashboard-accent hover:text-primary-coral font-medium">
           View All
         </button>
       </div>
@@ -61,7 +61,7 @@ const AdminOverview: React.FC = () => {
       {/* Admin List */}
       <div className="space-y-4">
         {adminData.map((admin: AdminData, index: number) => (
-          <div key={index} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+          <div key={index} className="flex items-center justify-between p-3 hover:bg-dashboard-bg rounded-lg transition-colors">
             <div className="flex items-center space-x-3">
               <UserAvatar
                 src={admin.avatar}
@@ -69,16 +69,16 @@ const AdminOverview: React.FC = () => {
                 size="md"
               />
               <div>
-                <p className="text-sm font-medium text-gray-900">{admin.name}</p>
-                <p className="text-xs text-gray-600">{admin.role}</p>
+                <p className="text-sm font-medium text-dashboard-text-primary">{admin.name}</p>
+                <p className="text-xs text-dashboard-text-secondary">{admin.role}</p>
               </div>
             </div>
             
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{admin.id}</p>
+              <p className="text-sm font-medium text-dashboard-text-primary">{admin.id}</p>
               <div className="flex items-center space-x-1">
-                <div className={`w-2 h-2 rounded-full ${admin.status === 'active' ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                <span className="text-xs text-gray-600 capitalize">{admin.status}</span>
+                <div className={`w-2 h-2 rounded-full ${admin.status === 'active' ? 'bg-status-delivered' : 'bg-status-cancelled'}`}></div>
+                <span className="text-xs text-dashboard-text-secondary capitalize">{admin.status}</span>
               </div>
             </div>
           </div>
@@ -86,19 +86,19 @@ const AdminOverview: React.FC = () => {
       </div>
       
       {/* Summary Stats */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
+      <div className="mt-6 pt-4 border-t border-dashboard-border">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <div className="text-lg font-bold text-gray-900">12</div>
-            <div className="text-xs text-gray-600">Total Staff</div>
+            <div className="text-lg font-bold text-dashboard-text-primary">12</div>
+            <div className="text-xs text-dashboard-text-secondary">Total Staff</div>
           </div>
           <div>
-            <div className="text-lg font-bold text-green-600">10</div>
-            <div className="text-xs text-gray-600">Active</div>
+            <div className="text-lg font-bold text-status-delivered">10</div>
+            <div className="text-xs text-dashboard-text-secondary">Active</div>
           </div>
           <div>
-            <div className="text-lg font-bold text-red-600">2</div>
-            <div className="text-xs text-gray-600">Offline</div>
+            <div className="text-lg font-bold text-status-cancelled">2</div>
+            <div className="text-xs text-dashboard-text-secondary">Offline</div>
           </div>
         </div>
       </div>

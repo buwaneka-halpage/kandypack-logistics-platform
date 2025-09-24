@@ -129,31 +129,31 @@ const WeeklyOrderChart: React.FC = () => {
   const yAxisLabels = getYAxisLabels();
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center space-x-2">
-            <h3 className="text-lg font-semibold text-gray-900">Weekly Order Analysis</h3>
+            <h3 className="text-lg font-semibold text-dashboard-text-primary">Weekly Order Analysis</h3>
             {isUsingDummyData && (
-              <div className="flex items-center space-x-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
+              <div className="flex items-center space-x-1 px-2 py-1 bg-status-shipped text-dashboard-text-primary rounded text-xs">
                 <AlertCircle className="w-3 h-3" />
                 <span>Demo Data</span>
               </div>
             )}
           </div>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-dashboard-text-secondary mt-1">
             Track {selectedMetric === 'orders' ? 'order volume' : 'revenue'} trends across the selected period
           </p>
         </div>
         <div className="flex items-center space-x-3">
           {/* Metric Toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-dashboard-bg rounded-lg p-1">
             <button
               onClick={() => setSelectedMetric('orders')}
               className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                 selectedMetric === 'orders'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-dashboard-white text-dashboard-accent shadow-sm'
+                  : 'text-dashboard-text-secondary hover:text-dashboard-text-primary'
               }`}
             >
               Orders
@@ -162,8 +162,8 @@ const WeeklyOrderChart: React.FC = () => {
               onClick={() => setSelectedMetric('revenue')}
               className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                 selectedMetric === 'revenue'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-dashboard-white text-dashboard-accent shadow-sm'
+                  : 'text-dashboard-text-secondary hover:text-dashboard-text-primary'
               }`}
             >
               Revenue
@@ -174,14 +174,14 @@ const WeeklyOrderChart: React.FC = () => {
           <div className="relative period-dropdown">
             <button 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
+              className="flex items-center space-x-2 px-3 py-2 border border-dashboard-border rounded-lg text-sm hover:bg-dashboard-bg"
             >
               <span>{selectedPeriod}</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
             
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+              <div className="absolute right-0 mt-2 w-48 bg-dashboard-white border border-dashboard-border rounded-lg shadow-lg z-10">
                 {periodOptions.map((option) => (
                   <button
                     key={option}
@@ -189,8 +189,8 @@ const WeeklyOrderChart: React.FC = () => {
                       handlePeriodChange(option);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg ${
-                      option === selectedPeriod ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-dashboard-bg first:rounded-t-lg last:rounded-b-lg ${
+                      option === selectedPeriod ? 'bg-dashboard-accent text-dashboard-white' : 'text-dashboard-text-primary'
                     }`}
                   >
                     {option}

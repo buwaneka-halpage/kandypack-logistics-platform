@@ -21,11 +21,9 @@ import Sidebar from './Sidebar';
 
 const Dashboard: React.FC = () => {
   return (
-    <div className="min-h-screen dashboard-bg">
+    <div className="min-h-screen bg-dashboard-bg">
       {/* Header */}
-
       <DashboardHeader />
-
 
       <div className="flex">
         {/* Sidebar */}
@@ -38,22 +36,22 @@ const Dashboard: React.FC = () => {
             <StatsCard
               title="Request For Quotation"
               value="0"
-              icon={<Package className="w-6 h-6 text-blue-600" />}
+              icon={<Package className="w-6 h-6 text-dashboard-chart" />}
             />
             <StatsCard
               title="Today's Revenue"
               value="Rs 700,000"
-              icon={<TrendingUp className="w-6 h-6 text-green-600" />}
+              icon={<TrendingUp className="w-6 h-6 text-dashboard-accent" />}
             />
             <StatsCard
               title="Scheduled Train Shipments"
               value="50"
-              icon={<Calendar className="w-6 h-6 text-purple-600" />}
+              icon={<Calendar className="w-6 h-6 text-primary-navy" />}
             />
             <StatsCard
               title="Active Truck Routes"
               value="12 routes"
-              icon={<Truck className="w-6 h-6 text-orange-600" />}
+              icon={<Truck className="w-6 h-6 text-dashboard-accent" />}
             />
           </div>
 

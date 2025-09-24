@@ -71,6 +71,16 @@ Examples:
   .bg-status-pending { background-color: oklch(0.75 0.15 60); }
   .bg-status-delivered { background-color: oklch(0.65 0.15 220); }
   .bg-status-cancelled { background-color: oklch(0.577 0.245 27.325); }
+  .text-status-delivered { color: oklch(0.65 0.15 220); }
+  .text-status-cancelled { color: oklch(0.577 0.245 27.325); }
+  
+  /* Additional dashboard utilities */
+  .bg-dashboard-white { background-color: oklch(1 0 0); }
+  .text-dashboard-white { color: oklch(1 0 0); }
+  .border-dashboard-border { border-color: oklch(0.929 0.013 255.508); }
+  .text-dashboard-text-primary { color: oklch(0.129 0.042 264.695); }
+  .text-dashboard-text-secondary { color: oklch(0.554 0.046 257.417); }
+  .bg-dashboard-hover { background-color: oklch(0.25 0.045 265.755); }
   
   /* Hover variants */
   .hover\:bg-primary-coral:hover { background-color: oklch(0.68 0.14 25); }
