@@ -208,90 +208,221 @@ const WeeklyOrderChart: React.FC = () => {
           // Loading State
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center space-y-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="text-sm text-gray-600">Loading chart data...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-dashboard-accent"></div>
+              <p className="text-sm text-dashboard-text-secondary">Loading chart data...</p>
             </div>
           </div>
         ) : (
           <>
             {/* Y-axis labels */}
-            <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500 pr-4">
+            <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-dashboard-text-secondary pr-4 z-10">
               {yAxisLabels.map((label, index) => (
-                <span key={index} className="leading-none">{label}</span>
+                <span key={index} className="leading-none bg-dashboard-white px-1">{label}</span>
               ))}
             </div>
             
-            {/* Chart Area */}
-            <div className="ml-8 h-full flex items-end justify-between space-x-3">
-              {currentData.map((item, index: number) => {
-                const height = ((item.value - minValue) / (maxValue - minValue)) * 100;
-                const isHighest = item.value === maxValue;
+            {/* SVG Area Chart */}
+            <div className="ml-8 h-full relative">
+              <svg width="100%" height="100%" className="overflow-visible">
+                <defs>
+                  <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="oklch(0.72 0.15 25)" stopOpacity="0.3"/>
+                    <stop offset="100%" stopColor="oklch(0.72 0.15 25)" stopOpacity="0.05"/>
+                  </linearGradient>
+                  <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="oklch(0.72 0.15 25)"/>
+                    <stop offset="100%" stopColor="oklch(0.65 0.18 260)"/>
+                  </linearGradient>
+                </defs>
                 
-                return (
-                  <div key={item.day} className="flex flex-col items-center flex-1 group">
-                    {/* Value tooltip on hover */}
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 mb-2">
-                      <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
-                        {selectedMetric === 'orders' ? `${item.value} orders` : `$${item.value.toLocaleString()}`}
-                      </div>
-                    </div>
-                    
-                    {/* Bar */}
-                    <div 
-                      className={`w-full rounded-t-lg transition-all duration-300 hover:opacity-80 ${
-                        isHighest 
-                          ? 'bg-gradient-to-t from-blue-600 to-blue-400' 
-                          : 'bg-gradient-to-t from-blue-500 to-blue-300'
-                      }`}
-                      style={{ 
-                        height: `${Math.max(height, 5)}%`,
-                      }}
+                {/* Grid lines */}
+                {yAxisLabels.map((_, index) => {
+                  const y = (index / (yAxisLabels.length - 1)) * 100;
+                  return (
+                    <line
+                      key={index}
+                      x1="0%"
+                      y1={`${y}%`}
+                      x2="100%"
+                      y2={`${y}%`}
+                      stroke="oklch(0.929 0.013 255.508)"
+                      strokeWidth="1"
+                      strokeDasharray="2,2"
                     />
+                  );
+                })}
+                
+                {/* Area Path */}
+                <path
+                  d={(() => {
+                    if (currentData.length === 0) return '';
                     
-                    {/* Day label */}
-                    <span className="text-xs text-gray-600 mt-2 font-medium">
-                      {item.day}
-                    </span>
-                  </div>
-                );
-              })}
+                    const chartWidth = 100; // percentage
+                    const chartHeight = 100; // percentage
+                    const stepX = chartWidth / (currentData.length - 1);
+                    
+                    let pathData = `M 0 ${chartHeight} `; // Start from bottom-left
+                    
+                    currentData.forEach((item, index) => {
+                      const x = index * stepX;
+                      const normalizedValue = ((item.value - minValue) / (maxValue - minValue));
+                      const y = chartHeight - (normalizedValue * chartHeight);
+                      
+                      if (index === 0) {
+                        pathData += `L ${x} ${y} `;
+                      } else {
+                        // Smooth curve using quadratic bezier
+                        const prevX = (index - 1) * stepX;
+                        const controlX = (prevX + x) / 2;
+                        pathData += `Q ${controlX} ${y} ${x} ${y} `;
+                      }
+                    });
+                    
+                    pathData += `L ${chartWidth} ${chartHeight} Z`; // Close path to bottom-right
+                    return pathData;
+                  })()}
+                  fill="url(#areaGradient)"
+                  className="transition-all duration-500"
+                />
+                
+                {/* Line Path */}
+                <path
+                  d={(() => {
+                    if (currentData.length === 0) return '';
+                    
+                    const chartWidth = 100;
+                    const chartHeight = 100;
+                    const stepX = chartWidth / (currentData.length - 1);
+                    
+                    let pathData = '';
+                    
+                    currentData.forEach((item, index) => {
+                      const x = index * stepX;
+                      const normalizedValue = ((item.value - minValue) / (maxValue - minValue));
+                      const y = chartHeight - (normalizedValue * chartHeight);
+                      
+                      if (index === 0) {
+                        pathData += `M ${x} ${y} `;
+                      } else {
+                        const prevX = (index - 1) * stepX;
+                        const controlX = (prevX + x) / 2;
+                        pathData += `Q ${controlX} ${y} ${x} ${y} `;
+                      }
+                    });
+                    
+                    return pathData;
+                  })()}
+                  fill="none"
+                  stroke="url(#lineGradient)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="transition-all duration-500"
+                />
+                
+                {/* Data Points */}
+                {currentData.map((item, index) => {
+                  const chartWidth = 100;
+                  const chartHeight = 100;
+                  const stepX = chartWidth / (currentData.length - 1);
+                  const x = index * stepX;
+                  const normalizedValue = ((item.value - minValue) / (maxValue - minValue));
+                  const y = chartHeight - (normalizedValue * chartHeight);
+                  const isHighest = item.value === maxValue;
+                  
+                  return (
+                    <g key={item.day} className="group">
+                      {/* Hover area */}
+                      <rect
+                        x={`${x - 5}%`}
+                        y="0%"
+                        width="10%"
+                        height="100%"
+                        fill="transparent"
+                        className="cursor-pointer"
+                      />
+                      
+                      {/* Data point */}
+                      <circle
+                        cx={`${x}%`}
+                        cy={`${y}%`}
+                        r={isHighest ? "6" : "4"}
+                        fill="oklch(1 0 0)"
+                        stroke="oklch(0.72 0.15 25)"
+                        strokeWidth="3"
+                        className="transition-all duration-200 group-hover:r-8 group-hover:stroke-4"
+                      />
+                      
+                      {/* Tooltip */}
+                      <g className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <rect
+                          x={`${x - 10}%`}
+                          y={`${y - 15}%`}
+                          width="20%"
+                          height="12%"
+                          fill="oklch(0.129 0.042 264.695)"
+                          rx="4"
+                          className="drop-shadow-lg"
+                        />
+                        <text
+                          x={`${x}%`}
+                          y={`${y - 8}%`}
+                          textAnchor="middle"
+                          className="fill-white text-xs font-medium"
+                        >
+                          {selectedMetric === 'orders' ? `${item.value}` : `$${(item.value / 1000).toFixed(0)}K`}
+                        </text>
+                      </g>
+                    </g>
+                  );
+                })}
+              </svg>
+              
+              {/* X-axis labels */}
+              <div className="absolute bottom-0 left-0 right-0 flex justify-between px-2 -mb-6">
+                {currentData.map((item, index) => (
+                  <span key={item.day} className="text-xs text-dashboard-text-secondary font-medium">
+                    {item.day}
+                  </span>
+                ))}
+              </div>
             </div>
           </>
         )}
       </div>
       
       {/* Summary Stats */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
+      <div className="mt-6 pt-4 border-t border-dashboard-border">
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-1">
-              <TrendingUp className="w-4 h-4 text-green-600" />
-              <span className="text-lg font-bold text-gray-900">
+              <TrendingUp className="w-4 h-4 text-dashboard-accent" />
+              <span className="text-lg font-bold text-dashboard-text-primary">
                 {selectedMetric === 'orders' 
                   ? Math.max(...currentData.map(d => d.value))
                   : `$${Math.max(...currentData.map(d => d.value)).toLocaleString()}`
                 }
               </span>
             </div>
-            <div className="text-xs text-gray-600">Peak {selectedMetric === 'orders' ? 'Orders' : 'Revenue'}</div>
+            <div className="text-xs text-dashboard-text-secondary">Peak {selectedMetric === 'orders' ? 'Orders' : 'Revenue'}</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold text-gray-900">
+            <div className="text-lg font-bold text-dashboard-text-primary">
               {selectedMetric === 'orders' 
                 ? Math.round(currentData.reduce((sum, d) => sum + d.value, 0) / currentData.length)
                 : `$${Math.round(currentData.reduce((sum, d) => sum + d.value, 0) / currentData.length).toLocaleString()}`
               }
             </div>
-            <div className="text-xs text-gray-600">Daily Average</div>
+            <div className="text-xs text-dashboard-text-secondary">Daily Average</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold text-gray-900">
+            <div className="text-lg font-bold text-dashboard-text-primary">
               {selectedMetric === 'orders' 
                 ? currentData.reduce((sum, d) => sum + d.value, 0)
                 : `$${currentData.reduce((sum, d) => sum + d.value, 0).toLocaleString()}`
               }
             </div>
-            <div className="text-xs text-gray-600">Total This Week</div>
+            <div className="text-xs text-dashboard-text-secondary">Total This Week</div>
           </div>
         </div>
       </div>
