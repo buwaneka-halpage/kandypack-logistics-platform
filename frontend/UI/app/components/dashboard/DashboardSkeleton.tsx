@@ -1,8 +1,8 @@
 export function DashboardSkeleton() {
   return (
-    <div className="min-h-screen dashboard-bg">
+    <div className="min-h-screen bg-dashboard-bg">
       {/* Sidebar Skeleton */}
-      <div className="fixed inset-y-0 left-0 z-50 w-64 dashboard-sidebar">
+      <div className="fixed inset-y-0 left-0 z-50 w-64 bg-primary-navy">
         <div className="flex h-full flex-col">
           {/* Logo Skeleton */}
           <div className="flex h-16 shrink-0 items-center px-6">

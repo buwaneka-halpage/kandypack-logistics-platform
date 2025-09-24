@@ -17,12 +17,12 @@ const DeliveryProgress: React.FC = () => {
   const totalDeliveries: number = 78;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Deliveries</h3>
+        <h3 className="text-lg font-semibold text-dashboard-text-primary">Deliveries</h3>
         <div className="flex items-center space-x-4 text-sm">
-          <span className="text-gray-600">Rail</span>
-          <span className="text-gray-600">Truck</span>
+          <span className="text-dashboard-text-secondary">Rail</span>
+          <span className="text-dashboard-text-secondary">Truck</span>
         </div>
       </div>
       
