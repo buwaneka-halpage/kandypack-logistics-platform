@@ -9,8 +9,10 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@react-router/dev": "^7.7.1",
     "@react-router/node": "^7.7.1",
     "@react-router/serve": "^7.7.1",
+    "@tailwindcss/vite": "^4.1.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "isbot": "^5.1.27",
@@ -22,19 +24,17 @@
     "react-leaflet": "^5.0.0",
     "react-router": "^7.7.1",
     "react-router-dom": "^7.9.1",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3",
+    "vite-tsconfig-paths": "^5.1.4"
   },
   "devDependencies": {
-    "@react-router/dev": "^7.7.1",
-    "@tailwindcss/vite": "^4.1.4",
     "@types/leaflet": "^1.9.20",
     "@types/node": "^20",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
-    "tailwindcss": "^4.1.4",
-    "tw-animate-css": "^1.3.8",
-    "typescript": "^5.8.3",
-    "vite": "^6.3.3",
-    "vite-tsconfig-paths": "^5.1.4"
+    "tw-animate-css": "^1.3.8"
   }
 }
