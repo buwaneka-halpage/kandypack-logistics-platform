@@ -1,5 +1,6 @@
-import { BarChart3, Calendar, Package, Truck, Users, Menu, X } from "lucide-react";
+import { BarChart3, Calendar, Package, Truck, Users, Menu, X, ArrowLeft } from "lucide-react";
 import { useState } from "react";
+
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -7,6 +8,8 @@ export default function Sidebar() {
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  
 
   const navItems = [
     { icon: BarChart3, label: "Dashboard", isActive: true },
@@ -21,35 +24,18 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className={`bg-primary-navy text-dashboard-white min-h-screen transition-all duration-300 ease-in-out ${
+    <aside className={`bg-primary-navy text-dashboard-white min-h-screen transition-all duration-00 ease-in-out ${
       isCollapsed ? 'w-16' : 'w-64'
     }`}>
       <div className="flex flex-col h-full">
         {/* Header with Logo and Toggle */}
-        <div className="flex items-center justify-between p-6 border-b border-dashboard-border">
+        <div className="flex items-center justify-between p-0  border-dashboard-border">
           <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'space-x-2'}`}>
-            <Package className="w-8 h-8 text-dashboard-accent flex-shrink-0" />
-            {!isCollapsed && (
-              <h1 className="text-xl font-bold">
-                Kandy<span className="text-dashboard-accent">Pack</span>
-              </h1>
-            )}
-          </div>
-          {!isCollapsed && (
-            <button
-              onClick={toggleSidebar}
-              className="text-dashboard-text-secondary hover:text-dashboard-white transition-colors p-1 rounded"
-              aria-label="Collapse sidebar"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-
-        {/* Expand Button (when collapsed) */}
-        {isCollapsed && (
-          <div className="p-2">
-            <button
+            
+            {/* Expand Button (when collapsed) */}
+            {isCollapsed && (
+              <div className="p-2">
+                <button
               onClick={toggleSidebar}
               className="w-full flex justify-center text-dashboard-text-secondary hover:text-dashboard-white transition-colors p-3 rounded-lg hover:bg-dashboard-accent"
               aria-label="Expand sidebar"
@@ -58,6 +44,19 @@ export default function Sidebar() {
             </button>
           </div>
         )}
+          </div>
+          {!isCollapsed && (
+            <button
+              onClick={toggleSidebar}
+              className="text-dashboard-text-secondary hover:text-dashboard-white transition-colors p-1 rounded"
+              aria-label="Collapse sidebar"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+
+      
 
         {/* Navigation */}
         <nav className={`flex-1 ${isCollapsed ? 'px-2 py-4' : 'px-6 py-4'} space-y-2`}>
