@@ -17,18 +17,18 @@ const DeliveryProgress: React.FC = () => {
   const totalDeliveries: number = 78;
 
   return (
-    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-dashboard-text-primary">Deliveries</h3>
-        <div className="flex items-center space-x-4 text-sm">
+    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h3 className="text-base sm:text-lg font-semibold text-dashboard-text-primary">Deliveries</h3>
+        <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
           <span className="text-dashboard-text-secondary">Rail</span>
           <span className="text-dashboard-text-secondary">Truck</span>
         </div>
       </div>
       
       {/* Circular Progress */}
-      <div className="flex items-center justify-center mb-6">
-        <div className="relative w-32 h-32">
+      <div className="flex items-center justify-center mb-4 sm:mb-6">
+        <div className="relative w-24 h-24 sm:w-32 sm:h-32">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
             {/* Background circle */}
             <circle
@@ -60,7 +60,7 @@ const DeliveryProgress: React.FC = () => {
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{totalDeliveries}%</div>
+              <div className="text-lg sm:text-2xl font-bold text-gray-900">{totalDeliveries}%</div>
               <div className="text-xs text-gray-600">Complete</div>
             </div>
           </div>
@@ -68,21 +68,21 @@ const DeliveryProgress: React.FC = () => {
       </div>
       
       {/* Stats Legend */}
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {deliveryStats.map((stat: DeliveryStat, index: number) => (
           <div key={stat.label} className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className={`w-3 h-3 rounded-full bg-${stat.color}`}></div>
-              <span className="text-sm text-gray-600">{stat.label}</span>
+              <span className="text-xs sm:text-sm text-gray-600">{stat.label}</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">{stat.value}%</span>
+            <span className="text-xs sm:text-sm font-medium text-gray-900">{stat.value}%</span>
           </div>
         ))}
       </div>
       
       {/* Download Button */}
-      <button className="w-full mt-6 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors">
-        <Download className="w-4 h-4" />
+      <button className="w-full mt-4 sm:mt-6 flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs sm:text-sm font-medium text-gray-700 transition-colors">
+        <Download className="w-3 h-3 sm:w-4 sm:h-4" />
         <span>Download Statistics</span>
       </button>
     </div>

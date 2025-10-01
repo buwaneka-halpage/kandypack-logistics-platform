@@ -10,11 +10,11 @@ interface StatsCardProps {
 
 const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, trend, trendValue }) => {
   return (
-    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-6 hover:shadow-md transition-all hover:border-dashboard-accent">
+    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6 hover:shadow-md transition-all hover:border-dashboard-accent">
       <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-dashboard-text-secondary mb-1">{title}</p>
-          <p className="text-2xl font-bold text-dashboard-text-primary">{value}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-medium text-dashboard-text-secondary mb-1 truncate">{title}</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-dashboard-text-primary">{value}</p>
           {trend && trendValue && (
             <div className={`flex items-center mt-2 text-sm ${
               trend === 'up' ? 'text-dashboard-accent' : 'text-status-cancelled'
@@ -31,7 +31,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon, trend, trendV
             </div>
           )}
         </div>
-        <div className="flex-shrink-0 ml-4">
+        <div className="flex-shrink-0 ml-2 sm:ml-4">
           {icon}
         </div>
       </div>

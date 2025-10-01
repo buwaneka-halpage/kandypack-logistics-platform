@@ -85,34 +85,56 @@ const LogisticsMap: React.FC = () => {
   const { MapContainer, TileLayer, Marker, Popup } = LeafletComponents;
 
   return (
-    <MapContainer
-      center={[7.2906, 80.6337]} // Centered around Sri Lanka
-      zoom={7}
-      style={{ height: "500px", width: "100%" }}
-    >
-      {/* Base map layer */}
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      />
+    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6">
+      <div className="mb-3 sm:mb-4">
+        <h3 className="text-base sm:text-lg font-semibold text-dashboard-text-primary">Logistics Map</h3>
+        <p className="text-xs sm:text-sm text-dashboard-text-secondary mt-1">Real-time tracking of stores and delivery trucks</p>
+      </div>
+      
+      <div className="rounded-lg overflow-hidden">
+        <MapContainer
+          center={[7.2906, 80.6337]} // Centered around Sri Lanka
+          zoom={7}
+          style={{ height: "250px", width: "100%" }}
+          className="sm:h-[350px] lg:h-[450px]"
+        >
+          {/* Base map layer */}
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          />
 
-      {/* Stores */}
-      {locations.stores.map((store, idx) => (
-        <Marker key={`store-${idx}`} position={[store.lat, store.lng]} icon={icons.DefaultIcon}>
-          <Popup>{store.name}</Popup>
-        </Marker>
-      ))}
+          {/* Stores */}
+          {locations.stores.map((store, idx) => (
+            <Marker key={`store-${idx}`} position={[store.lat, store.lng]} icon={icons.DefaultIcon}>
+              <Popup>{store.name}</Popup>
+            </Marker>
+          ))}
 
-      {/* Trucks */}
-      {locations.trucks.map((truck, idx) => (
-        <Marker key={`truck-${idx}`} position={[truck.lat, truck.lng]} icon={icons.TruckIcon}>
-          <Popup>
-            <strong>Truck ID:</strong> {truck.id} <br />
-            <strong>Status:</strong> {truck.status}
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+          {/* Trucks */}
+          {locations.trucks.map((truck, idx) => (
+            <Marker key={`truck-${idx}`} position={[truck.lat, truck.lng]} icon={icons.TruckIcon}>
+              <Popup>
+                <strong>Truck ID:</strong> {truck.id} <br />
+                <strong>Status:</strong> {truck.status}
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+      
+      {/* Map Legend */}
+      <div className="mt-3 sm:mt-4 flex items-center justify-center space-x-6">
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+          <span className="text-xs sm:text-sm text-dashboard-text-secondary">Stores</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+          <span className="text-xs sm:text-sm text-dashboard-text-secondary">Trucks</span>
+        </div>
+      </div>
+    </div>
   );
 };
 
