@@ -142,29 +142,29 @@ const WeeklyOrderChart: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between w-full">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between w-full gap-4">
           <div className="flex-1">
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
               <CardTitle>Weekly Order Analysis</CardTitle>
               {isUsingDummyData && (
-                <div className="flex items-center space-x-1 px-2 py-1 bg-status-shipped text-dashboard-text-primary rounded text-xs">
+                <div className="flex items-center space-x-1 px-2 py-1 bg-status-shipped text-dashboard-text-primary rounded text-xs w-fit">
                   <AlertCircle className="w-3 h-3" />
                   <span>Demo Data</span>
                 </div>
               )}
             </div>
-            <CardDescription>
+            <CardDescription className="mt-1">
               Track {selectedMetric === 'orders' ? 'order volume' : 'revenue'} trends across the selected period
             </CardDescription>
           </div>
           
           <CardAction>
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
               {/* Metric Toggle */}
-              <div className="flex bg-dashboard-bg rounded-lg p-1">
+              <div className="flex bg-dashboard-bg rounded-lg p-1 w-full sm:w-auto">
                 <button
                   onClick={() => setSelectedMetric('orders')}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  className={`flex-1 sm:flex-none px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                     selectedMetric === 'orders'
                       ? 'bg-dashboard-white text-dashboard-accent shadow-sm'
                       : 'text-dashboard-text-secondary hover:text-dashboard-text-primary'
@@ -174,7 +174,7 @@ const WeeklyOrderChart: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setSelectedMetric('revenue')}
-                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  className={`flex-1 sm:flex-none px-3 py-1 text-sm font-medium rounded-md transition-colors ${
                     selectedMetric === 'revenue'
                       ? 'bg-dashboard-white text-dashboard-accent shadow-sm'
                       : 'text-dashboard-text-secondary hover:text-dashboard-text-primary'
@@ -185,17 +185,17 @@ const WeeklyOrderChart: React.FC = () => {
               </div>
               
               {/* Period Selector */}
-              <div className="relative period-dropdown">
+              <div className="relative period-dropdown w-full sm:w-auto">
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center space-x-2 px-3 py-2 border border-dashboard-border rounded-lg text-sm hover:bg-dashboard-bg"
+                  className="flex items-center justify-between w-full sm:w-auto space-x-2 px-3 py-2 border border-dashboard-border rounded-lg text-sm hover:bg-dashboard-bg"
                 >
                   <span>{selectedPeriod}</span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-dashboard-white border border-dashboard-border rounded-lg shadow-lg z-10">
+                  <div className="absolute right-0 sm:right-0 left-0 sm:left-auto mt-2 w-full sm:w-48 bg-dashboard-white border border-dashboard-border rounded-lg shadow-lg z-10">
                     {periodOptions.map((option) => (
                       <button
                         key={option}
@@ -221,23 +221,24 @@ const WeeklyOrderChart: React.FC = () => {
       <CardContent>
         {isLoading ? (
           // Loading State
-          <div className="flex items-center justify-center h-64">
+          <div className="flex items-center justify-center h-80 w-full">
             <div className="flex flex-col items-center space-y-3">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-dashboard-accent"></div>
               <p className="text-sm text-dashboard-text-secondary">Loading chart data...</p>
             </div>
           </div>
         ) : (
-          <ChartContainer config={chartConfig} className="h-64">
-            <AreaChart
-              data={currentData}
-              margin={{
-                left: 12,
-                right: 12,
-                top: 12,
-                bottom: 12,
-              }}
-            >
+          <div className="flex justify-center w-full px-4">
+            <ChartContainer config={chartConfig} className="h-80 w-full max-w-5xl mx-auto min-w-0">
+              <AreaChart
+                data={currentData}
+                margin={{
+                  left: 10,
+                  right: 10,
+                  top: 20,
+                  bottom: 5,
+                }}
+              >
               <defs>
                 <linearGradient id="fillGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.3} />
@@ -252,6 +253,8 @@ const WeeklyOrderChart: React.FC = () => {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
+                height={60}
+                interval={0}
                 tickFormatter={(value) => value.slice(0, 3)}
               />
               
@@ -259,6 +262,7 @@ const WeeklyOrderChart: React.FC = () => {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
+                width={60}
                 tickFormatter={(value) => 
                   selectedMetric === 'orders' 
                     ? `${value}` 
@@ -298,12 +302,11 @@ const WeeklyOrderChart: React.FC = () => {
                   strokeWidth: 2,
                 }}
               />
-            </AreaChart>
-          </ChartContainer>
+              </AreaChart>
+            </ChartContainer>
+          </div>
         )}
-      </CardContent>
-      
-      {/* Summary Stats */}
+      </CardContent>      {/* Summary Stats */}
       <CardContent className="pt-0">
         <div className="pt-4 border-t border-dashboard-border">
           <div className="grid grid-cols-3 gap-4">
