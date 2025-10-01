@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, TrendingUp, AlertCircle } from 'lucide-react';
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardAction } from '~/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '~/components/ui/chart';
 
 interface ChartDataPoint {
   day: string;
@@ -128,305 +131,216 @@ const WeeklyOrderChart: React.FC = () => {
 
   const yAxisLabels = getYAxisLabels();
 
+  // Chart configuration for the UI component
+  const chartConfig = {
+    value: {
+      label: selectedMetric === 'orders' ? 'Orders' : 'Revenue',
+      color: 'oklch(0.72 0.15 25)', // dashboard accent color
+    },
+  } satisfies ChartConfig;
+
   return (
-    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h3 className="text-lg font-semibold text-dashboard-text-primary">Weekly Order Analysis</h3>
-            {isUsingDummyData && (
-              <div className="flex items-center space-x-1 px-2 py-1 bg-status-shipped text-dashboard-text-primary rounded text-xs">
-                <AlertCircle className="w-3 h-3" />
-                <span>Demo Data</span>
-              </div>
-            )}
-          </div>
-          <p className="text-sm text-dashboard-text-secondary mt-1">
-            Track {selectedMetric === 'orders' ? 'order volume' : 'revenue'} trends across the selected period
-          </p>
-        </div>
-        <div className="flex items-center space-x-3">
-          {/* Metric Toggle */}
-          <div className="flex bg-dashboard-bg rounded-lg p-1">
-            <button
-              onClick={() => setSelectedMetric('orders')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                selectedMetric === 'orders'
-                  ? 'bg-dashboard-white text-dashboard-accent shadow-sm'
-                  : 'text-dashboard-text-secondary hover:text-dashboard-text-primary'
-              }`}
-            >
-              Orders
-            </button>
-            <button
-              onClick={() => setSelectedMetric('revenue')}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                selectedMetric === 'revenue'
-                  ? 'bg-dashboard-white text-dashboard-accent shadow-sm'
-                  : 'text-dashboard-text-secondary hover:text-dashboard-text-primary'
-              }`}
-            >
-              Revenue
-            </button>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2">
+              <CardTitle>Weekly Order Analysis</CardTitle>
+              {isUsingDummyData && (
+                <div className="flex items-center space-x-1 px-2 py-1 bg-status-shipped text-dashboard-text-primary rounded text-xs">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>Demo Data</span>
+                </div>
+              )}
+            </div>
+            <CardDescription>
+              Track {selectedMetric === 'orders' ? 'order volume' : 'revenue'} trends across the selected period
+            </CardDescription>
           </div>
           
-          {/* Period Selector */}
-          <div className="relative period-dropdown">
-            <button 
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center space-x-2 px-3 py-2 border border-dashboard-border rounded-lg text-sm hover:bg-dashboard-bg"
-            >
-              <span>{selectedPeriod}</span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-            
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-dashboard-white border border-dashboard-border rounded-lg shadow-lg z-10">
-                {periodOptions.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      handlePeriodChange(option);
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-dashboard-bg first:rounded-t-lg last:rounded-b-lg ${
-                      option === selectedPeriod ? 'bg-dashboard-accent text-dashboard-white' : 'text-dashboard-text-primary'
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
+          <CardAction>
+            <div className="flex items-center space-x-3">
+              {/* Metric Toggle */}
+              <div className="flex bg-dashboard-bg rounded-lg p-1">
+                <button
+                  onClick={() => setSelectedMetric('orders')}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    selectedMetric === 'orders'
+                      ? 'bg-dashboard-white text-dashboard-accent shadow-sm'
+                      : 'text-dashboard-text-secondary hover:text-dashboard-text-primary'
+                  }`}
+                >
+                  Orders
+                </button>
+                <button
+                  onClick={() => setSelectedMetric('revenue')}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    selectedMetric === 'revenue'
+                      ? 'bg-dashboard-white text-dashboard-accent shadow-sm'
+                      : 'text-dashboard-text-secondary hover:text-dashboard-text-primary'
+                  }`}
+                >
+                  Revenue
+                </button>
               </div>
-            )}
-          </div>
+              
+              {/* Period Selector */}
+              <div className="relative period-dropdown">
+                <button 
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center space-x-2 px-3 py-2 border border-dashboard-border rounded-lg text-sm hover:bg-dashboard-bg"
+                >
+                  <span>{selectedPeriod}</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-dashboard-white border border-dashboard-border rounded-lg shadow-lg z-10">
+                    {periodOptions.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => {
+                          handlePeriodChange(option);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-dashboard-bg first:rounded-t-lg last:rounded-b-lg ${
+                          option === selectedPeriod ? 'bg-dashboard-accent text-dashboard-white' : 'text-dashboard-text-primary'
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardAction>
         </div>
-      </div>
+      </CardHeader>
       
-      {/* Chart Container */}
-      <div className="h-64 relative">
+      <CardContent>
         {isLoading ? (
           // Loading State
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center h-64">
             <div className="flex flex-col items-center space-y-3">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-dashboard-accent"></div>
               <p className="text-sm text-dashboard-text-secondary">Loading chart data...</p>
             </div>
           </div>
         ) : (
-          <>
-            {/* Y-axis labels */}
-            <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-dashboard-text-secondary pr-4 z-10">
-              {yAxisLabels.map((label, index) => (
-                <span key={index} className="leading-none bg-dashboard-white px-1">{label}</span>
-              ))}
-            </div>
-            
-            {/* SVG Area Chart */}
-            <div className="ml-8 h-full relative">
-              <svg width="100%" height="100%" className="overflow-visible">
-                <defs>
-                  <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="oklch(0.72 0.15 25)" stopOpacity="0.3"/>
-                    <stop offset="100%" stopColor="oklch(0.72 0.15 25)" stopOpacity="0.05"/>
-                  </linearGradient>
-                  <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="oklch(0.72 0.15 25)"/>
-                    <stop offset="100%" stopColor="oklch(0.65 0.18 260)"/>
-                  </linearGradient>
-                </defs>
-                
-                {/* Grid lines */}
-                {yAxisLabels.map((_, index) => {
-                  const y = (index / (yAxisLabels.length - 1)) * 100;
-                  return (
-                    <line
-                      key={index}
-                      x1="0%"
-                      y1={`${y}%`}
-                      x2="100%"
-                      y2={`${y}%`}
-                      stroke="oklch(0.929 0.013 255.508)"
-                      strokeWidth="1"
-                      strokeDasharray="2,2"
-                    />
-                  );
-                })}
-                
-                {/* Area Path */}
-                <path
-                  d={(() => {
-                    if (currentData.length === 0) return '';
-                    
-                    const chartWidth = 100; // percentage
-                    const chartHeight = 100; // percentage
-                    const stepX = chartWidth / (currentData.length - 1);
-                    
-                    let pathData = `M 0 ${chartHeight} `; // Start from bottom-left
-                    
-                    currentData.forEach((item, index) => {
-                      const x = index * stepX;
-                      const normalizedValue = ((item.value - minValue) / (maxValue - minValue));
-                      const y = chartHeight - (normalizedValue * chartHeight);
-                      
-                      if (index === 0) {
-                        pathData += `L ${x} ${y} `;
-                      } else {
-                        // Smooth curve using quadratic bezier
-                        const prevX = (index - 1) * stepX;
-                        const controlX = (prevX + x) / 2;
-                        pathData += `Q ${controlX} ${y} ${x} ${y} `;
-                      }
-                    });
-                    
-                    pathData += `L ${chartWidth} ${chartHeight} Z`; // Close path to bottom-right
-                    return pathData;
-                  })()}
-                  fill="url(#areaGradient)"
-                  className="transition-all duration-500"
-                />
-                
-                {/* Line Path */}
-                <path
-                  d={(() => {
-                    if (currentData.length === 0) return '';
-                    
-                    const chartWidth = 100;
-                    const chartHeight = 100;
-                    const stepX = chartWidth / (currentData.length - 1);
-                    
-                    let pathData = '';
-                    
-                    currentData.forEach((item, index) => {
-                      const x = index * stepX;
-                      const normalizedValue = ((item.value - minValue) / (maxValue - minValue));
-                      const y = chartHeight - (normalizedValue * chartHeight);
-                      
-                      if (index === 0) {
-                        pathData += `M ${x} ${y} `;
-                      } else {
-                        const prevX = (index - 1) * stepX;
-                        const controlX = (prevX + x) / 2;
-                        pathData += `Q ${controlX} ${y} ${x} ${y} `;
-                      }
-                    });
-                    
-                    return pathData;
-                  })()}
-                  fill="none"
-                  stroke="url(#lineGradient)"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="transition-all duration-500"
-                />
-                
-                {/* Data Points */}
-                {currentData.map((item, index) => {
-                  const chartWidth = 100;
-                  const chartHeight = 100;
-                  const stepX = chartWidth / (currentData.length - 1);
-                  const x = index * stepX;
-                  const normalizedValue = ((item.value - minValue) / (maxValue - minValue));
-                  const y = chartHeight - (normalizedValue * chartHeight);
-                  const isHighest = item.value === maxValue;
-                  
-                  return (
-                    <g key={item.day} className="group">
-                      {/* Hover area */}
-                      <rect
-                        x={`${x - 5}%`}
-                        y="0%"
-                        width="10%"
-                        height="100%"
-                        fill="transparent"
-                        className="cursor-pointer"
-                      />
-                      
-                      {/* Data point */}
-                      <circle
-                        cx={`${x}%`}
-                        cy={`${y}%`}
-                        r={isHighest ? "6" : "4"}
-                        fill="oklch(1 0 0)"
-                        stroke="oklch(0.72 0.15 25)"
-                        strokeWidth="3"
-                        className="transition-all duration-200 group-hover:r-8 group-hover:stroke-4"
-                      />
-                      
-                      {/* Tooltip */}
-                      <g className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <rect
-                          x={`${x - 10}%`}
-                          y={`${y - 15}%`}
-                          width="20%"
-                          height="12%"
-                          fill="oklch(0.129 0.042 264.695)"
-                          rx="4"
-                          className="drop-shadow-lg"
-                        />
-                        <text
-                          x={`${x}%`}
-                          y={`${y - 8}%`}
-                          textAnchor="middle"
-                          className="fill-white text-xs font-medium"
-                        >
-                          {selectedMetric === 'orders' ? `${item.value}` : `$${(item.value / 1000).toFixed(0)}K`}
-                        </text>
-                      </g>
-                    </g>
-                  );
-                })}
-              </svg>
+          <ChartContainer config={chartConfig} className="h-64">
+            <AreaChart
+              data={currentData}
+              margin={{
+                left: 12,
+                right: 12,
+                top: 12,
+                bottom: 12,
+              }}
+            >
+              <defs>
+                <linearGradient id="fillGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--color-value)" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
               
-              {/* X-axis labels */}
-              <div className="absolute bottom-0 left-0 right-0 flex justify-between px-2 -mb-6">
-                {currentData.map((item, index) => (
-                  <span key={item.day} className="text-xs text-dashboard-text-secondary font-medium">
-                    {item.day}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </>
+              <CartesianGrid strokeDasharray="3 3" />
+              
+              <XAxis
+                dataKey="day"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => value.slice(0, 3)}
+              />
+              
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => 
+                  selectedMetric === 'orders' 
+                    ? `${value}` 
+                    : `$${(value / 1000).toFixed(0)}K`
+                }
+              />
+              
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name) => [
+                      selectedMetric === 'orders' 
+                        ? `${value} orders`
+                        : `$${Number(value).toLocaleString()}`,
+                      selectedMetric === 'orders' ? 'Orders' : 'Revenue'
+                    ]}
+                    labelFormatter={(label) => label}
+                  />
+                }
+              />
+              
+              <Area
+                dataKey="value"
+                type="monotone"
+                fill="url(#fillGradient)"
+                fillOpacity={1}
+                stroke="var(--color-value)"
+                strokeWidth={3}
+                dot={{
+                  fill: "var(--color-value)",
+                  strokeWidth: 2,
+                  r: 4,
+                }}
+                activeDot={{
+                  r: 6,
+                  strokeWidth: 2,
+                }}
+              />
+            </AreaChart>
+          </ChartContainer>
         )}
-      </div>
+      </CardContent>
       
       {/* Summary Stats */}
-      <div className="mt-6 pt-4 border-t border-dashboard-border">
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-1">
-              <TrendingUp className="w-4 h-4 text-dashboard-accent" />
-              <span className="text-lg font-bold text-dashboard-text-primary">
+      <CardContent className="pt-0">
+        <div className="pt-4 border-t border-dashboard-border">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-1">
+                <TrendingUp className="w-4 h-4 text-dashboard-accent" />
+                <span className="text-lg font-bold text-dashboard-text-primary">
+                  {selectedMetric === 'orders' 
+                    ? Math.max(...currentData.map(d => d.value))
+                    : `$${Math.max(...currentData.map(d => d.value)).toLocaleString()}`
+                  }
+                </span>
+              </div>
+              <div className="text-xs text-dashboard-text-secondary">Peak {selectedMetric === 'orders' ? 'Orders' : 'Revenue'}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-dashboard-text-primary">
                 {selectedMetric === 'orders' 
-                  ? Math.max(...currentData.map(d => d.value))
-                  : `$${Math.max(...currentData.map(d => d.value)).toLocaleString()}`
+                  ? Math.round(currentData.reduce((sum, d) => sum + d.value, 0) / currentData.length)
+                  : `$${Math.round(currentData.reduce((sum, d) => sum + d.value, 0) / currentData.length).toLocaleString()}`
                 }
-              </span>
+              </div>
+              <div className="text-xs text-dashboard-text-secondary">Daily Average</div>
             </div>
-            <div className="text-xs text-dashboard-text-secondary">Peak {selectedMetric === 'orders' ? 'Orders' : 'Revenue'}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold text-dashboard-text-primary">
-              {selectedMetric === 'orders' 
-                ? Math.round(currentData.reduce((sum, d) => sum + d.value, 0) / currentData.length)
-                : `$${Math.round(currentData.reduce((sum, d) => sum + d.value, 0) / currentData.length).toLocaleString()}`
-              }
+            <div className="text-center">
+              <div className="text-lg font-bold text-dashboard-text-primary">
+                {selectedMetric === 'orders' 
+                  ? currentData.reduce((sum, d) => sum + d.value, 0)
+                  : `$${currentData.reduce((sum, d) => sum + d.value, 0).toLocaleString()}`
+                }
+              </div>
+              <div className="text-xs text-dashboard-text-secondary">Total This Week</div>
             </div>
-            <div className="text-xs text-dashboard-text-secondary">Daily Average</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold text-dashboard-text-primary">
-              {selectedMetric === 'orders' 
-                ? currentData.reduce((sum, d) => sum + d.value, 0)
-                : `$${currentData.reduce((sum, d) => sum + d.value, 0).toLocaleString()}`
-              }
-            </div>
-            <div className="text-xs text-dashboard-text-secondary">Total This Week</div>
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
