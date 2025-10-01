@@ -85,18 +85,18 @@ const LogisticsMap: React.FC = () => {
   const { MapContainer, TileLayer, Marker, Popup } = LeafletComponents;
 
   return (
-    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6">
+    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6 h-full min-h-[500px] flex flex-col">
       <div className="mb-3 sm:mb-4">
         <h3 className="text-base sm:text-lg font-semibold text-dashboard-text-primary">Logistics Map</h3>
         <p className="text-xs sm:text-sm text-dashboard-text-secondary mt-1">Real-time tracking of stores and delivery trucks</p>
       </div>
       
-      <div className="rounded-lg overflow-hidden">
+      <div className="rounded-lg overflow-hidden flex-1">
         <MapContainer
           center={[7.2906, 80.6337]} // Centered around Sri Lanka
           zoom={7}
-          style={{ height: "250px", width: "100%" }}
-          className="sm:h-[350px] lg:h-[450px]"
+          style={{ height: "100%", width: "100%" }}
+          className="h-full"
         >
           {/* Base map layer */}
           <TileLayer

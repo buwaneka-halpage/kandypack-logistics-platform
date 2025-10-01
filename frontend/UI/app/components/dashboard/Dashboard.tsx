@@ -31,7 +31,7 @@ const Dashboard: React.FC = () => {
       {/* Header */}
       <DashboardHeader onMobileMenuToggle={toggleMobileMenu} />
 
-      <div className="flex flex-col lg:flex-row">
+      <div className="flex flex-col lg:flex-row min-h-screen">
         {/* Sidebar */}
         <Sidebar 
           isMobileMenuOpen={isMobileMenuOpen}
@@ -39,7 +39,7 @@ const Dashboard: React.FC = () => {
         />
 
         {/* Main Content */}
-        <main className="flex-1 p-3 sm:p-4 lg:p-6 w-full lg:w-auto overflow-x-hidden">
+        <main className="flex-1 p-3 sm:p-4 lg:p-6 w-full lg:w-auto overflow-x-hidden lg:pt-6 pt-3">
           {/* Stats Cards Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
             <StatsCard

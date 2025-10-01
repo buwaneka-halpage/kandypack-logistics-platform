@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+/* Layout Custom Properties */
+:root {
+  --header-height: 4rem;
+}
+
+/* Ensure proper scrolling and layout */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Fix for sticky sidebar on desktop */
+@media (min-width: 1024px) {
+  .sidebar-sticky {
+    position: sticky;
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height));
+  }
+}
+
 /* 
 KandyPack Logistics Color Palette Usage Guide:
 

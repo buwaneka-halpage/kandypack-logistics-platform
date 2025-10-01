@@ -50,7 +50,7 @@ const AdminOverview: React.FC = () => {
   ];
 
   return (
-    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6">
+    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6 h-full min-h-[500px] flex flex-col">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h3 className="text-base sm:text-lg font-semibold text-dashboard-text-primary">Admin Overview</h3>
         <button className="text-xs sm:text-sm text-dashboard-accent hover:text-primary-coral font-medium">
@@ -59,7 +59,7 @@ const AdminOverview: React.FC = () => {
       </div>
       
       {/* Admin List */}
-      <div className="space-y-2 sm:space-y-4">
+      <div className="space-y-2 sm:space-y-4 flex-1">
         {adminData.map((admin: AdminData, index: number) => (
           <div key={index} className="flex items-center justify-between p-2 sm:p-3 hover:bg-dashboard-bg rounded-lg transition-colors">
             <div className="flex items-center space-x-2 sm:space-x-3">

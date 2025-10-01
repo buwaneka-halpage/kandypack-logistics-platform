@@ -32,7 +32,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
         <div
           className="lg:hidden fixed bg-black bg-opacity-50 z-30"
           style={{
-            top: 'var(--header-height, 4rem)',
+            top: 'var(--header-height)',
             left: 0,
             right: 0,
             bottom: 0
@@ -41,17 +41,17 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
         />
       )}
 
-      <aside className={`bg-primary-navy text-dashboard-white transition-all duration-300 ease-in-out z-40
+      <aside className={`bg-primary-navy text-dashboard-white transition-all duration-300 ease-in-out sidebar-sticky
         ${/* Desktop styles */ ''}
-        lg:relative lg:block lg:min-h-screen 
+        lg:block lg:z-10
         ${isCollapsed ? 'lg:w-16' : 'lg:w-64'}
         ${/* Mobile styles */ ''}
-        fixed left-0 w-64
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        fixed left-0 w-64 z-40 lg:translate-x-0
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}
       style={{ 
-        top: 'var(--header-height, 4rem)', 
-        height: 'calc(100vh - var(--header-height, 4rem))' 
+        top: 'var(--header-height)',
+        height: 'calc(100vh - var(--header-height))',
       }}>
       <div className="flex flex-col h-full">
         {/* Header with Logo and Toggle - Desktop Only */}
