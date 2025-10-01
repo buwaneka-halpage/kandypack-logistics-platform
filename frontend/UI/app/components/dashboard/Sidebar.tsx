@@ -54,8 +54,8 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
         height: 'calc(100vh - var(--header-height, 4rem))' 
       }}>
       <div className="flex flex-col h-full">
-        {/* Header with Logo and Toggle */}
-        <div className="flex items-center justify-between p-0  border-dashboard-border">
+        {/* Header with Logo and Toggle - Desktop Only */}
+        <div className="hidden lg:flex items-center justify-between p-0 border-dashboard-border">
           <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'space-x-2'}`}>
             
             {/* Expand Button (when collapsed) */}
@@ -89,7 +89,7 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
           ${/* Desktop styles */ ''}
           ${isCollapsed ? 'lg:px-2 lg:py-4' : 'lg:px-6 lg:py-4'}
           ${/* Mobile styles */ ''}
-          px-4 py-6
+          px-4 pt-6 pb-4
         `}>
           {navItems.map((item, index) => {
             const Icon = item.icon;
