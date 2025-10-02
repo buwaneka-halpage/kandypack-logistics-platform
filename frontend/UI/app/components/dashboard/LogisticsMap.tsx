@@ -85,17 +85,17 @@ const LogisticsMap: React.FC = () => {
   const { MapContainer, TileLayer, Marker, Popup } = LeafletComponents;
 
   return (
-    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6 h-full min-h-[500px] flex flex-col">
-      <div className="mb-3 sm:mb-4">
+    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6 h-full min-h-[600px] flex flex-col">
+      <div className="mb-2 sm:mb-3 flex-shrink-0">
         <h3 className="text-base sm:text-lg font-semibold text-dashboard-text-primary">Logistics Map</h3>
         <p className="text-xs sm:text-sm text-dashboard-text-secondary mt-1">Real-time tracking of stores and delivery trucks</p>
       </div>
       
-      <div className="rounded-lg overflow-hidden flex-1">
+      <div className="rounded-lg overflow-hidden flex-1 min-h-0">
         <MapContainer
           center={[7.2906, 80.6337]} // Centered around Sri Lanka
           zoom={7}
-          style={{ height: "100%", width: "100%" }}
+          style={{ height: "100%", width: "100%", minHeight: "400px" }}
           className="h-full"
         >
           {/* Base map layer */}
@@ -124,7 +124,7 @@ const LogisticsMap: React.FC = () => {
       </div>
       
       {/* Map Legend */}
-      <div className="mt-3 sm:mt-4 flex items-center justify-center space-x-6">
+      <div className="mt-2 sm:mt-3 flex items-center justify-center space-x-6 flex-shrink-0">
         <div className="flex items-center space-x-2">
           <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
           <span className="text-xs sm:text-sm text-dashboard-text-secondary">Stores</span>

@@ -50,8 +50,8 @@ const AdminOverview: React.FC = () => {
   ];
 
   return (
-    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6 h-full min-h-[500px] flex flex-col">
-      <div className="flex items-center justify-between mb-4 sm:mb-6">
+    <div className="bg-dashboard-white rounded-lg shadow-sm border border-dashboard-border p-3 sm:p-4 lg:p-6 h-full min-h-[600px] flex flex-col">
+      <div className="flex items-center justify-between mb-4 sm:mb-6 flex-shrink-0">
         <h3 className="text-base sm:text-lg font-semibold text-dashboard-text-primary">Admin Overview</h3>
         <button className="text-xs sm:text-sm text-dashboard-accent hover:text-primary-coral font-medium">
           View All
@@ -86,7 +86,7 @@ const AdminOverview: React.FC = () => {
       </div>
       
       {/* Summary Stats */}
-      <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-dashboard-border">
+      <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-dashboard-border flex-shrink-0">
         <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
           <div>
             <div className="text-sm sm:text-lg font-bold text-dashboard-text-primary">12</div>
