@@ -1,29 +1,21 @@
 import { BarChart3, Calendar, Package, Truck, Users, X, ArrowLeft, Menu } from "lucide-react";
-import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useSidebar } from "~/contexts/SidebarContext";
 
-interface SidebarProps {
-  isMobileMenuOpen: boolean;
-  setIsMobileMenuOpen: (open: boolean) => void;
-  activeItem?: string;
-}
-
-export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen, activeItem = "Dashboard" }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+export default function Sidebar() {
+  const { isCollapsed, toggleSidebar, isMobileMenuOpen, setIsMobileMenuOpen } = useSidebar();
+  const location = useLocation();
 
   const navItems = [
-    { icon: BarChart3, label: "Dashboard", isActive: activeItem === "Dashboard" },
-    { icon: Package, label: "Order Management", isActive: activeItem === "Order Management" },
-    { icon: Calendar, label: "Rail Scheduling", isActive: activeItem === "Rail Scheduling" },
-    { icon: Truck, label: "Last-Mile Delivery", isActive: activeItem === "Last-Mile Delivery" },
-    { icon: Package, label: "Store Management", isActive: activeItem === "Store Management" },
-    { icon: Users, label: "Admin Management", isActive: activeItem === "Admin Management" },
-    { icon: Truck, label: "Router Management", isActive: activeItem === "Router Management" },
-    { icon: BarChart3, label: "Reports", isActive: activeItem === "Reports" },
-    { icon: Package, label: "Activity Logs", isActive: activeItem === "Activity Logs" },
+    { icon: BarChart3, label: "Dashboard", route: "/dashboard", isActive: location.pathname === "/dashboard" },
+    { icon: Package, label: "Order Management", route: "/orders", isActive: location.pathname === "/orders" },
+    { icon: Calendar, label: "Rail Scheduling", route: "/rail-scheduling", isActive: location.pathname === "/rail-scheduling" },
+    { icon: Truck, label: "Last-Mile Delivery", route: "/last-mile", isActive: location.pathname === "/last-mile" },
+    { icon: Package, label: "Store Management", route: "/stores", isActive: location.pathname === "/stores" },
+    { icon: Users, label: "Admin Management", route: "/admin", isActive: location.pathname === "/admin" },
+    { icon: Truck, label: "Router Management", route: "/routers", isActive: location.pathname === "/routers" },
+    { icon: BarChart3, label: "Reports", route: "/reports", isActive: location.pathname === "/reports" },
+    { icon: Package, label: "Activity Logs", route: "/logs", isActive: location.pathname === "/logs" },
   ];
 
   return (
@@ -95,11 +87,11 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen, activeI
           {navItems.map((item, index) => {
             const Icon = item.icon;
             return (
-              <a
+              <Link
                 key={index}
-                href="#"
+                to={item.route}
                 onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu on item click
-                className={`flex items-center rounded-lg transition-colors group
+                className={`sidebar-nav-item flex items-center rounded-lg transition-all duration-200 group relative
                   ${/* Desktop styles */ ''}
                   ${isCollapsed ? 'lg:justify-center lg:p-3' : 'lg:space-x-3 lg:px-4 lg:py-3'}
                   ${/* Mobile styles */ ''}
@@ -107,8 +99,8 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen, activeI
                   ${/* Common styles */ ''}
                   ${
                     item.isActive
-                      ? 'bg-dashboard-accent text-dashboard-white'
-                      : 'text-dashboard-text-secondary hover:text-dashboard-white hover:bg-dashboard-hover'
+                      ? 'bg-dashboard-accent text-dashboard-white shadow-md active'
+                      : 'text-dashboard-text-secondary hover:text-dashboard-white hover:bg-dashboard-accent/20 hover:shadow-sm'
                   }
                 `}
                 title={isCollapsed ? item.label : undefined}
@@ -116,11 +108,11 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen, activeI
                 <Icon className="w-5 h-5 flex-shrink-0" />
                 <span className={`truncate ${isCollapsed ? 'lg:hidden' : ''}`}>{item.label}</span>
                 {isCollapsed && (
-                  <div className="hidden lg:block absolute left-full ml-2 px-2 py-1 bg-primary-navy text-dashboard-white text-sm rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+                  <div className="sidebar-tooltip hidden lg:block absolute left-full ml-2 px-3 py-2 bg-primary-navy text-dashboard-white text-sm rounded-lg group-hover:show whitespace-nowrap z-50 shadow-lg border border-gray-600">
                     {item.label}
                   </div>
                 )}
-              </a>
+              </Link>
             );
           })}
         </nav>

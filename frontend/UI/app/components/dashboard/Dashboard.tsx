@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Package, 
   TrendingUp, 
@@ -16,31 +16,11 @@ import WeeklyOrderChart from './WeeklyOrderChart';
 import DeliveryProgress from './DeliveryProgress';
 import LogisticsMap from './LogisticsMap';
 import AdminOverview from './AdminOverview';
-import { DashboardHeader } from './DashboardHeader';
-import Sidebar from './Sidebar';
+import DashboardLayout from './DashboardLayout';
 
 const Dashboard: React.FC = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
   return (
-    <div className="min-h-screen bg-dashboard-bg">
-      {/* Header */}
-      <DashboardHeader onMobileMenuToggle={toggleMobileMenu} />
-
-      <div className="flex flex-col lg:flex-row min-h-screen">
-        {/* Sidebar */}
-        <Sidebar 
-          isMobileMenuOpen={isMobileMenuOpen}
-          setIsMobileMenuOpen={setIsMobileMenuOpen}
-          activeItem="Dashboard"
-        />
-
-        {/* Main Content */}
-        <main className="flex-1 p-3 sm:p-4 lg:p-6 w-full lg:w-auto overflow-x-hidden lg:pt-6 pt-3">
+    <DashboardLayout>
           {/* Stats Cards Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
             <StatsCard
@@ -90,9 +70,7 @@ const Dashboard: React.FC = () => {
               <LogisticsMap />
             </div>
           </div>
-        </main>
-      </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

@@ -1,11 +1,9 @@
 import { Bell, Search, ChevronDown, Menu } from "lucide-react";
 import UserAvatar from "../UserAvatar";
+import { useSidebar } from "~/contexts/SidebarContext";
 
-interface DashboardHeaderProps {
-  onMobileMenuToggle?: () => void;
-}
-
-export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
+export function DashboardHeader() {
+  const { toggleMobileMenu } = useSidebar();
   return (
     <header 
       className="bg-white border-b border-gray-200 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 sticky top-0 z-[9999] w-full"
@@ -16,7 +14,7 @@ export function DashboardHeader({ onMobileMenuToggle }: DashboardHeaderProps) {
         <div className="flex items-center space-x-2 sm:space-x-4">
           {/* Mobile Menu Toggle Button */}
           <button
-            onClick={onMobileMenuToggle}
+            onClick={toggleMobileMenu}
             className="lg:hidden p-2 text-gray-600 hover:text-primary-navy hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Toggle mobile menu"
           >

@@ -21,6 +21,53 @@ html, body {
   }
 }
 
+/* Enhanced sidebar navigation hover effects */
+.sidebar-nav-item {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-nav-item:hover {
+  transform: translateX(2px);
+}
+
+.sidebar-nav-item:hover::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: oklch(0.72 0.15 25);
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+.sidebar-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: oklch(0.72 0.15 25);
+  border-radius: 2px;
+}
+
+/* Enhanced tooltip for collapsed sidebar */
+.sidebar-tooltip {
+  transform: translateX(0) scale(0.95);
+  opacity: 0;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-tooltip.show {
+  transform: translateX(4px) scale(1);
+  opacity: 1;
+}
+
 /* 
 KandyPack Logistics Color Palette Usage Guide:
 
