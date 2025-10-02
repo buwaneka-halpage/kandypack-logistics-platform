@@ -36,6 +36,7 @@ const Dashboard: React.FC = () => {
         <Sidebar 
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
+          activeItem="Dashboard"
         />
 
         {/* Main Content */}

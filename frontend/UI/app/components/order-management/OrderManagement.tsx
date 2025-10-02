@@ -34,6 +34,10 @@ import {
   PaginationPrevious,
 } from "~/components/ui/pagination";
 
+// Import dashboard components
+import { DashboardHeader } from "../dashboard/DashboardHeader";
+import Sidebar from "../dashboard/Sidebar";
+
 // Sample order data
 const orderData = [
   {
@@ -153,7 +157,12 @@ export function OrderManagement() {
   const [dateFilter, setDateFilter] = useState<string>("last-30-days");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const itemsPerPage = 10;
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
 
   // Filter orders based on selected filters
   const filteredOrders = orderData.filter((order) => {
@@ -169,7 +178,21 @@ export function OrderManagement() {
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="w-full space-y-4">
+    <div className="min-h-screen bg-dashboard-bg">
+      {/* Header */}
+      <DashboardHeader onMobileMenuToggle={toggleMobileMenu} />
+
+      <div className="flex flex-col lg:flex-row min-h-screen">
+        {/* Sidebar */}
+        <Sidebar 
+          isMobileMenuOpen={isMobileMenuOpen}
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
+          activeItem="Order Management"
+        />
+
+        {/* Main Content */}
+        <main className="flex-1 p-3 sm:p-4 lg:p-6 w-full lg:w-auto overflow-x-hidden lg:pt-6 pt-3">
+          <div className="w-full space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Manage Orders</h1>
@@ -323,6 +346,9 @@ export function OrderManagement() {
           </Pagination>
         </div>
       )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

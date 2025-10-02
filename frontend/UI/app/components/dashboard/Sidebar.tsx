@@ -4,9 +4,10 @@ import { useState } from "react";
 interface SidebarProps {
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
+  activeItem?: string;
 }
 
-export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: SidebarProps) {
+export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen, activeItem = "Dashboard" }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const toggleSidebar = () => {
@@ -14,15 +15,15 @@ export default function Sidebar({ isMobileMenuOpen, setIsMobileMenuOpen }: Sideb
   };
 
   const navItems = [
-    { icon: BarChart3, label: "Dashboard", isActive: true },
-    { icon: Package, label: "Order Management" },
-    { icon: Calendar, label: "Rail Scheduling" },
-    { icon: Truck, label: "Last-Mile Delivery" },
-    { icon: Package, label: "Store Management" },
-    { icon: Users, label: "Admin Management" },
-    { icon: Truck, label: "Router Management" },
-    { icon: BarChart3, label: "Reports" },
-    { icon: Package, label: "Activity Logs" },
+    { icon: BarChart3, label: "Dashboard", isActive: activeItem === "Dashboard" },
+    { icon: Package, label: "Order Management", isActive: activeItem === "Order Management" },
+    { icon: Calendar, label: "Rail Scheduling", isActive: activeItem === "Rail Scheduling" },
+    { icon: Truck, label: "Last-Mile Delivery", isActive: activeItem === "Last-Mile Delivery" },
+    { icon: Package, label: "Store Management", isActive: activeItem === "Store Management" },
+    { icon: Users, label: "Admin Management", isActive: activeItem === "Admin Management" },
+    { icon: Truck, label: "Router Management", isActive: activeItem === "Router Management" },
+    { icon: BarChart3, label: "Reports", isActive: activeItem === "Reports" },
+    { icon: Package, label: "Activity Logs", isActive: activeItem === "Activity Logs" },
   ];
 
   return (
