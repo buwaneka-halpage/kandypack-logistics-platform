@@ -1,10 +1,11 @@
 import { BarChart3, Calendar, Package, Truck, Users, X, ArrowLeft, Menu } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router";
 import { useSidebar } from "~/contexts/SidebarContext";
 
 export default function Sidebar() {
   const { isCollapsed, toggleSidebar, isMobileMenuOpen, setIsMobileMenuOpen } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItems = [
     { icon: BarChart3, label: "Dashboard", route: "/dashboard", isActive: location.pathname === "/dashboard" },
@@ -48,30 +49,27 @@ export default function Sidebar() {
       }}>
       <div className="flex flex-col h-full">
         {/* Header with Logo and Toggle - Desktop Only */}
-        <div className="hidden lg:flex items-center justify-between p-0 border-dashboard-border">
-          <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'space-x-2'}`}>
-            
-            {/* Expand Button (when collapsed) */}
-            {isCollapsed && (
-              <div className="p-2">
-                <button
+        <div className="hidden lg:flex items-center justify-between p-4 border-b border-dashboard-border">
+          {/* Expand Button (when collapsed) */}
+          {isCollapsed ? (
+            <button
               onClick={toggleSidebar}
-              className="w-full flex justify-center text-dashboard-text-secondary hover:text-dashboard-white transition-colors p-3 rounded-lg hover:bg-dashboard-accent"
+              className="w-full flex justify-center text-dashboard-text-secondary hover:text-dashboard-white transition-colors p-2 rounded-lg hover:bg-dashboard-accent/20"
               aria-label="Expand sidebar"
             >
               <Menu className="w-5 h-5" />
             </button>
-          </div>
-        )}
-          </div>
-          {!isCollapsed && (
-            <button
-              onClick={toggleSidebar}
-              className="text-dashboard-text-secondary hover:text-dashboard-white transition-colors p-1 rounded"
-              aria-label="Collapse sidebar"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+          ) : (
+            <div className="flex items-center justify-between w-full">
+              <span className="text-lg font-semibold text-dashboard-white">Menu</span>
+              <button
+                onClick={toggleSidebar}
+                className="text-dashboard-text-secondary hover:text-dashboard-white transition-colors p-1 rounded"
+                aria-label="Collapse sidebar"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            </div>
           )}
         </div>
 
@@ -87,11 +85,16 @@ export default function Sidebar() {
           {navItems.map((item, index) => {
             const Icon = item.icon;
             return (
-              <Link
+              <button
                 key={index}
-                to={item.route}
-                onClick={() => setIsMobileMenuOpen(false)} // Close mobile menu on item click
-                className={`sidebar-nav-item flex items-center rounded-lg transition-all duration-200 group relative
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Close mobile menu on item click
+                  setIsMobileMenuOpen(false);
+                  // Navigate to the route
+                  navigate(item.route);
+                }}
+                className={`sidebar-nav-item flex items-center rounded-lg transition-all duration-200 group relative w-full text-left
                   ${/* Desktop styles */ ''}
                   ${isCollapsed ? 'lg:justify-center lg:p-3' : 'lg:space-x-3 lg:px-4 lg:py-3'}
                   ${/* Mobile styles */ ''}
@@ -112,7 +115,7 @@ export default function Sidebar() {
                     {item.label}
                   </div>
                 )}
-              </Link>
+              </button>
             );
           })}
         </nav>
