@@ -1,0 +1,336 @@
+@import "tailwindcss";
+
+/* Layout Custom Properties */
+:root {
+  --header-height: 4rem;
+}
+
+/* Ensure proper scrolling and layout */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Fix for sticky sidebar on desktop */
+@media (min-width: 1024px) {
+  .sidebar-sticky {
+    position: sticky;
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height));
+  }
+}
+
+/* Enhanced sidebar navigation hover effects */
+.sidebar-nav-item {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-nav-item:hover {
+  transform: translateX(2px);
+}
+
+.sidebar-nav-item:hover::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: oklch(0.72 0.15 25);
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+.sidebar-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: oklch(0.72 0.15 25);
+  border-radius: 2px;
+}
+
+/* Enhanced tooltip for collapsed sidebar */
+.sidebar-tooltip {
+  transform: translateX(0) scale(0.95);
+  opacity: 0;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-tooltip.show {
+  transform: translateX(4px) scale(1);
+  opacity: 1;
+}
+
+/* 
+KandyPack Logistics Color Palette Usage Guide:
+
+Primary Colors:
+- bg-primary-coral, text-primary-coral - Coral accent color
+- bg-primary-navy, text-primary-navy - Deep navy primary
+
+Dashboard Colors:
+- bg-dashboard-accent, text-dashboard-accent - Main accent (coral)
+- bg-dashboard-sidebar, text-dashboard-sidebar - Sidebar background (navy)
+- bg-dashboard-chart, text-dashboard-chart - Chart colors (blue)
+- bg-dashboard-bg - Light background
+- bg-dashboard-success, text-dashboard-success - Success states (green)
+- bg-dashboard-warning, text-dashboard-warning - Warning states (yellow)
+- bg-dashboard-info, text-dashboard-info - Info states (blue)
+
+Status Indicators:
+- bg-status-shipped - Green for shipped orders
+- bg-status-pending - Yellow for pending orders
+- bg-status-delivered - Blue for delivered orders
+- bg-status-cancelled - Red for cancelled orders
+
+Examples:
+<div className="bg-primary-coral text-white">Coral background</div>
+<button className="bg-primary-navy hover:bg-primary-navy text-white">Navy button</button>
+<span className="text-dashboard-accent">Coral text</span>
+*/
+
+/* Define custom color utilities for Tailwind v4 */
+@layer utilities {
+  /* Primary colors */
+  .text-primary-coral { color: oklch(0.72 0.15 25); }
+  .bg-primary-coral { background-color: oklch(0.72 0.15 25); }
+  .border-primary-coral { border-color: oklch(0.72 0.15 25); }
+  
+  .text-primary-navy { color: oklch(0.208 0.042 265.755); }
+  .bg-primary-navy { background-color: oklch(0.208 0.042 265.755); }
+  .border-primary-navy { border-color: oklch(0.208 0.042 265.755); }
+  
+  /* Dashboard specific colors */
+  .text-dashboard-accent { color: oklch(0.72 0.15 25); }
+  .bg-dashboard-accent { background-color: oklch(0.72 0.15 25); }
+  .border-dashboard-accent { border-color: oklch(0.72 0.15 25); }
+  
+  .text-dashboard-sidebar { color: oklch(0.984 0.003 247.858); }
+  .bg-dashboard-sidebar { background-color: oklch(0.208 0.042 265.755); }
+  .border-dashboard-sidebar { border-color: oklch(0.208 0.042 265.755); }
+  
+  .text-dashboard-chart { color: white; }
+  .bg-dashboard-chart { background-color: oklch(0.65 0.18 260); }
+  .border-dashboard-chart { border-color: oklch(0.65 0.18 260); }
+  
+  .bg-dashboard-bg { background-color: oklch(0.98 0.005 250); }
+  
+  .text-dashboard-success { color: white; }
+  .bg-dashboard-success { background-color: oklch(0.65 0.15 140); }
+  .border-dashboard-success { border-color: oklch(0.65 0.15 140); }
+  
+  .text-dashboard-warning { color: white; }
+  .bg-dashboard-warning { background-color: oklch(0.75 0.15 60); }
+  .border-dashboard-warning { border-color: oklch(0.75 0.15 60); }
+  
+  .text-dashboard-info { color: white; }
+  .bg-dashboard-info { background-color: oklch(0.65 0.15 220); }
+  .border-dashboard-info { border-color: oklch(0.65 0.15 220); }
+  
+  /* Status indicators */
+  .bg-status-shipped { background-color: oklch(0.65 0.15 140); }
+  .bg-status-pending { background-color: oklch(0.75 0.15 60); }
+  .bg-status-delivered { background-color: oklch(0.65 0.15 220); }
+  .bg-status-cancelled { background-color: oklch(0.577 0.245 27.325); }
+  .text-status-delivered { color: oklch(0.65 0.15 220); }
+  .text-status-cancelled { color: oklch(0.577 0.245 27.325); }
+  
+  /* Additional dashboard utilities */
+  .bg-dashboard-white { background-color: oklch(1 0 0); }
+  .text-dashboard-white { color: oklch(1 0 0); }
+  .border-dashboard-border { border-color: oklch(0.929 0.013 255.508); }
+  .text-dashboard-text-primary { color: oklch(0.129 0.042 264.695); }
+  .text-dashboard-text-secondary { color: oklch(0.554 0.046 257.417); }
+  .bg-dashboard-hover { background-color: oklch(0.25 0.045 265.755); }
+  
+  /* Hover variants */
+  .hover\:bg-primary-coral:hover { background-color: oklch(0.68 0.14 25); }
+  .hover\:bg-primary-navy:hover { background-color: oklch(0.25 0.045 265.755); }
+  .hover\:bg-dashboard-accent:hover { background-color: oklch(0.68 0.14 25); }
+  .hover\:bg-dashboard-sidebar:hover { background-color: oklch(0.25 0.045 265.755); }
+  .hover\:bg-dashboard-chart:hover { background-color: oklch(0.6 0.16 260); }
+  .hover\:bg-dashboard-success:hover { background-color: oklch(0.6 0.14 140); }
+  .hover\:bg-dashboard-warning:hover { background-color: oklch(0.7 0.14 60); }
+  .hover\:bg-dashboard-info:hover { background-color: oklch(0.6 0.14 220); }
+  
+  /* Focus variants */
+  .focus\:ring-primary-coral:focus { --tw-ring-color: oklch(0.72 0.15 25); }
+  .focus\:ring-primary-navy:focus { --tw-ring-color: oklch(0.208 0.042 265.755); }
+  .focus\:ring-dashboard-accent:focus { --tw-ring-color: oklch(0.72 0.15 25); }
+  
+  /* Dark mode variants */
+  .dark .bg-dashboard-sidebar { background-color: oklch(0.15 0.04 265); }
+  .dark .bg-dashboard-accent { background-color: oklch(0.65 0.12 25); }
+  .dark .bg-dashboard-chart { background-color: oklch(0.55 0.15 260); }
+  .dark .bg-dashboard-bg { background-color: oklch(0.13 0.04 265); }
+  .dark .bg-dashboard-success { background-color: oklch(0.55 0.12 140); }
+  .dark .bg-dashboard-warning { background-color: oklch(0.65 0.12 60); }
+  .dark .bg-dashboard-info { background-color: oklch(0.55 0.12 220); }
+  
+  /* Dark mode hover variants */
+  .dark .hover\:bg-dashboard-accent:hover { background-color: oklch(0.7 0.13 25); }
+  .dark .hover\:bg-dashboard-sidebar:hover { background-color: oklch(0.18 0.045 265); }
+}
+
+/* Custom properties for CSS variable usage (keeping for legacy support) */
+:root {
+  /* Core design system colors */
+  --radius: 0.5rem;
+  --background: oklch(1 0 0); /* White background */
+  --foreground: oklch(0.129 0.042 264.695); /* Dark navy text */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: oklch(0.208 0.042 265.755); /* Deep navy for sidebar */
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: oklch(0.129 0.042 264.695);
+  --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(0.72 0.15 25); /* Coral/orange-red accent */
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.929 0.013 255.508);
+  --input: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.129 0.042 264.695);
+  
+  /* Custom colors for your logistics dashboard */
+  --dashboard-sidebar: oklch(0.208 0.042 265.755); /* Deep navy */
+  --dashboard-accent: oklch(0.72 0.15 25); /* Coral/orange-red */
+  --dashboard-chart: oklch(0.65 0.18 260); /* Blue for charts */
+  --dashboard-bg: oklch(0.98 0.005 250); /* Very light blue-gray */
+  --dashboard-success: oklch(0.65 0.15 140); /* Green for success states */
+  --dashboard-warning: oklch(0.75 0.15 60); /* Yellow for warnings */
+  --dashboard-info: oklch(0.65 0.15 220); /* Blue for info */
+}
+
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.129 0.042 264.695);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.984 0.003 247.858);
+  --primary-foreground: oklch(0.129 0.042 264.695);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.279 0.041 260.031);
+  --input: oklch(0.279 0.041 260.031);
+  --ring: oklch(0.551 0.027 264.364);
+  
+  /* Dark mode dashboard colors */
+  --dashboard-sidebar: oklch(0.15 0.04 265);
+  --dashboard-accent: oklch(0.65 0.12 25);
+  --dashboard-chart: oklch(0.55 0.15 260);
+  --dashboard-bg: oklch(0.13 0.04 265);
+  --dashboard-success: oklch(0.55 0.12 140);
+  --dashboard-warning: oklch(0.65 0.12 60);
+  --dashboard-info: oklch(0.55 0.12 220);
+}
+
+/* Base styles */
+html, body {
+  background-color: oklch(var(--background));
+  color: oklch(var(--foreground));
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  border-color: oklch(var(--border));
+}
+
+/* Custom utility classes for your logistics dashboard */
+.dashboard-sidebar {
+  background-color: oklch(var(--dashboard-sidebar));
+  color: oklch(var(--primary-foreground));
+}
+
+.dashboard-accent {
+  background-color: oklch(var(--dashboard-accent));
+  color: oklch(var(--accent-foreground));
+}
+
+.dashboard-chart {
+  background-color: oklch(var(--dashboard-chart));
+  color: white;
+}
+
+.dashboard-bg {
+  background-color: oklch(var(--dashboard-bg));
+}
+
+.dashboard-success {
+  background-color: oklch(var(--dashboard-success));
+  color: white;
+}
+
+.dashboard-warning {
+  background-color: oklch(var(--dashboard-warning));
+  color: white;
+}
+
+.dashboard-info {
+  background-color: oklch(var(--dashboard-info));
+  color: white;
+}
+
+/* Card styles for dashboard */
+.dashboard-card {
+  background-color: oklch(var(--card));
+  border: 1px solid oklch(var(--border));
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Status indicator styles */
+.status-shipped { background-color: oklch(var(--dashboard-success)); }
+.status-pending { background-color: oklch(var(--dashboard-warning)); }
+.status-delivered { background-color: oklch(var(--dashboard-info)); }
+.status-cancelled { background-color: oklch(var(--destructive)); }
+
+/* Sidebar transition styles */
+.sidebar-transition {
+  transition: width 0.3s ease-in-out;
+}
+
+/* Tooltip styles for collapsed sidebar */
+.sidebar-tooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.sidebar-tooltip.show {
+  opacity: 1;
+  visibility: visible;
+}
