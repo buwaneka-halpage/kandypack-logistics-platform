@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   plugins: [
     tailwindcss(),
     reactRouter(),
@@ -11,9 +11,9 @@ export default defineConfig({
   ],
   build: {
     rollupOptions: {
-      output: {
+      output: isSsrBuild ? {} : {
         manualChunks: {
-          // Split vendor chunks for better caching
+          // Split vendor chunks for better caching (client-side only)
           'react-vendor': ['react', 'react-dom', 'react-router', 'react-router-dom'],
           'ui-vendor': ['lucide-react', '@radix-ui/react-slot', 'class-variance-authority'],
           'chart-vendor': ['recharts'],
@@ -27,4 +27,4 @@ export default defineConfig({
   ssr: {
     noExternal: ['recharts', 'leaflet', 'react-leaflet'],
   },
-});
+}));
