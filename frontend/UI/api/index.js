@@ -1,5 +1,8 @@
-// api/index.js
-import { createRequestHandler } from "@react-router/server-runtime";
+import { createRequestHandler } from "@react-router/node";
 import * as build from "../build/server/index.js";
 
-export default createRequestHandler(build);
+// Export the handler for Vercel serverless function
+export default createRequestHandler({
+  build,
+  mode: process.env.NODE_ENV || "production",
+});
