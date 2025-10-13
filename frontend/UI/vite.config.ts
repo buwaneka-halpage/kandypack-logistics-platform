@@ -6,14 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [
     tailwindcss(),
-    reactRouter({
-      future: {
-        v7_dev: true,
-        v7_unstable_server_rendering: true,
-      },
-      // @ts-expect-error - `process.env.VERCEL` is a string, not a boolean
-      platform: process.env.VERCEL ? "vercel" : "node",
-    }),
+    reactRouter(),
     tsconfigPaths(),
   ],
 });
