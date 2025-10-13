@@ -9,4 +9,22 @@ export default defineConfig({
     reactRouter(),
     tsconfigPaths(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor chunks for better caching
+          'react-vendor': ['react', 'react-dom', 'react-router', 'react-router-dom'],
+          'ui-vendor': ['lucide-react', '@radix-ui/react-slot', 'class-variance-authority'],
+          'chart-vendor': ['recharts'],
+          'map-vendor': ['leaflet', 'react-leaflet'],
+        },
+      },
+    },
+    // Increase chunk size warning limit for large dependencies
+    chunkSizeWarningLimit: 1000,
+  },
+  ssr: {
+    noExternal: ['recharts', 'leaflet', 'react-leaflet'],
+  },
 });
