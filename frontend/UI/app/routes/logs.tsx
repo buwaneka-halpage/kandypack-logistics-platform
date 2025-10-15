@@ -1,6 +1,11 @@
 import React from "react";
 import ActivityLogs from "../components/logs/ActivityLogs";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
 export default function LogsPage() {
-  return <ActivityLogs />;
+  return (
+    <ProtectedRoute>
+      <ActivityLogs />
+    </ProtectedRoute>
+  );
 }
