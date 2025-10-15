@@ -1,11 +1,6 @@
 import React from "react";
-import PlaceholderPage from "../components/PlaceholderPage";
+import RosterManagement from "../components/rosters/RosterManagement";
 
 export default function RoutersPage() {
-  return (
-    <PlaceholderPage 
-      title="Router Management"
-      description="Manage routing algorithms and optimize delivery paths."
-    />
-  );
+  return <RosterManagement />;
 }
