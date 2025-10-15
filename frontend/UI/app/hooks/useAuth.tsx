@@ -76,6 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('kandypack_user');
+    // Use window.location for redirect to ensure clean state reset
+    window.location.href = '/login';
   };
 
   const value: AuthContextType = {

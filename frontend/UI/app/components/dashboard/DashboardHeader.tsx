@@ -1,9 +1,32 @@
-import { Bell, Search, ChevronDown, Menu } from "lucide-react";
+import { Bell, Search, ChevronDown, Menu, LogOut } from "lucide-react";
 import UserAvatar from "../UserAvatar";
 import { useSidebar } from "~/contexts/SidebarContext";
+import { useAuth } from "~/hooks/useAuth";
+import { useState, useRef, useEffect } from "react";
 
 export function DashboardHeader() {
   const { toggleMobileMenu } = useSidebar();
+  const { user, logout } = useAuth();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setShowDropdown(false);
+  };
+
   return (
     <header 
       className="bg-white border-b border-gray-200 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 sticky top-0 z-[9999] w-full"
@@ -53,17 +76,39 @@ export function DashboardHeader() {
           </button>
           
           {/* User Profile Dropdown */}
-          <div className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group">
-            <UserAvatar
-              src="/api/placeholder/32/32"
-              name="Admin User"
-              size="sm"
-            />
-            <div className="text-right hidden lg:block">
-              <p className="text-sm font-medium text-primary-navy">Admin User</p>
-              <p className="text-xs text-gray-500">Administrator</p>
+          <div className="relative" ref={dropdownRef}>
+            <div 
+              className="flex items-center space-x-2 sm:space-x-3 cursor-pointer group"
+              onClick={() => setShowDropdown(!showDropdown)}
+            >
+              <UserAvatar
+                src="/api/placeholder/32/32"
+                name={user?.name || "Admin User"}
+                size="sm"
+              />
+              <div className="text-right hidden lg:block">
+                <p className="text-sm font-medium text-primary-navy">{user?.name || "Admin User"}</p>
+                <p className="text-xs text-gray-500">{user?.role || "Administrator"}</p>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-primary-navy transition-all hidden sm:block ${showDropdown ? 'rotate-180' : ''}`} />
             </div>
-            <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-primary-navy transition-colors hidden sm:block" />
+
+            {/* Dropdown Menu */}
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <div className="px-4 py-2 border-b border-gray-200">
+                  <p className="text-sm font-medium text-gray-900">{user?.name || "Admin User"}</p>
+                  <p className="text-xs text-gray-500">{user?.email || "admin@kandypack.com"}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
           </div>
           
           {/* Quick Action Button */}
