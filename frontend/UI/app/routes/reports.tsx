@@ -1,11 +1,6 @@
 import React from "react";
-import PlaceholderPage from "../components/PlaceholderPage";
+import Reports from "../components/reports/Reports";
 
 export default function ReportsPage() {
-  return (
-    <PlaceholderPage 
-      title="Reports"
-      description="Generate and view comprehensive reports and analytics."
-    />
-  );
+  return <Reports />;
 }
