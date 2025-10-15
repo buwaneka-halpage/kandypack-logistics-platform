@@ -1,11 +1,6 @@
 import React from "react";
-import PlaceholderPage from "../components/PlaceholderPage";
+import RailScheduling from "../components/rail-scheduling/RailScheduling";
 
 export default function RailSchedulingPage() {
-  return (
-    <PlaceholderPage 
-      title="Rail Scheduling"
-      description="Manage rail transportation schedules and logistics operations."
-    />
-  );
+  return <RailScheduling />;
 }
