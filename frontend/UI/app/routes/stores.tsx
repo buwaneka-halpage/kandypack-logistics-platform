@@ -1,11 +1,6 @@
 import React from "react";
-import PlaceholderPage from "../components/PlaceholderPage";
+import StoreManagement from "../components/stores/StoreManagement";
 
 export default function StoresPage() {
-  return (
-    <PlaceholderPage 
-      title="Store Management"
-      description="Manage store operations, inventory, and logistics coordination."
-    />
-  );
+  return <StoreManagement />;
 }
