@@ -5,16 +5,16 @@ export default [
   route("/login", "routes/customer-login.tsx"),
   route("/admin", "routes/login.tsx"),
   
-  // Admin Routes
-  route("/dashboard", "routes/dashboard.tsx"),
-  route("/orders", "routes/order-management.tsx"),
-  route("/rail-scheduling", "routes/rail-scheduling.tsx"),
-  route("/last-mile", "routes/last-mile.tsx"),
-  route("/stores", "routes/stores.tsx"),
-  route("/admin-management", "routes/admin.tsx"),
-  route("/routers", "routes/routers.tsx"),
-  route("/reports", "routes/reports.tsx"),
-  route("/logs", "routes/logs.tsx"),
+  // Admin Routes (with /admin prefix)
+  route("/admin/dashboard", "routes/dashboard.tsx"),
+  route("/admin/orders", "routes/order-management.tsx"),
+  route("/admin/rail-scheduling", "routes/rail-scheduling.tsx"),
+  route("/admin/last-mile", "routes/last-mile.tsx"),
+  route("/admin/stores", "routes/stores.tsx"),
+  route("/admin/admin-management", "routes/admin.tsx"),
+  route("/admin/routers", "routes/routers.tsx"),
+  route("/admin/reports", "routes/reports.tsx"),
+  route("/admin/logs", "routes/logs.tsx"),
 
   // Customer Routes with Layout
   layout("components/customer/CustomerLayout.tsx", [

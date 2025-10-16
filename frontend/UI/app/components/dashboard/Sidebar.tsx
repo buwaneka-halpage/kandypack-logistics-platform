@@ -8,15 +8,15 @@ export default function Sidebar() {
   const navigate = useNavigate();
 
   const navItems = [
-    { icon: BarChart3, label: "Dashboard", route: "/dashboard", isActive: location.pathname === "/dashboard" },
-    { icon: Package, label: "Order Management", route: "/orders", isActive: location.pathname === "/orders" },
-    { icon: Calendar, label: "Rail Scheduling", route: "/rail-scheduling", isActive: location.pathname === "/rail-scheduling" },
-    { icon: Truck, label: "Last-Mile Delivery", route: "/last-mile", isActive: location.pathname === "/last-mile" },
-    { icon: Package, label: "Store Management", route: "/stores", isActive: location.pathname === "/stores" },
-    { icon: Users, label: "Admin Management", route: "/admin-management", isActive: location.pathname === "/admin-management" },
-    { icon: Truck, label: "Router Management", route: "/routers", isActive: location.pathname === "/routers" },
-    { icon: BarChart3, label: "Reports", route: "/reports", isActive: location.pathname === "/reports" },
-    { icon: Package, label: "Activity Logs", route: "/logs", isActive: location.pathname === "/logs" },
+    { icon: BarChart3, label: "Dashboard", route: "/admin/dashboard", isActive: location.pathname === "/admin/dashboard" },
+    { icon: Package, label: "Order Management", route: "/admin/orders", isActive: location.pathname === "/admin/orders" },
+    { icon: Calendar, label: "Rail Scheduling", route: "/admin/rail-scheduling", isActive: location.pathname === "/admin/rail-scheduling" },
+    { icon: Truck, label: "Last-Mile Delivery", route: "/admin/last-mile", isActive: location.pathname === "/admin/last-mile" },
+    { icon: Package, label: "Store Management", route: "/admin/stores", isActive: location.pathname === "/admin/stores" },
+    { icon: Users, label: "Admin Management", route: "/admin/admin-management", isActive: location.pathname === "/admin/admin-management" },
+    { icon: Truck, label: "Router Management", route: "/admin/routers", isActive: location.pathname === "/admin/routers" },
+    { icon: BarChart3, label: "Reports", route: "/admin/reports", isActive: location.pathname === "/admin/reports" },
+    { icon: Package, label: "Activity Logs", route: "/admin/logs", isActive: location.pathname === "/admin/logs" },
   ];
 
   return (

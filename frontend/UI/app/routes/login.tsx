@@ -25,9 +25,9 @@ export default function LoginRoute() {
     );
   }
 
-  // If already logged in, redirect to dashboard
+  // If already logged in, redirect to admin dashboard
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
