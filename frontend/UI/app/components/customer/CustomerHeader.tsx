@@ -23,8 +23,9 @@ export function CustomerHeader() {
   }, []);
 
   const handleLogout = () => {
-    logout();
     setShowDropdown(false);
+    localStorage.removeItem('kandypack_user');
+    window.location.href = '/login';
   };
 
   return (

@@ -169,6 +169,16 @@ export default function LoginRoute() {
               </button>
             </div>
           </form>
+
+          {/* Customer Login Link */}
+          <div className="mt-6 text-center">
+            <p className="text-white/80 text-sm">
+              Not an admin?{' '}
+              <a href="/login" className="text-white font-medium hover:underline">
+                Customer Login
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>

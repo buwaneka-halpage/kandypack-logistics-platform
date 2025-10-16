@@ -1,11 +1,11 @@
 import React from "react";
 import CustomerHome from "../components/customer/CustomerHome";
-import { ProtectedRoute } from "../components/ProtectedRoute";
+import { CustomerProtectedRoute } from "../components/CustomerProtectedRoute";
 
 export default function CustomerHomePage() {
   return (
-    <ProtectedRoute>
+    <CustomerProtectedRoute>
       <CustomerHome />
-    </ProtectedRoute>
+    </CustomerProtectedRoute>
   );
 }
