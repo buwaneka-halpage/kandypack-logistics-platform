@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     localStorage.removeItem('kandypack_user');
     // Use window.location for redirect to ensure clean state reset
-    window.location.href = '/login';
+    window.location.href = '/admin';
   };
 
   const value: AuthContextType = {

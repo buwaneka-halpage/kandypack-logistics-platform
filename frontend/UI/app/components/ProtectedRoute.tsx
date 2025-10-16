@@ -21,9 +21,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // If not authenticated, redirect to login
+  // If not authenticated, redirect to admin login
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
   // User is authenticated, render the protected content

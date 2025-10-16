@@ -13,7 +13,7 @@ export default function Sidebar() {
     { icon: Calendar, label: "Rail Scheduling", route: "/rail-scheduling", isActive: location.pathname === "/rail-scheduling" },
     { icon: Truck, label: "Last-Mile Delivery", route: "/last-mile", isActive: location.pathname === "/last-mile" },
     { icon: Package, label: "Store Management", route: "/stores", isActive: location.pathname === "/stores" },
-    { icon: Users, label: "Admin Management", route: "/admin", isActive: location.pathname === "/admin" },
+    { icon: Users, label: "Admin Management", route: "/admin-management", isActive: location.pathname === "/admin-management" },
     { icon: Truck, label: "Router Management", route: "/routers", isActive: location.pathname === "/routers" },
     { icon: BarChart3, label: "Reports", route: "/reports", isActive: location.pathname === "/reports" },
     { icon: Package, label: "Activity Logs", route: "/logs", isActive: location.pathname === "/logs" },
@@ -23,7 +23,7 @@ export default function Sidebar() {
     <>
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
-        <div
+        <div 
           className="lg:hidden fixed bg-black bg-opacity-50 z-30"
           style={{
             top: 'var(--header-height)',

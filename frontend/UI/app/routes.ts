@@ -2,7 +2,7 @@ import { type RouteConfig, index, route, layout } from "@react-router/dev/routes
 
 export default [
   index("routes/home.tsx"),
-  route("/login", "routes/login.tsx"),
+  route("/admin", "routes/login.tsx"),
   
   // Admin Routes
   route("/dashboard", "routes/dashboard.tsx"),
@@ -10,7 +10,7 @@ export default [
   route("/rail-scheduling", "routes/rail-scheduling.tsx"),
   route("/last-mile", "routes/last-mile.tsx"),
   route("/stores", "routes/stores.tsx"),
-  route("/admin", "routes/admin.tsx"),
+  route("/admin-management", "routes/admin.tsx"),
   route("/routers", "routes/routers.tsx"),
   route("/reports", "routes/reports.tsx"),
   route("/logs", "routes/logs.tsx"),
