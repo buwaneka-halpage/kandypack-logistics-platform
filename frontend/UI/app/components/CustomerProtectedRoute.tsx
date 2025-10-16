@@ -7,7 +7,7 @@ interface CustomerProtectedRouteProps {
 }
 
 export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
   // Show loading state while checking authentication
   if (loading) {
@@ -26,6 +26,11 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
     return <Navigate to="/login" replace />;
   }
 
-  // User is authenticated, render the protected content
+  // If authenticated but not a customer, redirect to customer login
+  if (user?.role !== 'customer') {
+    return <Navigate to="/login" replace />;
+  }
+
+  // User is authenticated and is a customer, render the protected content
   return <>{children}</>;
 }

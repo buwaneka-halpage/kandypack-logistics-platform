@@ -10,7 +10,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function LoginRoute() {
-  const { isAuthenticated, login, loading } = useAuth();
+  const { isAuthenticated, login, loading, user } = useAuth();
   const [error, setError] = useState("");
 
   // Show loading state while checking authentication
@@ -25,9 +25,14 @@ export default function LoginRoute() {
     );
   }
 
-  // If already logged in, redirect to admin dashboard
-  if (isAuthenticated) {
+  // If already logged in as admin, redirect to admin dashboard
+  if (isAuthenticated && user?.role === 'admin') {
     return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  // If logged in as customer, redirect to customer home
+  if (isAuthenticated && user?.role === 'customer') {
+    return <Navigate to="/customer/home" replace />;
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -36,7 +41,7 @@ export default function LoginRoute() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const success = await login(email, password);
+    const success = await login(email, password, 'admin');
     if (!success) {
       setError("Invalid credentials");
     }

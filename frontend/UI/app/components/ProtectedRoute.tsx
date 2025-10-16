@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
   // Show loading state while checking authentication
   if (loading) {
@@ -26,6 +26,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/admin" replace />;
   }
 
-  // User is authenticated, render the protected content
+  // If authenticated but not an admin, redirect to admin login
+  if (user?.role !== 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
+  // User is authenticated and is an admin, render the protected content
   return <>{children}</>;
 }
