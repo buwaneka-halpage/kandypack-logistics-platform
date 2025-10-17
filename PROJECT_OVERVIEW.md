@@ -126,7 +126,7 @@ kandypack-logistics-platform/
                 ├── logs/                 # Activity logs
                 │   └── ActivityLogs.tsx  # Activity tracking
                 └── rail-scheduling/      # Rail scheduling
-                    └── RailScheduling.tsx # Rail logistics
+                    └── RailScheduling.tsx # Rail logistic
 ```
 
 ---
