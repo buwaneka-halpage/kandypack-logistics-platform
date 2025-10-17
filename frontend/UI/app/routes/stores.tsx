@@ -1,11 +1,11 @@
 import React from "react";
-import PlaceholderPage from "../components/PlaceholderPage";
+import StoreManagement from "../components/stores/StoreManagement";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
 export default function StoresPage() {
   return (
-    <PlaceholderPage 
-      title="Store Management"
-      description="Manage store operations, inventory, and logistics coordination."
-    />
+    <ProtectedRoute>
+      <StoreManagement />
+    </ProtectedRoute>
   );
 }

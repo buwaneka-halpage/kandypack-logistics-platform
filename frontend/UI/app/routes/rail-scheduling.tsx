@@ -1,11 +1,11 @@
 import React from "react";
-import PlaceholderPage from "../components/PlaceholderPage";
+import RailScheduling from "../components/rail-scheduling/RailScheduling";
+import { ProtectedRoute } from "~/components/ProtectedRoute";
 
 export default function RailSchedulingPage() {
   return (
-    <PlaceholderPage 
-      title="Rail Scheduling"
-      description="Manage rail transportation schedules and logistics operations."
-    />
+    <ProtectedRoute>
+      <RailScheduling />
+    </ProtectedRoute>
   );
 }

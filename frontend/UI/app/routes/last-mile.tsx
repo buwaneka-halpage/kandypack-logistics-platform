@@ -1,11 +1,11 @@
 import React from "react";
-import PlaceholderPage from "../components/PlaceholderPage";
+import LastMileDelivery from "../components/last-mile/LastMileDelivery";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
 export default function LastMilePage() {
   return (
-    <PlaceholderPage 
-      title="Last-Mile Delivery"
-      description="Manage final delivery operations and optimize last-mile logistics."
-    />
+    <ProtectedRoute>
+      <LastMileDelivery />
+    </ProtectedRoute>
   );
 }

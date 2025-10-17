@@ -1,11 +1,11 @@
 import React from "react";
-import PlaceholderPage from "../components/PlaceholderPage";
+import AdminManagement from "../components/admin/AdminManagement";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
 export default function AdminPage() {
   return (
-    <PlaceholderPage 
-      title="Admin Management"
-      description="Manage admin users, roles, and system administration tasks."
-    />
+    <ProtectedRoute>
+      <AdminManagement />
+    </ProtectedRoute>
   );
 }

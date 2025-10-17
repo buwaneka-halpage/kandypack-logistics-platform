@@ -3,10 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "react-router build",
+    "build": "vite build && vite build --ssr",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "typecheck": "react-router typegen && tsc",
+    "build:vercel": "vercel build",
+    "deploy:vercel": "vercel --prod"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -39,10 +41,5 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "tw-animate-css": "^1.3.8"
-  },
-  "overrides": {
-    "@remix-run/dev": "npm:@react-router/dev@^7.7.1",
-    "@remix-run/node": "npm:@react-router/node@^7.7.1",
-    "@remix-run/serve": "npm:@react-router/serve@^7.7.1"
   }
 }
