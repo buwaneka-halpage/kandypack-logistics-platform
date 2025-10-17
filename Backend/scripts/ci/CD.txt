@@ -1,0 +1,4 @@
+- name: Apply SQL procedures
+  run: |
+    python -m pip install pymysql
+    python scripts/apply_procs.py --user $DB_USER --db $DB_NAME --password ${{ secrets.DB_PASSWORD }}
