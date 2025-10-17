@@ -1,0 +1,14 @@
+sqlalchemy
+fastapi
+uvicorn
+pydantic
+typing 
+pymysql
+cryptography
+uuid 
+pytz
+python-jose[cryptographyp]
+passlib
+bcrypt 
+python-multipart 
+
