@@ -142,7 +142,7 @@ export default function Reports() {
                 <Download className="h-4 w-4 text-gray-600" />
               </Button>
             </div>
-            <div className="h-[200px] rounded-lg overflow-hidden">
+            <div className="h-[300px] rounded-lg overflow-hidden">
               <ReportsMap />
             </div>
           </div>

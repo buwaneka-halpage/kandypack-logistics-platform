@@ -10,7 +10,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function LoginRoute() {
-  const { isAuthenticated, login, loading } = useAuth();
+  const { isAuthenticated, login, loading, user } = useAuth();
   const [error, setError] = useState("");
 
   // Show loading state while checking authentication
@@ -25,9 +25,45 @@ export default function LoginRoute() {
     );
   }
 
-  // If already logged in, redirect to dashboard
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+  // If already logged in as admin, redirect to admin dashboard
+  if (isAuthenticated && user?.role === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  // If logged in as customer, show access denied message (don't redirect)
+  if (isAuthenticated && user?.role === 'customer') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="mb-4">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+              <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Access Denied</h3>
+          <p className="text-sm text-gray-500 mb-6">
+            You are currently logged in as a customer. This is the admin login page. 
+            Please log out first or navigate back to the customer portal.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => window.history.back()}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Go Back
+            </button>
+            <a
+              href="/customer/home"
+              className="px-4 py-2 bg-[#5D5FEF] text-white rounded-md hover:bg-[#4D4FDF] transition-colors"
+            >
+              Customer Portal
+            </a>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -36,7 +72,7 @@ export default function LoginRoute() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const success = await login(email, password);
+    const success = await login(email, password, 'admin');
     if (!success) {
       setError("Invalid credentials");
     }
@@ -169,6 +205,16 @@ export default function LoginRoute() {
               </button>
             </div>
           </form>
+
+          {/* Customer Login Link */}
+          <div className="mt-6 text-center">
+            <p className="text-white/80 text-sm">
+              Not an admin?{' '}
+              <a href="/login" className="text-white font-medium hover:underline">
+                Customer Login
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string, userRole?: 'admin' | 'customer') => Promise<boolean>;
   logout: () => void;
 }
 
@@ -44,19 +44,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuthStatus();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string, userRole: 'admin' | 'customer' = 'customer'): Promise<boolean> => {
     setLoading(true);
     try {
       // Simulate API call - replace with real authentication
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Mock successful login for demo purposes
-      if (email === "admin@kandypack.com" && password === "password") {
+      // Admin login
+      if (email === "admin@kandypack.com" && password === "password" && userRole === "admin") {
         const mockUser: User = {
           id: "1",
           email: "admin@kandypack.com",
           name: "Admin User",
           role: "admin"
+        };
+        
+        setUser(mockUser);
+        localStorage.setItem('kandypack_user', JSON.stringify(mockUser));
+        return true;
+      }
+      
+      // Customer login
+      if (email === "customer@kandypack.com" && password === "password" && userRole === "customer") {
+        const mockUser: User = {
+          id: "2",
+          email: "customer@kandypack.com",
+          name: "Customer User",
+          role: "customer"
         };
         
         setUser(mockUser);
@@ -77,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     localStorage.removeItem('kandypack_user');
     // Use window.location for redirect to ensure clean state reset
-    window.location.href = '/login';
+    window.location.href = '/admin';
   };
 
   const value: AuthContextType = {

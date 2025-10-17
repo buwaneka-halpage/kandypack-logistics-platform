@@ -11,6 +11,7 @@ import {
 import type { Route } from "./+types/root";
 
 import { AuthProvider } from "./hooks/useAuth";
+import { SidebarProvider } from "./contexts/SidebarContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -36,7 +37,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <AuthProvider>
-          {children}
+          <SidebarProvider>
+            {children}
+          </SidebarProvider>
         </AuthProvider>
         <ScrollRestoration />
         <Scripts />
