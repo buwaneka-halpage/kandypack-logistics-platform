@@ -1,9 +1,9 @@
-import { Home, Package, MapPin, History, HelpCircle, Menu, X } from "lucide-react";
+import { Home, Package, MapPin, History, HelpCircle, Menu, X, ArrowLeft } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
 import { useSidebar } from "~/contexts/SidebarContext";
 
 export default function CustomerSidebar() {
-  const { isCollapsed, isMobileMenuOpen, setIsMobileMenuOpen } = useSidebar();
+  const { isCollapsed, toggleSidebar, isMobileMenuOpen, setIsMobileMenuOpen } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -31,12 +31,12 @@ export default function CustomerSidebar() {
         />
       )}
 
-      <aside className={`bg-[#282F4E] text-white transition-all duration-300 ease-in-out sidebar-sticky
+      <aside className={`bg-primary-navy text-dashboard-white transition-all duration-300 ease-in-out sidebar-sticky
         ${/* Desktop styles */ ''}
         lg:block lg:z-10
-        ${isCollapsed ? 'lg:w-20' : 'lg:w-56'}
+        ${isCollapsed ? 'lg:w-16' : 'lg:w-64'}
         ${/* Mobile styles */ ''}
-        fixed left-0 w-56 z-40 lg:translate-x-0
+        fixed left-0 w-64 z-40 lg:translate-x-0
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}
       style={{ 
@@ -44,22 +44,37 @@ export default function CustomerSidebar() {
         height: 'calc(100vh - var(--header-height))',
       }}>
         <div className="flex flex-col h-full">
-          {/* Logo Section - Only visible when not collapsed */}
-          {!isCollapsed && (
-            <div className="px-6 py-6 border-b border-white/10">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-                  <Menu className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg font-semibold">Home</span>
+          {/* Header with Logo and Toggle - Desktop Only */}
+          <div className="hidden lg:flex items-center justify-between p-4 border-b border-dashboard-border">
+            {/* Expand Button (when collapsed) */}
+            {isCollapsed ? (
+              <button
+                onClick={toggleSidebar}
+                className="w-full flex justify-center text-dashboard-text-secondary hover:text-dashboard-white transition-colors p-2 rounded-lg hover:bg-dashboard-accent/20"
+                aria-label="Expand sidebar"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            ) : (
+              <div className="flex items-center justify-between w-full">
+                <span className="text-lg font-semibold text-dashboard-white">Menu</span>
+                <button
+                  onClick={toggleSidebar}
+                  className="text-dashboard-text-secondary hover:text-dashboard-white transition-colors p-1 rounded"
+                  aria-label="Collapse sidebar"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Navigation */}
-          <nav className={`flex-1 space-y-1 pt-4
-            ${isCollapsed ? 'lg:px-2' : 'lg:px-4'}
-            px-3
+          <nav className={`flex-1 space-y-2
+            ${/* Desktop styles */ ''}
+            ${isCollapsed ? 'lg:px-2 lg:py-4' : 'lg:px-6 lg:py-4'}
+            ${/* Mobile styles */ ''}
+            px-4 pt-6 pb-4
           `}>
             {navItems.map((item, index) => {
               const Icon = item.icon;
@@ -71,29 +86,24 @@ export default function CustomerSidebar() {
                     setIsMobileMenuOpen(false);
                     navigate(item.route);
                   }}
-                  className={`flex items-center rounded-lg transition-all duration-200 group relative w-full text-left
+                  className={`sidebar-nav-item flex items-center rounded-lg transition-all duration-200 group relative w-full text-left
+                    ${/* Desktop styles */ ''}
                     ${isCollapsed ? 'lg:justify-center lg:p-3' : 'lg:space-x-3 lg:px-4 lg:py-3'}
-                    px-4 py-3 space-x-3
-                    ${item.isActive 
-                      ? 'bg-[#5D5FEF] text-white shadow-lg' 
-                      : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                    ${/* Mobile styles */ ''}
+                    space-x-3 px-4 py-3
+                    ${/* Common styles */ ''}
+                    ${
+                      item.isActive
+                        ? 'bg-dashboard-accent text-dashboard-white shadow-md active'
+                        : 'text-dashboard-text-secondary hover:text-dashboard-white hover:bg-dashboard-accent/20 hover:shadow-sm'
                     }
                   `}
+                  title={isCollapsed ? item.label : undefined}
                 >
-                  <Icon className={`flex-shrink-0 transition-colors
-                    ${isCollapsed ? 'lg:w-6 lg:h-6' : 'lg:w-5 lg:h-5'}
-                    w-5 h-5
-                  `} />
-                  <span className={`font-medium transition-all duration-300 whitespace-nowrap
-                    ${isCollapsed ? 'lg:hidden' : 'lg:block'}
-                    block
-                  `}>
-                    {item.label}
-                  </span>
-
-                  {/* Tooltip for collapsed state - Desktop only */}
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className={`truncate ${isCollapsed ? 'lg:hidden' : ''}`}>{item.label}</span>
                   {isCollapsed && (
-                    <div className="hidden lg:block absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                    <div className="sidebar-tooltip hidden lg:block absolute left-full ml-2 px-3 py-2 bg-primary-navy text-dashboard-white text-sm rounded-lg group-hover:show whitespace-nowrap z-50 shadow-lg border border-gray-600">
                       {item.label}
                     </div>
                   )}
@@ -103,10 +113,10 @@ export default function CustomerSidebar() {
           </nav>
 
           {/* Mobile Close Button */}
-          <div className="lg:hidden p-4 border-t border-white/10">
+          <div className="lg:hidden p-4 border-t border-dashboard-border">
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-dashboard-accent/20 hover:bg-dashboard-accent/30 rounded-lg transition-colors text-dashboard-white"
             >
               <X className="w-5 h-5" />
               <span>Close Menu</span>

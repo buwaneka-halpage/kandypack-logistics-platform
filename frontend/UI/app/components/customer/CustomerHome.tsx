@@ -43,7 +43,6 @@ export default function CustomerHome() {
 
   return (
     <div className="space-y-6">
-      <h1>Hello</h1>
       {/* Welcome Section */}
       <div className="flex items-center space-x-3 mb-6">
         <div className="w-10 h-10 bg-[#5D5FEF] rounded-lg flex items-center justify-center">
