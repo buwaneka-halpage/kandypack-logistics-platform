@@ -35,7 +35,6 @@ def get_all_orders(db: db_dependency, current_user: dict = Depends(get_current_u
 
 @router.get("/{order_id}", response_model=schemas.order, status_code=status.HTTP_200_OK)
 def get_order(order_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
-   
     role = current_user.get("role")
     if role not in ["StoreManager", "Management"]:
         raise HTTPException(
