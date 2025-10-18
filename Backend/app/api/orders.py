@@ -30,7 +30,19 @@ def get_all_orders(db: db_dependency, current_user: dict = Depends(get_current_u
             detail="You cannot access orders"
         )
 
-
+@router.get("/", response_model=List[schemas.order_history], status_code=status.HTTP_200_OK)
+def get_all_Order_history(db: db_dependency,customer_id: str ,  current_user: dict = Depends(get_current_user)):
+    role = current_user.get("role")
+    if role not in ["StoreManager", "Management", "Customer"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You cannot Orders Routes"
+        )
+    
+    orders_history = db.query(model.Orders).filter(model.Orders.customer_id == customer_id).first()
+    if orders_history is None:
+        raise HTTPException(status_code=404, detail=f"Order history not found")
+    return orders_history
 
 
 @router.get("/{order_id}", response_model=schemas.order, status_code=status.HTTP_200_OK)
@@ -77,7 +89,7 @@ def create_order(order: schemas.create_new_order, db: db_dependency, current_use
         deliver_city_id=order.deliver_city_id,
         full_price=order.full_price
     )
-    db.add(new_order)
+    db.add(new_order) 
     db.commit()
     db.refresh(new_order)
     return new_order
