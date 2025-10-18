@@ -14,23 +14,36 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 
 
-@router.get("/", response_model=List[schemas.order], status_code=status.HTTP_200_OK)
+@router.get("/", status_code=status.HTTP_200_OK)
 def get_all_orders(db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    orders = db.query(model.Orders).all()
-    if role == "StoreManager":
-        orders = db.query(model.Orders).all()
-        return orders
-    elif role == "Management":
-        orders = db.query(model.Orders).all()
-        return orders
-    else:
+    if role not in ["StoreManager", "Management"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot access orders"
         )
 
-@router.get("/", response_model=List[schemas.order_history], status_code=status.HTTP_200_OK)
+    # join Orders with Customers to get customer name alongside order fields
+    rows = (
+        db.query(model.Orders, model.Customers)
+        .join(model.Customers, model.Orders.customer_id == model.Customers.customer_id)
+        .all()
+    )
+
+    results = []
+    for order, customer in rows:
+        customer_name = getattr(customer, "customer_name", None) or getattr(customer, "name", None) or ""
+        results.append({
+            "order_id": order.order_id,
+            "customer_name": customer_name,
+            "order_date": order.order_date,
+            "deliver_address": order.deliver_address,
+            "state": order.status
+        })
+
+    return results
+
+@router.get("/history", response_model=List[schemas.order_history], status_code=status.HTTP_200_OK)
 def get_all_Order_history(db: db_dependency,customer_id: str ,  current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
     if role not in ["StoreManager", "Management", "Customer"]:

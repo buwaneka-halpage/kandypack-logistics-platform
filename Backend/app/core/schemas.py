@@ -313,11 +313,19 @@ class StoreUpdate(BaseModel):
 
     model_config = {"from_attributes": True}
 
+class get_order_by_customer_name(order):
+    order_id : str 
+    customer_name : str 
+    order_date  : date
+    deliver_address : str 
+    state : str 
+    
+    model_config = {"from_attributes": True}
 
 class create_new_order(order):
     customer_id: str 
     order_date: datetime
-    deliver_address  : str 
+    deliver_address  : str  
     status : str 
     deliver_city_id: str 
     full_price  : float 
