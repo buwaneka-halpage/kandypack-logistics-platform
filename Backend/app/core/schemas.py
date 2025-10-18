@@ -17,15 +17,22 @@ class OrderStatus(enum.Enum):
     DELIVERED = "Delivered"
     FAILED = "Failed"
 
+    model_config = {"from_attributes": True}
+
+
 class ScheduleStatus(str, enum.Enum):
     PLANNED = "PLANNED"
     IN_PROGRESS = "IN_PROGRESS"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED" 
 
+    model_config = {"from_attributes": True}
+
+
 # user 
 class UserBase(BaseModel):
     user_name: str
+
     model_config = {"from_attributes": True}
 
 
@@ -34,10 +41,16 @@ class UserCreate(UserBase):
     password: str
     role: str
 
+    model_config = {"from_attributes": True}
+
+
 class UserUpdate(BaseModel):
     user_name: str | None = None
     password: str | None = None
     role: str | None = None
+
+    model_config = {"from_attributes": True}
+
 
 class UserResponse(UserBase):
     user_id: str
@@ -54,12 +67,18 @@ class CustomerBase(BaseModel):
     phone_number : str 
     address : str 
 
+    model_config = {"from_attributes": True}
+
+
 class CustomerCreate(BaseModel):
     customer_user_name : str 
     customer_name : str 
     phone_number : str 
     address : str
     password : str 
+
+    model_config = {"from_attributes": True}
+
 
 # order 
 class order(BaseModel):
@@ -71,6 +90,8 @@ class order(BaseModel):
     deliver_city_id: str 
     full_price  : float 
 
+    model_config = {"from_attributes": True}
+
 class store(BaseModel):
     store_id : str 
     name : str 
@@ -79,23 +100,32 @@ class store(BaseModel):
     contact_person : str 
     station_id : str 
 
+    model_config = {"from_attributes": True}
+
+
 class route(BaseModel):
     route_id  : str 
     store_id : str 
     start_city_id : str 
     end_city_id : str 
     distance : int 
-    class Config:
-        orm_mode = True
+
+    model_config = {"from_attributes": True}
 
 class routeOrderBase(BaseModel):
     route_order_id : str 
     route_id : str 
     order_id : str 
 
+    model_config = {"from_attributes": True}
+
+
 class ProductBase(BaseModel):
     product_name: str
     space_consumption_rate: float
+
+    model_config = {"from_attributes": True}
+
 
 class ProductCreate(ProductBase):
     pass
@@ -103,6 +133,9 @@ class ProductCreate(ProductBase):
 class ProductUpdate(BaseModel):
     product_name: str | None = None
     space_consumption_rate: float | None = None
+
+    model_config = {"from_attributes": True}
+
 
 class ProductResponse(ProductBase):
     product_type_id: str
@@ -117,24 +150,32 @@ class order_itemsBase(BaseModel):
     quantity : int 
     item_price: float
 
+    model_config = {"from_attributes": True}
+
+
 class City(BaseModel):
     city_id :str 
     city_name : str
     province : str 
-    class Config:
-        orm_mode = True
+    
+    model_config = {"from_attributes": True}
+
 
 class RailwayStation(BaseModel):
     station_id : str 
     station_name : str 
     city_id : str 
-    class Config:
-        orm_mode = True
+    
+    model_config = {"from_attributes": True}
+
 
 class Train(BaseModel):
     train_id : str 
     train_name : str 
     capacity : int 
+
+    model_config = {"from_attributes": True}
+
 
 class Train_Schedules(BaseModel):
     schedule_id : str 
@@ -145,10 +186,8 @@ class Train_Schedules(BaseModel):
     arrival_time : time
     status : ScheduleStatus
 
-    class Config:
-        orm_mode = True
-        use_enum_values = True
-        from_attributes = True
+    model_config = {"from_attributes": True, "orm_mode": True, "use_enum_values": True}
+    
 
 class RailwayAllocationBase(BaseModel):
     allocation_id : str 
@@ -157,23 +196,33 @@ class RailwayAllocationBase(BaseModel):
     shipment_date : str 
     status : str 
 
+    model_config = {"from_attributes": True}
+
 class DriverBase(BaseModel):
     name: str
+    
+    model_config = {"from_attributes": True}
+
     
 class DriverCreate(DriverBase):
     user_id: str
 
+    model_config = {"from_attributes": True}
+
+
 class DriverUpdate(BaseModel):
     name: str | None = None
     weekly_working_hours: int | None = None
+
+    model_config = {"from_attributes": True}
+
 
 class DriverResponse(DriverBase):
     driver_id: str
     weekly_working_hours: int
     user_id: str
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 class TruckBase(BaseModel):
     truck_id : str 
@@ -181,23 +230,33 @@ class TruckBase(BaseModel):
     capacity : int 
     is_active  : bool
 
+    model_config = {"from_attributes": True}
+
 class AssistantBase(BaseModel):
     name: str
+
+    model_config = {"from_attributes": True}
+
     
 class AssistantCreate(AssistantBase):
     user_id: str
 
+    model_config = {"from_attributes": True}
+
+
 class AssistantUpdate(BaseModel):
     name: str | None = None
     weekly_working_hours: int | None = None
+
+    model_config = {"from_attributes": True}
+
 
 class AssistantResponse(AssistantBase):
     assistant_id: str
     weekly_working_hours: int
     user_id: str
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 class Truck_Schedule(BaseModel):
     schedule_id : str 
@@ -209,16 +268,18 @@ class Truck_Schedule(BaseModel):
     departure_time : time
     duration : int  
     status : ScheduleStatus
-    class Config:
-        orm_mode = True
-        use_enum_values = True
 
+    model_config = {"from_attributes": True, "orm_mode" : True} 
+    
 class Truck_allocationBase(BaseModel):
     allocation_id : str 
     order_id : str 
     schedule_id : str 
     shipment_date : str 
     status  : str 
+
+    model_config = {"from_attributes": True}
+
 
 
 
@@ -227,6 +288,9 @@ class customerUpdate(CustomerBase):
     customer_name : str 
     phone_number : str 
     address : str 
+
+    model_config = {"from_attributes": True}
+
 
 
 class StoreCreate(BaseModel):
@@ -237,6 +301,9 @@ class StoreCreate(BaseModel):
     contact_person: str 
     station_id : str 
 
+    model_config = {"from_attributes": True}
+
+
 class StoreUpdate(BaseModel):
     name : str 
     telephone_number : str
@@ -244,13 +311,32 @@ class StoreUpdate(BaseModel):
     contact_person: str 
     station_id : str 
 
+    model_config = {"from_attributes": True}
+
+class get_order_by_customer_name(order):
+    order_id : str 
+    customer_name : str 
+    order_date  : date
+    deliver_address : str 
+    state : str 
+    
+    model_config = {"from_attributes": True}
+
 class create_new_order(order):
     customer_id: str 
     order_date: datetime
-    deliver_address  : str 
+    deliver_address  : str  
     status : str 
     deliver_city_id: str 
     full_price  : float 
+
+    model_config = {"from_attributes": True}
+
+class order_history(order):
+    customer_id : str 
+
+    model_config = {"from_attributes": True}
+
 
 class update_order(order):
     order_date: date
@@ -259,12 +345,18 @@ class update_order(order):
     deliver_city_id : str 
     full_price  : float 
 
+    model_config = {"from_attributes": True}
+
+
 class route_create(route):
     route_id  : str 
     store_id : str
     start_city_id : str 
     end_city_id : str 
     distance : int 
+
+    model_config = {"from_attributes": True}
+
     
 
 class route_update(route):
@@ -273,6 +365,9 @@ class route_update(route):
     start_city_id : str 
     end_city_id : str 
     distance : int 
+
+    model_config = {"from_attributes": True}
+
     
     
 class create_new_trainSchedule(Train_Schedules):
@@ -302,6 +397,7 @@ class Trucks(BaseModel):
     license_num: str 
     capacity : int
     is_active : bool
+
     model_config = {"from_attributes": True}
 
 class update_trainSchedules(Train_Schedules):
@@ -312,10 +408,8 @@ class update_trainSchedules(Train_Schedules):
     departure_time : time
     status: ScheduleStatus
     
-    class Config:
-        from_attributes = True
-        use_enum_values = True
-    pass
+    model_config = {"from_attributes": True, "use_enum_values" :True} 
+    
 
 class update_truckSchedules(Truck_Schedule):
     schedule_id : str 
@@ -328,7 +422,5 @@ class update_truckSchedules(Truck_Schedule):
     duration : int  
     status : ScheduleStatus
     
-    class Config:
-        from_attributes = True
-        use_enum_values = True
-    pass
+    model_config = {"from_attributes": True, "use_enum_values" :True} 
+    
