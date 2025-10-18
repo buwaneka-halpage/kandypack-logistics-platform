@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import type { ReactNode } from "react";
 import { AuthAPI, TokenService, ApiError } from "../services/api";
-import { UserRole, hasPermission, type Permission } from "../types/roles";
+import { UserRole, hasPermission, hasPermissionWithScope, type Permission } from "../types/roles";
 
 // Types
 interface User {
@@ -9,6 +9,8 @@ interface User {
   email: string;
   name: string;
   role: UserRole;
+  warehouseId?: string;  // Assigned warehouse for scoped roles
+  warehouseName?: string; // For display purposes
 }
 
 interface AuthContextType {
@@ -18,6 +20,7 @@ interface AuthContextType {
   login: (email: string, password: string, userRole?: 'staff' | 'customer') => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   hasUserPermission: (resource: string, action: string) => boolean;
+  hasUserPermissionWithScope: (resource: string, action: string, resourceWarehouseId?: string) => boolean;
 }
 
 // Create Auth Context
@@ -106,6 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: email,
           name: response.user_name,
           role: mappedRole,
+          warehouseId: response.warehouse_id, // From backend if user is warehouse-scoped
+          warehouseName: response.warehouse_name, // From backend if user is warehouse-scoped
         };
         
         // Store token and user
@@ -164,13 +169,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return hasPermission(user.role, resource, action);
   };
 
+  const hasUserPermissionWithScope = (
+    resource: string, 
+    action: string, 
+    resourceWarehouseId?: string
+  ): boolean => {
+    if (!user) return false;
+    return hasPermissionWithScope(
+      user.role, 
+      resource, 
+      action, 
+      user.warehouseId, 
+      resourceWarehouseId
+    );
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
     loading,
     login,
     logout,
-    hasUserPermission
+    hasUserPermission,
+    hasUserPermissionWithScope
   };
 
   return (

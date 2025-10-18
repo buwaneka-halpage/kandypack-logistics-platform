@@ -1,28 +1,79 @@
 # Frontend RBAC Implementation Summary
 
 ## Overview
-This document summarizes the frontend RBAC implementation that integrates with the KandyPack backend's 6-role authentication system.
+This document summarizes the frontend RBAC implementation that integrates with the KandyPack backend's 7-role authentication system with **warehouse-scoped access control**.
+
+## Warehouse-Based Access Control
+
+KandyPack operates with **multiple warehouses across the country**. The RBAC system implements three permission scopes:
+
+### Permission Scopes
+
+1. **`all` scope** - Full access across all warehouses
+   - **Management**: Can view all orders, assign orders to warehouses
+   - **System Administrator**: Full system access including warehouse assignments
+
+2. **`warehouse` scope** - Limited to assigned warehouse
+   - **Store Manager**: Manages operations for assigned warehouse only
+   - **Warehouse Staff**: Handles inventory for assigned warehouse only
+   - **Driver Assistant**: Schedules deliveries from assigned warehouse only
+
+3. **`own` scope** - Personal resources only
+   - **Customer**: Own orders only
+   - **Driver**: Assigned deliveries only
+
+### Key Workflows
+
+#### Order Assignment Flow:
+1. Customer places order → Order created (unassigned)
+2. **Management or System Admin** assigns order to specific warehouse
+3. Order becomes visible to warehouse staff (Store Manager, Warehouse Staff)
+4. Warehouse staff processes order within their warehouse
+5. Driver Assistant schedules delivery from that warehouse
+6. Driver delivers order
+
+#### Data Isolation:
+- Store Manager at Warehouse A **cannot see** orders assigned to Warehouse B
+- Warehouse Staff at Warehouse A **cannot access** inventory at Warehouse B
+- Driver Assistant at Warehouse A **cannot schedule** trucks/drivers from Warehouse B
 
 ## What Was Implemented
 
 ### 1. Type System (app/types/roles.ts)
-Created comprehensive TypeScript types for RBAC:
+Created comprehensive TypeScript types for RBAC with warehouse scoping:
 - **UserRole enum**: 7 roles matching backend
   - `CUSTOMER`: Customer users
-  - `MANAGEMENT`: Full system access
-  - `STORE_MANAGER`: Store and inventory management
-  - `WAREHOUSE_STAFF`: Warehouse operations
-  - `DRIVER`: Delivery operations
-  - `DRIVER_ASSISTANT`: Driver support
-  - `SYSTEM_ADMIN`: System administration
+  - `MANAGEMENT`: Full system access across all warehouses
+  - `STORE_MANAGER`: Store and inventory management (warehouse-scoped)
+  - `WAREHOUSE_STAFF`: Warehouse operations (warehouse-scoped)
+  - `DRIVER`: Delivery operations (own deliveries)
+  - `DRIVER_ASSISTANT`: Driver support (warehouse-scoped)
+  - `SYSTEM_ADMIN`: System administration (all warehouses)
 
-- **Permission interface**: Defines resource-action pairs
+- **Permission interface**: Defines resource-action pairs with scope
   ```typescript
   interface Permission {
     resource: string;
-    action: 'create' | 'read' | 'update' | 'delete' | 'execute' | '*';
+    action: 'create' | 'read' | 'update' | 'delete' | 'execute' | 'assign' | '*';
+    scope?: 'all' | 'own' | 'warehouse';
   }
   ```
+
+- **WarehouseContext interface**: Provides warehouse context
+  ```typescript
+  interface WarehouseContext {
+    warehouseId?: string;
+    storeName?: string;
+  }
+  ```
+
+- **ROLE_PERMISSIONS mapping**: Complete permission sets with scopes
+  - Management: `order:assign:all`, `warehouse:assign:all` (can assign orders to warehouses)
+  - StoreManager: `order:read:warehouse` (only warehouse orders)
+  - WarehouseStaff: `inventory:update:warehouse` (only warehouse inventory)
+
+- **hasPermission() utility**: Basic permission checking
+- **hasPermissionWithScope() utility**: Advanced warehouse-aware validation
 
 - **ROLE_PERMISSIONS mapping**: Complete permission sets for each role
 - **hasPermission() utility**: Checks if a role has specific permission with wildcard support
@@ -48,7 +99,10 @@ Comprehensive API client with JWT authentication:
 
 #### API Modules:
 All backend endpoints are wrapped with typed interfaces:
-- OrdersAPI
+- **OrdersAPI** (Enhanced with warehouse support)
+  - `getAll(params)` - Now supports `warehouse_id` parameter
+  - `assignToWarehouse(orderId, warehouseId)` - Management/SystemAdmin only
+  - `getByWarehouse(warehouseId, params)` - For warehouse staff
 - CustomersAPI
 - CitiesAPI
 - RailwayStationsAPI
@@ -353,6 +407,299 @@ function Dashboard() {
 - [ ] Log all authentication events for audit trail
 - [ ] Implement session timeout with activity tracking
 - [ ] Add suspicious activity detection
+- [ ] **Warehouse context validation** - Ensure API calls include warehouse verification
+- [ ] **Cross-warehouse access prevention** - Server-side validation of warehouse assignments
+
+## Warehouse-Scoped Access Control
+
+### Implementation Details
+
+#### 1. User-Warehouse Assignment
+
+When staff members are created, they should be assigned to a specific warehouse:
+
+```typescript
+// In User interface (extend as needed)
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  warehouseId?: string;  // Assigned warehouse for scoped roles
+  warehouseName?: string; // For display purposes
+}
+```
+
+#### 2. Permission Checking with Warehouse Context
+
+```typescript
+import { hasPermissionWithScope } from '~/types/roles';
+import { useAuth } from '~/hooks/useAuth';
+
+function WarehouseOrdersPage() {
+  const { user } = useAuth();
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    async function loadOrders() {
+      if (user?.role === UserRole.MANAGEMENT || user?.role === UserRole.SYSTEM_ADMIN) {
+        // Management can see all orders
+        const data = await OrdersAPI.getAll();
+        setOrders(data);
+      } else if (user?.warehouseId) {
+        // Warehouse staff see only their warehouse orders
+        const data = await OrdersAPI.getByWarehouse(user.warehouseId);
+        setOrders(data);
+      }
+    }
+    loadOrders();
+  }, [user]);
+
+  // Check if user can assign orders to warehouses
+  const canAssignWarehouse = hasPermissionWithScope(
+    user?.role!,
+    'warehouse',
+    'assign',
+    user?.warehouseId
+  );
+
+  return (
+    <div>
+      {canAssignWarehouse && (
+        <button onClick={handleAssignWarehouse}>
+          Assign to Warehouse
+        </button>
+      )}
+      <OrdersList orders={orders} />
+    </div>
+  );
+}
+```
+
+#### 3. Order Assignment Workflow (Management)
+
+```typescript
+import { OrdersAPI } from '~/services/api';
+import { useAuth } from '~/hooks/useAuth';
+
+function OrderAssignmentPage() {
+  const { user, hasUserPermission } = useAuth();
+  const [unassignedOrders, setUnassignedOrders] = useState([]);
+  const [warehouses, setWarehouses] = useState([]);
+
+  // Only Management and SystemAdmin can access this page
+  if (!hasUserPermission('warehouse', 'assign')) {
+    return <AccessDenied />;
+  }
+
+  const handleAssignOrder = async (orderId: string, warehouseId: string) => {
+    try {
+      await OrdersAPI.assignToWarehouse(orderId, warehouseId);
+      toast.success('Order assigned to warehouse successfully');
+      // Refresh lists
+      loadUnassignedOrders();
+    } catch (error) {
+      toast.error('Failed to assign order');
+    }
+  };
+
+  return (
+    <div>
+      <h1>Assign Orders to Warehouses</h1>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <h2>Unassigned Orders</h2>
+          {unassignedOrders.map(order => (
+            <OrderCard
+              key={order.id}
+              order={order}
+              warehouses={warehouses}
+              onAssign={handleAssignOrder}
+            />
+          ))}
+        </div>
+
+        <div>
+          <h2>Warehouses</h2>
+          {warehouses.map(warehouse => (
+            <WarehouseCard
+              key={warehouse.id}
+              warehouse={warehouse}
+              orderCount={warehouse.assigned_orders_count}
+              capacity={warehouse.capacity}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+#### 4. Warehouse Staff Dashboard
+
+```typescript
+function WarehouseStaffDashboard() {
+  const { user } = useAuth();
+
+  if (!user?.warehouseId) {
+    return <div>No warehouse assigned. Contact administrator.</div>;
+  }
+
+  return (
+    <div>
+      <h1>Warehouse: {user.warehouseName}</h1>
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard
+          title="Pending Orders"
+          value={pendingOrders}
+          subtitle={`In ${user.warehouseName}`}
+        />
+        <StatCard
+          title="Inventory Items"
+          value={inventoryCount}
+          subtitle="Current stock"
+        />
+        <StatCard
+          title="Today's Deliveries"
+          value={todayDeliveries}
+          subtitle="Scheduled"
+        />
+      </div>
+
+      {/* Only show orders for this warehouse */}
+      <WarehouseOrders warehouseId={user.warehouseId} />
+    </div>
+  );
+}
+```
+
+#### 5. Backend Integration Requirements
+
+The backend should implement warehouse filtering at the API level:
+
+**For warehouse-scoped roles:**
+```python
+# Backend example (FastAPI)
+@router.get("/orders")
+async def get_orders(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # If user is warehouse-scoped, filter by their warehouse
+    if current_user.role in ['StoreManager', 'WarehouseStaff', 'DriverAssistant']:
+        if not current_user.warehouse_id:
+            raise HTTPException(status_code=400, detail="User has no warehouse assigned")
+        
+        return db.query(Order).filter(
+            Order.warehouse_id == current_user.warehouse_id
+        ).all()
+    
+    # Management and SystemAdmin see all
+    if current_user.role in ['Management', 'SystemAdmin']:
+        return db.query(Order).all()
+    
+    raise HTTPException(status_code=403, detail="Insufficient permissions")
+```
+
+### Database Schema Updates
+
+#### Users Table Enhancement:
+```sql
+ALTER TABLE Users 
+ADD COLUMN warehouse_id VARCHAR(255),
+ADD CONSTRAINT fk_users_warehouse 
+  FOREIGN KEY (warehouse_id) 
+  REFERENCES Stores(StoreID);
+
+-- Index for performance
+CREATE INDEX idx_users_warehouse ON Users(warehouse_id);
+```
+
+#### Orders Table Enhancement:
+```sql
+ALTER TABLE Orders
+ADD COLUMN warehouse_id VARCHAR(255),
+ADD COLUMN assigned_at DATETIME,
+ADD COLUMN assigned_by VARCHAR(255),
+ADD CONSTRAINT fk_orders_warehouse
+  FOREIGN KEY (warehouse_id)
+  REFERENCES Stores(StoreID);
+
+-- Indexes
+CREATE INDEX idx_orders_warehouse ON Orders(warehouse_id);
+CREATE INDEX idx_orders_warehouse_status ON Orders(warehouse_id, Status);
+```
+
+### Testing Scenarios for Warehouse Scoping
+
+#### Test 1: Management Assigns Order
+1. Login as Management user
+2. Navigate to Order Assignment page
+3. Select unassigned order
+4. Choose warehouse based on customer location
+5. Confirm assignment
+6. Verify order appears in warehouse staff's view
+
+#### Test 2: Warehouse Staff Access
+1. Login as Warehouse Staff (assigned to Warehouse A)
+2. Navigate to Orders page
+3. Verify only Warehouse A orders are visible
+4. Try to access order from Warehouse B (should fail)
+5. Verify inventory shows only Warehouse A stock
+
+#### Test 3: Cross-Warehouse Prevention
+1. Login as Store Manager (Warehouse A)
+2. Attempt API call to get Warehouse B orders
+3. Verify 403 Forbidden response
+4. Check audit logs for unauthorized attempt
+
+#### Test 4: Role Scope Validation
+```typescript
+// Unit test example
+describe('Warehouse Scope Permissions', () => {
+  it('should allow Management to assign warehouses', () => {
+    const canAssign = hasPermissionWithScope(
+      UserRole.MANAGEMENT,
+      'warehouse',
+      'assign'
+    );
+    expect(canAssign).toBe(true);
+  });
+
+  it('should prevent StoreManager from accessing other warehouses', () => {
+    const canAccess = hasPermissionWithScope(
+      UserRole.STORE_MANAGER,
+      'order',
+      'read',
+      'warehouse-a',  // User's warehouse
+      'warehouse-b'   // Resource's warehouse
+    );
+    expect(canAccess).toBe(false);
+  });
+
+  it('should allow StoreManager to access own warehouse', () => {
+    const canAccess = hasPermissionWithScope(
+      UserRole.STORE_MANAGER,
+      'order',
+      'read',
+      'warehouse-a',
+      'warehouse-a'
+    );
+    expect(canAccess).toBe(true);
+  });
+});
+```
+
+### Security Best Practices for Warehouse Access
+
+1. **Always validate warehouse context server-side** - Never trust client-side checks alone
+2. **Log all cross-warehouse access attempts** - Monitor for unauthorized access patterns
+3. **Include warehouse_id in JWT claims** - Reduces database lookups
+4. **Implement row-level security** - Database-level enforcement of warehouse boundaries
+5. **Regular access audits** - Review who accessed which warehouse data
+6. **Warehouse reassignment workflow** - Formal process for changing user warehouse assignments
 
 ## File Structure
 ```

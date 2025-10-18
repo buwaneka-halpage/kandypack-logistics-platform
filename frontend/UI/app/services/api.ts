@@ -180,6 +180,8 @@ export const AuthAPI = {
       user_id: string;
       user_name: string;
       role: string;
+      warehouse_id?: string;  // Optional: for warehouse-scoped roles
+      warehouse_name?: string; // Optional: for display
     }>('/users/login', formData as any);
   },
 
