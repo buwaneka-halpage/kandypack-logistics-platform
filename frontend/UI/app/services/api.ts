@@ -201,7 +201,7 @@ export const AuthAPI = {
 
 // Orders API
 export const OrdersAPI = {
-  async getAll(params?: { status?: string; customer_id?: string }) {
+  async getAll(params?: { status?: string; customer_id?: string; warehouse_id?: string }) {
     return httpClient.get<any[]>('/orders', params);
   },
 
@@ -219,6 +219,18 @@ export const OrdersAPI = {
 
   async delete(orderId: string) {
     return httpClient.delete<any>(`/orders/${orderId}`);
+  },
+
+  // Assign order to warehouse (Management/SystemAdmin only)
+  async assignToWarehouse(orderId: string, warehouseId: string) {
+    return httpClient.post<any>(`/orders/${orderId}/assign-warehouse`, { 
+      warehouse_id: warehouseId 
+    });
+  },
+
+  // Get orders by warehouse (for warehouse staff)
+  async getByWarehouse(warehouseId: string, params?: { status?: string }) {
+    return httpClient.get<any[]>(`/warehouses/${warehouseId}/orders`, params);
   },
 };
 

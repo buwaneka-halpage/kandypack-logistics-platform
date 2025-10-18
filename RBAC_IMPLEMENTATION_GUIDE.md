@@ -27,6 +27,29 @@ The KandyPack Supply Chain Distribution System requires a comprehensive Role-Bas
 
 ## User Roles & Permissions
 
+### Overview of Warehouse-Scoped Access Control
+
+The KandyPack system implements **warehouse-based access control** for operational roles. This ensures that:
+
+1. **Management** and **System Administrator** roles can:
+   - View all orders across all warehouses
+   - Assign customer orders to specific warehouses across the country
+   - Manage warehouse assignments and reallocations
+
+2. **Warehouse-scoped roles** (Store Manager, Warehouse Staff, Driver Assistant) can only:
+   - Access orders assigned to their specific warehouse
+   - Manage resources (inventory, trucks, drivers) within their warehouse
+   - Schedule deliveries from their warehouse only
+
+3. **Permission Scopes**:
+   - `all`: Full access across all warehouses (Management, SystemAdmin)
+   - `warehouse`: Access limited to assigned warehouse (StoreManager, WarehouseStaff, DriverAssistant)
+   - `own`: Access to own resources only (Customer, Driver)
+
+This architecture supports the distributed nature of KandyPack's supply chain with multiple warehouses nationwide.
+
+---
+
 ### 1. **Customer** 
 **Role Code:** `customer`  
 **Access Level:** External User  
@@ -56,22 +79,25 @@ The KandyPack Supply Chain Distribution System requires a comprehensive Role-Bas
 **Role Code:** `StoreManager`  
 **Access Level:** Internal Staff (Management)  
 **Primary Interface:** Admin Web Portal
+**Warehouse Scope:** Limited to assigned warehouse only
 
 #### Permissions & Use Cases
 
 | Use Case | Description | Steps | Permissions Required |
 |----------|-------------|-------|---------------------|
-| **Schedule Rail Cargo Trip** | Allocate orders to train schedules | 1. Login with authorized credentials<br>2. Navigate to "Rail Transport" section<br>3. View pending orders (7+ days advance)<br>4. Select orders for destination<br>5. System calculates space requirements<br>6. View available train capacity<br>7. Assign orders to trip<br>8. System validates capacity<br>9. Confirm assignment<br>10. System updates status to "Scheduled for Rail" | `rail:view`<br>`rail:schedule`<br>`rail:allocate`<br>`order:update_status` |
-| **Schedule Last-Mile Road Delivery** | Assign trucks, drivers, and assistants | 1. Login to system<br>2. Navigate to "Road Delivery" section<br>3. View warehouse goods ready for delivery<br>4. Select delivery route<br>5. System shows available resources:<br>&nbsp;&nbsp;&nbsp;- Drivers (no consecutive deliveries)<br>&nbsp;&nbsp;&nbsp;- Assistants (max 2 consecutive routes)<br>&nbsp;&nbsp;&nbsp;- Working hour limits enforced<br>6. Assign truck, driver, and assistant<br>7. System validates constraints<br>8. Resolve conflicts if any<br>9. Confirm schedule<br>10. System notifies personnel | `truck:view`<br>`truck:schedule`<br>`driver:view`<br>`driver:assign`<br>`assistant:view`<br>`assistant:assign`<br>`route:view`<br>`order:update_status` |
-| **View Customer Order History** | Access customer order records | 1. Login to system<br>2. Navigate to "Customer Management"<br>3. Search customer by ID/name<br>4. View order history with:<br>&nbsp;&nbsp;&nbsp;- Order details<br>&nbsp;&nbsp;&nbsp;- Delivery status<br>&nbsp;&nbsp;&nbsp;- Route information<br>5. Filter by date/status<br>6. Export reports<br>7. System logs access | `customer:view`<br>`order:view_all`<br>`order:export` |
+| **Schedule Rail Cargo Trip** | Allocate warehouse orders to train schedules | 1. Login with authorized credentials<br>2. Navigate to "Rail Transport" section<br>3. **View pending orders for assigned warehouse only** (7+ days advance)<br>4. Select orders for destination<br>5. System calculates space requirements<br>6. View available train capacity<br>7. Assign orders to trip<br>8. System validates capacity<br>9. Confirm assignment<br>10. System updates status to "Scheduled for Rail" | `rail:view:warehouse`<br>`rail:schedule:warehouse`<br>`rail:allocate:warehouse`<br>`order:update_status:warehouse` |
+| **Schedule Last-Mile Road Delivery** | Assign trucks, drivers, and assistants from warehouse | 1. Login to system<br>2. Navigate to "Road Delivery" section<br>3. **View warehouse goods ready for delivery** (warehouse-scoped)<br>4. Select delivery route from warehouse<br>5. System shows available resources from warehouse:<br>&nbsp;&nbsp;&nbsp;- Drivers assigned to warehouse<br>&nbsp;&nbsp;&nbsp;- Assistants at warehouse<br>&nbsp;&nbsp;&nbsp;- Trucks at warehouse location<br>6. Assign truck, driver, and assistant<br>7. System validates constraints<br>8. Resolve conflicts if any<br>9. Confirm schedule<br>10. System notifies personnel | `truck:view:warehouse`<br>`truck:schedule:warehouse`<br>`driver:view:warehouse`<br>`driver:assign:warehouse`<br>`assistant:view:warehouse`<br>`assistant:assign:warehouse`<br>`route:view:warehouse`<br>`order:update_status:warehouse` |
+| **View Customer Order History** | Access customer orders assigned to warehouse | 1. Login to system<br>2. Navigate to "Customer Management"<br>3. Search customer by ID/name<br>4. **View only orders assigned to this warehouse** with:<br>&nbsp;&nbsp;&nbsp;- Order details<br>&nbsp;&nbsp;&nbsp;- Delivery status<br>&nbsp;&nbsp;&nbsp;- Route information<br>5. Filter by date/status<br>6. Export warehouse-specific reports<br>7. System logs access | `customer:view:all`<br>`order:view:warehouse`<br>`order:export:warehouse` |
 
 **Route Access:**
-- `/admin/dashboard` - Overview dashboard
-- `/admin/rail-scheduling` - Rail cargo management
-- `/admin/last-mile` - Road delivery scheduling
-- `/admin/orders` - Order management
-- `/admin/stores` - Store operations
-- `/admin/routers` - Route management
+- `/admin/dashboard` - Warehouse dashboard
+- `/admin/rail-scheduling` - Rail cargo for warehouse
+- `/admin/last-mile` - Road delivery from warehouse
+- `/admin/orders` - Orders assigned to warehouse only
+- `/admin/stores` - Warehouse operations
+- `/admin/routers` - Warehouse routes
+
+**Important Note:** Store Managers can only see and manage orders that have been **assigned to their warehouse** by Management or System Admin.
 
 ---
 
@@ -79,17 +105,20 @@ The KandyPack Supply Chain Distribution System requires a comprehensive Role-Bas
 **Role Code:** `WarehouseStaff`  
 **Access Level:** Internal Staff (Operations)  
 **Primary Interface:** Web/Mobile Interface
+**Warehouse Scope:** Limited to assigned warehouse only
 
 #### Permissions & Use Cases
 
 | Use Case | Description | Steps | Permissions Required |
 |----------|-------------|-------|---------------------|
-| **Manage Warehouse Inventory** | Record and update stock levels | 1. Login with authorized credentials<br>2. Navigate to "Warehouse Inventory"<br>3. View current inventory (products, quantities, locations)<br>4. Upon rail cargo arrival:<br>&nbsp;&nbsp;&nbsp;- Select corresponding trip<br>&nbsp;&nbsp;&nbsp;- View expected goods<br>&nbsp;&nbsp;&nbsp;- Verify received quantities<br>&nbsp;&nbsp;&nbsp;- Log discrepancies if any<br>5. System updates inventory<br>6. For road delivery dispatch:<br>&nbsp;&nbsp;&nbsp;- Mark items as dispatched<br>&nbsp;&nbsp;&nbsp;- System reduces inventory<br>7. System logs transaction | `inventory:view`<br>`inventory:update`<br>`inventory:receive`<br>`inventory:dispatch`<br>`rail:verify_arrival` |
+| **Manage Warehouse Inventory** | Record and update stock levels for assigned warehouse | 1. Login with authorized credentials<br>2. Navigate to "Warehouse Inventory"<br>3. **View current inventory for assigned warehouse only** (products, quantities, locations)<br>4. Upon rail cargo arrival at warehouse:<br>&nbsp;&nbsp;&nbsp;- Select corresponding trip<br>&nbsp;&nbsp;&nbsp;- View expected goods for this warehouse<br>&nbsp;&nbsp;&nbsp;- Verify received quantities<br>&nbsp;&nbsp;&nbsp;- Log discrepancies if any<br>5. System updates warehouse inventory<br>6. For road delivery dispatch from warehouse:<br>&nbsp;&nbsp;&nbsp;- Mark items as dispatched<br>&nbsp;&nbsp;&nbsp;- System reduces warehouse inventory<br>7. System logs transaction with warehouse ID | `inventory:view:warehouse`<br>`inventory:update:warehouse`<br>`inventory:receive:warehouse`<br>`inventory:dispatch:warehouse`<br>`rail:verify_arrival:warehouse` |
 
 **Route Access:**
-- `/admin/stores` - Warehouse management
-- `/admin/orders` - View order details
+- `/admin/stores` - Assigned warehouse management only
+- `/admin/orders` - View orders for assigned warehouse
 - Mobile app for inventory updates
+
+**Important Note:** Warehouse Staff can only manage inventory and orders for their **assigned warehouse**. They cannot see or access data from other warehouses.
 
 ---
 
@@ -97,21 +126,27 @@ The KandyPack Supply Chain Distribution System requires a comprehensive Role-Bas
 **Role Code:** `Management`  
 **Access Level:** Internal Staff (Executive)  
 **Primary Interface:** Admin Web Portal (Reports & Analytics)
+**Warehouse Scope:** Full access to all warehouses
 
 #### Permissions & Use Cases
 
 | Use Case | Description | Steps | Permissions Required |
 |----------|-------------|-------|---------------------|
-| **Generate Sales & Utilization Reports** | Analyze performance metrics | 1. Login with authorized credentials<br>2. Navigate to "Reports and Analytics"<br>3. View available report types:<br>&nbsp;&nbsp;&nbsp;- Quarterly sales reports<br>&nbsp;&nbsp;&nbsp;- Product popularity analysis<br>&nbsp;&nbsp;&nbsp;- City/route-wise sales<br>&nbsp;&nbsp;&nbsp;- Driver/assistant working hours<br>&nbsp;&nbsp;&nbsp;- Truck usage statistics<br>4. Select report type<br>5. Specify parameters (date range, quarter)<br>6. System retrieves data<br>7. Review generated report with:<br>&nbsp;&nbsp;&nbsp;- Sales value and volume<br>&nbsp;&nbsp;&nbsp;- Most ordered items<br>&nbsp;&nbsp;&nbsp;- Regional breakdowns<br>&nbsp;&nbsp;&nbsp;- Resource utilization<br>8. Filter/sort data<br>9. Export as PDF/CSV<br>10. System logs activity | `reports:view_all`<br>`reports:generate`<br>`reports:export`<br>`analytics:view`<br>`sales:view`<br>`driver:view_hours`<br>`assistant:view_hours`<br>`truck:view_usage` |
-| **View All System Data** | Access comprehensive system information | Full access to all resources for oversight | `*:view_all` (Super permission) |
-| **Audit User Actions** | Review system logs | Access audit trails for compliance | `audit:view`<br>`logs:view_all` |
+| **Assign Orders to Warehouses** | Allocate customer orders to specific warehouses nationwide | 1. Login with authorized credentials<br>2. Navigate to "Order Management"<br>3. View unassigned customer orders<br>4. Select order(s) to assign<br>5. View list of all warehouses:<br>&nbsp;&nbsp;&nbsp;- Warehouse locations<br>&nbsp;&nbsp;&nbsp;- Current capacity<br>&nbsp;&nbsp;&nbsp;- Geographic proximity to customer<br>6. Select optimal warehouse based on:<br>&nbsp;&nbsp;&nbsp;- Customer delivery address<br>&nbsp;&nbsp;&nbsp;- Warehouse capacity<br>&nbsp;&nbsp;&nbsp;- Inventory availability<br>7. Confirm warehouse assignment<br>8. System updates order with warehouse_id<br>9. Order becomes visible to warehouse staff<br>10. System logs assignment for audit | `order:read:all`<br>`order:update:all`<br>`warehouse:assign:all`<br>`order-assignment:create:all`<br>`warehouse:view:all` |
+| **Generate Sales & Utilization Reports** | Analyze performance metrics across all warehouses | 1. Login with authorized credentials<br>2. Navigate to "Reports and Analytics"<br>3. View available report types:<br>&nbsp;&nbsp;&nbsp;- Quarterly sales reports (all warehouses)<br>&nbsp;&nbsp;&nbsp;- Product popularity analysis<br>&nbsp;&nbsp;&nbsp;- City/route-wise sales<br>&nbsp;&nbsp;&nbsp;- Driver/assistant working hours per warehouse<br>&nbsp;&nbsp;&nbsp;- Truck usage statistics by warehouse<br>&nbsp;&nbsp;&nbsp;- Warehouse performance comparison<br>4. Select report type<br>5. Specify parameters (date range, quarter, warehouse filter)<br>6. System retrieves data from all warehouses<br>7. Review generated report with:<br>&nbsp;&nbsp;&nbsp;- Sales value and volume<br>&nbsp;&nbsp;&nbsp;- Most ordered items<br>&nbsp;&nbsp;&nbsp;- Regional breakdowns<br>&nbsp;&nbsp;&nbsp;- Resource utilization<br>&nbsp;&nbsp;&nbsp;- Cross-warehouse comparisons<br>8. Filter/sort data<br>9. Export as PDF/CSV<br>10. System logs activity | `reports:view_all:all`<br>`reports:generate:all`<br>`reports:export:all`<br>`analytics:view:all`<br>`sales:view:all`<br>`driver:view_hours:all`<br>`assistant:view_hours:all`<br>`truck:view_usage:all` |
+| **View All System Data** | Access comprehensive system information across warehouses | Full access to all resources for oversight | `*:view_all:all` (Super permission) |
+| **Audit User Actions** | Review system logs from all warehouses | Access audit trails for compliance | `audit:view:all`<br>`logs:view_all:all` |
+| **Reallocate Orders** | Move orders between warehouses if needed | 1. View assigned orders<br>2. Select order to reallocate<br>3. Choose new warehouse<br>4. System validates and updates<br>5. Notifies both warehouse teams | `order:update:all`<br>`warehouse:assign:all` |
 
 **Route Access:**
-- `/admin/dashboard` - Executive dashboard
-- `/admin/reports` - Analytics and reporting
-- `/admin/logs` - Activity logs
+- `/admin/dashboard` - Executive dashboard (all warehouses)
+- `/admin/reports` - Analytics and reporting (cross-warehouse)
+- `/admin/logs` - Activity logs (all warehouses)
 - `/admin/admin-management` - User management
-- All other admin routes (read access)
+- `/admin/order-assignment` - Warehouse assignment interface
+- All other admin routes (read access across all warehouses)
+
+**Important Note:** Management has **full visibility and control** across all warehouses. They are responsible for the critical function of assigning customer orders to the appropriate warehouse based on logistics optimization.
 
 ---
 
@@ -142,24 +177,26 @@ The KandyPack Supply Chain Distribution System requires a comprehensive Role-Bas
 **Role Code:** `DriverAssistant`  
 **Access Level:** Internal Staff (Operations Support)  
 **Primary Interface:** Web/Mobile Interface
+**Warehouse Scope:** Limited to assigned warehouse only
 
 #### Permissions & Use Cases
 
 | Use Case | Description | Steps | Permissions Required |
 |----------|-------------|-------|---------------------|
-| **Assign Drivers** | Allocate drivers to delivery routes | 1. Login with authorized credentials<br>2. Navigate to "Driver Assignment"<br>3. View scheduled routes needing drivers<br>4. Select route<br>5. System shows available drivers:<br>&nbsp;&nbsp;&nbsp;- Filters out consecutive assignments<br>&nbsp;&nbsp;&nbsp;- Excludes drivers exceeding 40hrs/week<br>6. Select driver from available list<br>7. System validates:<br>&nbsp;&nbsp;&nbsp;- No scheduling conflicts<br>&nbsp;&nbsp;&nbsp;- Hour limit compliance<br>8. If conflict, system suggests alternatives<br>9. Confirm assignment<br>10. System logs and notifies driver | `driver:view`<br>`driver:assign`<br>`route:view`<br>`schedule:manage` |
-| **Check Routes** | Verify route scheduling and compliance | 1. Login to system<br>2. Navigate to "Route Management"<br>3. View scheduled delivery routes<br>4. Select route to review<br>5. System shows:<br>&nbsp;&nbsp;&nbsp;- Orders and stops<br>&nbsp;&nbsp;&nbsp;- Expected timelines<br>&nbsp;&nbsp;&nbsp;- Assigned personnel and truck<br>6. Verify compliance:<br>&nbsp;&nbsp;&nbsp;- No overlapping assignments<br>&nbsp;&nbsp;&nbsp;- Assistant limit (2 consecutive routes)<br>&nbsp;&nbsp;&nbsp;- Truck compatibility<br>7. Flag issues for resolution<br>8. System logs review<br>9. Mark route as verified or escalate<br>10. System updates route record | `route:view`<br>`route:verify`<br>`route:flag_issues`<br>`driver:view`<br>`assistant:view`<br>`truck:view` |
-| **Schedule Trucks** | Assign trucks to delivery routes | 1. Login to system<br>2. Navigate to "Truck Scheduling"<br>3. View routes needing trucks<br>4. Select route<br>5. System shows available trucks:<br>&nbsp;&nbsp;&nbsp;- Filters by availability<br>&nbsp;&nbsp;&nbsp;- Checks capacity compatibility<br>6. Select truck<br>7. System validates:<br>&nbsp;&nbsp;&nbsp;- No overlapping routes<br>&nbsp;&nbsp;&nbsp;- Usage limit compliance<br>8. If conflict, system suggests alternatives<br>9. Confirm assignment<br>10. System notifies personnel | `truck:view`<br>`truck:schedule`<br>`route:view`<br>`schedule:manage` |
+| **Assign Drivers** | Allocate drivers to delivery routes from warehouse | 1. Login with authorized credentials<br>2. Navigate to "Driver Assignment"<br>3. **View scheduled routes for assigned warehouse only**<br>4. Select route<br>5. System shows available drivers from warehouse:<br>&nbsp;&nbsp;&nbsp;- Filters out consecutive assignments<br>&nbsp;&nbsp;&nbsp;- Excludes drivers exceeding 40hrs/week<br>&nbsp;&nbsp;&nbsp;- Shows only drivers assigned to this warehouse<br>6. Select driver from available list<br>7. System validates:<br>&nbsp;&nbsp;&nbsp;- No scheduling conflicts<br>&nbsp;&nbsp;&nbsp;- Hour limit compliance<br>8. If conflict, system suggests alternatives<br>9. Confirm assignment<br>10. System logs and notifies driver | `driver:view:warehouse`<br>`driver:assign:warehouse`<br>`route:view:warehouse`<br>`schedule:manage:warehouse` |
+| **Check Routes** | Verify route scheduling and compliance for warehouse | 1. Login to system<br>2. Navigate to "Route Management"<br>3. **View scheduled delivery routes from warehouse**<br>4. Select route to review<br>5. System shows:<br>&nbsp;&nbsp;&nbsp;- Orders and stops (warehouse orders only)<br>&nbsp;&nbsp;&nbsp;- Expected timelines<br>&nbsp;&nbsp;&nbsp;- Assigned personnel and truck from warehouse<br>6. Verify compliance:<br>&nbsp;&nbsp;&nbsp;- No overlapping assignments<br>&nbsp;&nbsp;&nbsp;- Assistant limit (2 consecutive routes)<br>&nbsp;&nbsp;&nbsp;- Truck compatibility<br>7. Flag issues for resolution<br>8. System logs review<br>9. Mark route as verified or escalate<br>10. System updates route record | `route:view:warehouse`<br>`route:verify:warehouse`<br>`route:flag_issues:warehouse`<br>`driver:view:warehouse`<br>`assistant:view:warehouse`<br>`truck:view:warehouse` |
+| **Schedule Trucks** | Assign trucks to delivery routes from warehouse | 1. Login to system<br>2. Navigate to "Truck Scheduling"<br>3. **View routes needing trucks (warehouse routes only)**<br>4. Select route<br>5. System shows available trucks at warehouse:<br>&nbsp;&nbsp;&nbsp;- Filters by availability<br>&nbsp;&nbsp;&nbsp;- Checks capacity compatibility<br>&nbsp;&nbsp;&nbsp;- Shows only warehouse fleet<br>6. Select truck<br>7. System validates:<br>&nbsp;&nbsp;&nbsp;- No overlapping routes<br>&nbsp;&nbsp;&nbsp;- Usage limit compliance<br>8. If conflict, system suggests alternatives<br>9. Confirm assignment<br>10. System notifies personnel | `truck:view:warehouse`<br>`truck:schedule:warehouse`<br>`route:view:warehouse`<br>`schedule:manage:warehouse` |
 
 **Route Access:**
-- `/admin/rosters` - Driver/assistant management
-- `/admin/last-mile` - Delivery scheduling
+- `/admin/rosters` - Driver/assistant management (warehouse team)
+- `/admin/last-mile` - Delivery scheduling (warehouse operations)
 - Mobile app for field operations
 
 **Constraints:**
 - Assistants limited to 2 consecutive routes
 - Maximum 60 hours per week for assistants
 - Must validate all scheduling constraints
+- **Can only manage resources assigned to their warehouse**
 
 ---
 
@@ -167,14 +204,25 @@ The KandyPack Supply Chain Distribution System requires a comprehensive Role-Bas
 **Role Code:** `SystemAdmin`  
 **Access Level:** Super Admin  
 **Primary Interface:** Admin Portal + System Console
+**Warehouse Scope:** Full access to all warehouses
 
 #### Permissions
-- Full system access (`*:*`)
-- User management (`user:create`, `user:update`, `user:delete`)
-- Role assignment (`role:assign`, `role:modify`)
-- System configuration (`system:configure`)
-- Database management (`database:manage`)
-- Security settings (`security:manage`)
+- Full system access (`*:*:all`)
+- User management (`user:create:all`, `user:update:all`, `user:delete:all`)
+- Role assignment (`role:assign:all`, `role:modify:all`)
+- Warehouse assignment for users (`user:assign_warehouse:all`)
+- Order-to-warehouse assignment (`order:assign_warehouse:all`, `warehouse:assign:all`)
+- System configuration (`system:configure:all`)
+- Database management (`database:manage:all`)
+- Security settings (`security:manage:all`)
+
+#### Additional Responsibilities
+- Assign staff members to specific warehouses
+- Manage warehouse-user relationships
+- Assist Management with order-to-warehouse assignments when needed
+- Configure warehouse-specific settings and policies
+
+**Important Note:** System Administrators have the same warehouse assignment capabilities as Management and can assign both orders and users to warehouses.
 
 ---
 
