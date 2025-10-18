@@ -1,20 +1,23 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import type { ReactNode } from "react";
+import { AuthAPI, TokenService, ApiError } from "../services/api";
+import { UserRole, hasPermission, type Permission } from "../types/roles";
 
 // Types
 interface User {
   id: string;
   email: string;
   name: string;
-  role: string;
+  role: UserRole;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (email: string, password: string, userRole?: 'admin' | 'customer') => Promise<boolean>;
+  login: (email: string, password: string, userRole?: 'staff' | 'customer') => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
+  hasUserPermission: (resource: string, action: string) => boolean;
 }
 
 // Create Auth Context
@@ -26,16 +29,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate checking for existing auth token/session
+    // Check for existing auth token on mount
     const checkAuthStatus = async () => {
       try {
-        // In a real app, you'd check localStorage/sessionStorage or make an API call
-        const savedUser = localStorage.getItem('kandypack_user');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
+        const token = TokenService.getToken();
+        const savedUser = TokenService.getUser();
+        
+        if (token && savedUser) {
+          // Validate token is not expired
+          const tokenData = parseJWT(token);
+          if (tokenData && tokenData.exp && tokenData.exp * 1000 > Date.now()) {
+            setUser(savedUser);
+          } else {
+            // Token expired, clear everything
+            TokenService.clear();
+          }
         }
       } catch (error) {
         console.error('Error checking auth status:', error);
+        TokenService.clear();
       } finally {
         setLoading(false);
       }
@@ -44,45 +56,95 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuthStatus();
   }, []);
 
-  const login = async (email: string, password: string, userRole: 'admin' | 'customer' = 'customer'): Promise<boolean> => {
+  // Helper to parse JWT (simple decode, not verification)
+  const parseJWT = (token: string): any => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const login = async (
+    email: string, 
+    password: string, 
+    userRole: 'staff' | 'customer' = 'customer'
+  ): Promise<{ success: boolean; error?: string }> => {
     setLoading(true);
     try {
-      // Simulate API call - replace with real authentication
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      let response;
       
-      // Mock successful login for demo purposes
-      // Admin login
-      if (email === "admin@kandypack.com" && password === "password" && userRole === "admin") {
-        const mockUser: User = {
-          id: "1",
-          email: "admin@kandypack.com",
-          name: "Admin User",
-          role: "admin"
+      // Call appropriate login endpoint
+      if (userRole === 'staff') {
+        response = await AuthAPI.loginStaff(email, password);
+        
+        // Map backend role string to UserRole enum
+        const roleMap: Record<string, UserRole> = {
+          'Management': UserRole.MANAGEMENT,
+          'StoreManager': UserRole.STORE_MANAGER,
+          'WarehouseStaff': UserRole.WAREHOUSE_STAFF,
+          'Driver': UserRole.DRIVER,
+          'DriverAssistant': UserRole.DRIVER_ASSISTANT,
+          'SystemAdmin': UserRole.SYSTEM_ADMIN,
         };
         
-        setUser(mockUser);
-        localStorage.setItem('kandypack_user', JSON.stringify(mockUser));
-        return true;
-      }
-      
-      // Customer login
-      if (email === "customer@kandypack.com" && password === "password" && userRole === "customer") {
-        const mockUser: User = {
-          id: "2",
-          email: "customer@kandypack.com",
-          name: "Customer User",
-          role: "customer"
+        const mappedRole = roleMap[response.role];
+        if (!mappedRole) {
+          return { success: false, error: 'Invalid role returned from server' };
+        }
+        
+        const user: User = {
+          id: response.user_id,
+          email: email,
+          name: response.user_name,
+          role: mappedRole,
         };
         
-        setUser(mockUser);
-        localStorage.setItem('kandypack_user', JSON.stringify(mockUser));
-        return true;
+        // Store token and user
+        TokenService.setToken(response.access_token);
+        TokenService.setUser(user);
+        setUser(user);
+        
+        return { success: true };
+      } else {
+        response = await AuthAPI.loginCustomer(email, password);
+        
+        const user: User = {
+          id: response.customer_id,
+          email: email,
+          name: response.customer_user_name,
+          role: UserRole.CUSTOMER,
+        };
+        
+        // Store token and user
+        TokenService.setToken(response.access_token);
+        TokenService.setUser(user);
+        setUser(user);
+        
+        return { success: true };
       }
-      
-      return false;
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      
+      if (error instanceof ApiError) {
+        return { 
+          success: false, 
+          error: error.message || 'Invalid credentials' 
+        };
+      }
+      
+      return { 
+        success: false, 
+        error: 'Network error. Please check your connection.' 
+      };
     } finally {
       setLoading(false);
     }
@@ -90,9 +152,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('kandypack_user');
-    // Use window.location for redirect to ensure clean state reset
-    window.location.href = '/admin';
+    TokenService.clear();
+    
+    // Redirect based on user type
+    const wasCustomer = user?.role === UserRole.CUSTOMER;
+    window.location.href = wasCustomer ? '/login' : '/admin';
+  };
+
+  const hasUserPermission = (resource: string, action: string): boolean => {
+    if (!user) return false;
+    return hasPermission(user.role, resource, action);
   };
 
   const value: AuthContextType = {
@@ -100,7 +169,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!user,
     loading,
     login,
-    logout
+    logout,
+    hasUserPermission
   };
 
   return (

@@ -2,10 +2,11 @@ import type { Route } from "./+types/login";
 import { useAuth } from "../hooks/useAuth";
 import { Form, Navigate } from "react-router";
 import { useState } from "react";
+import { UserRole } from "../types/roles";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Login - KandyPack Logistics" },
+    { title: "Admin Login - KandyPack Logistics" },
   ];
 }
 
@@ -25,13 +26,13 @@ export default function LoginRoute() {
     );
   }
 
-  // If already logged in as admin, redirect to admin dashboard
-  if (isAuthenticated && user?.role === 'admin') {
+  // If already logged in as staff (any role except customer), redirect to admin dashboard
+  if (isAuthenticated && user?.role !== UserRole.CUSTOMER) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
   // If logged in as customer, show access denied message (don't redirect)
-  if (isAuthenticated && user?.role === 'customer') {
+  if (isAuthenticated && user?.role === UserRole.CUSTOMER) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
@@ -68,13 +69,14 @@ export default function LoginRoute() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(""); // Clear previous errors
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const success = await login(email, password, 'admin');
-    if (!success) {
-      setError("Invalid credentials");
+    const result = await login(email, password, 'staff');
+    if (!result.success) {
+      setError(result.error || "Invalid credentials");
     }
   };
 

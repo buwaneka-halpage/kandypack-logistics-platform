@@ -2,6 +2,7 @@ import type { Route } from "./+types/customer-login";
 import { useAuth } from "../hooks/useAuth";
 import { Form, Navigate } from "react-router";
 import { useState } from "react";
+import { UserRole } from "../types/roles";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -26,12 +27,12 @@ export default function CustomerLoginRoute() {
   }
 
   // If already logged in as customer, redirect to customer home
-  if (isAuthenticated && user?.role === 'customer') {
+  if (isAuthenticated && user?.role === UserRole.CUSTOMER) {
     return <Navigate to="/customer/home" replace />;
   }
 
-  // If logged in as admin, show access denied message (don't redirect)
-  if (isAuthenticated && user?.role === 'admin') {
+  // If logged in as staff (not customer), show access denied message (don't redirect)
+  if (isAuthenticated && user?.role !== UserRole.CUSTOMER) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
@@ -44,7 +45,7 @@ export default function CustomerLoginRoute() {
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Access Denied</h3>
           <p className="text-sm text-gray-500 mb-6">
-            You are currently logged in as an admin. This is the customer login page. 
+            You are currently logged in as staff. This is the customer login page. 
             Please log out first or navigate back to the admin portal.
           </p>
           <div className="flex gap-3 justify-center">
@@ -68,13 +69,14 @@ export default function CustomerLoginRoute() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(""); // Clear previous errors
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const success = await login(email, password, 'customer');
-    if (!success) {
-      setError("Invalid credentials");
+    const result = await login(email, password, 'customer');
+    if (!result.success) {
+      setError(result.error || "Invalid credentials");
     }
   };
 
