@@ -2,6 +2,7 @@ import { Navigate, useNavigate } from "react-router";
 import { useAuth } from "~/hooks/useAuth";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
+import { UserRole } from "~/types/roles";
 
 interface CustomerProtectedRouteProps {
   children: ReactNode;
@@ -13,10 +14,10 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
 
   // Handle unauthorized access - must be at top level for hooks rules
   useEffect(() => {
-    if (!loading && isAuthenticated && user?.role !== 'customer') {
+    if (!loading && isAuthenticated && user?.role !== UserRole.CUSTOMER) {
       navigate(-1);
       setTimeout(() => {
-        alert("Access Denied: You don't have permission to access customer pages. You are logged in as an admin.");
+        alert("Access Denied: You don't have permission to access customer pages. You are logged in as staff.");
       }, 100);
     }
   }, [loading, isAuthenticated, user?.role, navigate]);
@@ -39,7 +40,7 @@ export function CustomerProtectedRoute({ children }: CustomerProtectedRouteProps
   }
 
   // If authenticated but not a customer, show redirecting message
-  if (user?.role !== 'customer') {
+  if (user?.role !== UserRole.CUSTOMER) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
