@@ -1,185 +1,223 @@
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import React, { useState } from "react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Package } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 interface Product {
-  product: string;
+  name: string;
   quantity: string;
   unitPrice: number;
   subtotal: number;
 }
 
 export default function CustomerNewOrder() {
-  const [selectedProducts] = useState<Product[]>([
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([
     {
-      product: "Detergent Powder",
+      name: "Detergent Powder",
       quantity: "5kg",
       unitPrice: 1000.0,
       subtotal: 5000.0,
     },
     {
-      product: "Special Family Pack",
+      name: "Biscuit Family Pack",
       quantity: "1kg",
-      unitPrice: 1500.0,
-      subtotal: 1500.0,
+      unitPrice: 1000.0,
+      subtotal: 1000.0,
     },
     {
-      product: "Sunflower Oil",
-      quantity: "4L",
+      name: "Sunflower Oil",
+      quantity: "4kg",
       unitPrice: 1000.0,
       subtotal: 4000.0,
     },
   ]);
 
-  const total = selectedProducts.reduce((sum, item) => sum + item.subtotal, 0);
+  const total = selectedProducts.reduce(
+    (sum, product) => sum + product.subtotal,
+    0
+  );
 
-  const handlePlaceOrder = () => {
-    // Implement order placement logic here
-    console.log("Placing order:", { selectedProducts, total });
+  const handleAddToCart = () => {
+    // Add to cart logic here
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      {/* Product Selection and Order Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Product Selection */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Product Selection */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Select Products</h3>
-              <Button variant="outline" size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Product
-              </Button>
-            </div>
+    <div className="space-y-8">
+      {/* Page Title */}
+      <h1 className="text-2xl font-semibold">Place New Order</h1>
 
-            {/* Products Table */}
-            <div className="mt-4">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-sm text-gray-600">
-                    <th className="text-left font-medium pb-4">Product</th>
-                    <th className="text-right font-medium pb-4">Quantity</th>
-                    <th className="text-right font-medium pb-4">Unit Price</th>
-                    <th className="text-right font-medium pb-4">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {selectedProducts.map((item, index) => (
-                    <tr key={index}>
-                      <td className="py-4">{item.product}</td>
-                      <td className="py-4 text-right">{item.quantity}</td>
-                      <td className="py-4 text-right">
-                        {item.unitPrice.toFixed(2)}
-                      </td>
-                      <td className="py-4 text-right">
-                        {item.subtotal.toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Select Products Section */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold mb-4">Select Products</h2>
+
+            {/* Product Selection Form */}
+            <div className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <Label>Select Product</Label>
+                  <Select>
+                    <SelectTrigger className="w-full bg-white">
+                      <SelectValue placeholder="Choose product" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="detergent">
+                        Detergent Powder
+                      </SelectItem>
+                      <SelectItem value="biscuit">
+                        Biscuit Family Pack
+                      </SelectItem>
+                      <SelectItem value="oil">Sunflower Oil</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Quantity</Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="number"
+                      placeholder="Enter quantity"
+                      className="bg-white"
+                    />
+                    <span className="text-sm text-gray-500">kg</span>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={handleAddToCart}
+                className="w-full bg-primary text-white hover:bg-primary/90"
+              >
+                + Add to cart
+              </Button>
             </div>
           </Card>
 
-          {/* Delivery Details */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Delivery Details</h3>
+          {/* Delivery Details Section */}
+          <Card className="p-6 mt-6">
+            <h2 className="text-lg font-semibold mb-4">Delivery Details</h2>
             <div className="space-y-4">
-              {/* Name Fields */}
-              <div>
-                <Label>Name</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
-                  <div>
-                    <Input id="firstName" placeholder="First Name" />
-                  </div>
-                  <div>
-                    <Input id="lastName" placeholder="Last Name" />
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>First Name</Label>
+                  <Input placeholder="First name" className="bg-white mt-1" />
+                </div>
+                <div>
+                  <Label>Last Name</Label>
+                  <Input placeholder="Last name" className="bg-white mt-1" />
                 </div>
               </div>
 
-              {/* Address Fields */}
-              <div>
-                <Label>Address</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
-                  <div>
-                    <Input id="number" placeholder="Number" />
-                  </div>
-                  <div>
-                    <Input id="street" placeholder="Street" />
-                  </div>
+              <div className="space-y-3">
+                <div>
+                  <Label>Address Line 1</Label>
+                  <Input
+                    placeholder="Address line 1"
+                    className="bg-white mt-1"
+                  />
                 </div>
-                <div className="mt-2">
-                  <Input id="addressLine1" placeholder="Address line 1" />
-                </div>
-                <div className="mt-2">
-                  <Input id="addressLine2" placeholder="Address line 2" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                  <div>
-                    <Input id="city" placeholder="City" />
-                  </div>
-                  <div>
-                    <Input id="postalCode" placeholder="Postal Code" />
-                  </div>
+                <div>
+                  <Label>Address Line 2</Label>
+                  <Input
+                    placeholder="Address line 2"
+                    className="bg-white mt-1"
+                  />
                 </div>
               </div>
 
-              {/* Mobile Number */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>City</Label>
+                  <Input placeholder="City" className="bg-white mt-1" />
+                </div>
+                <div>
+                  <Label>Postal Code</Label>
+                  <Input placeholder="Postal code" className="bg-white mt-1" />
+                </div>
+              </div>
+
               <div>
                 <Label>Mobile Number</Label>
-                <div className="mt-1">
-                  <Input id="mobile" placeholder="Mobile Number" />
-                </div>
+                <Input
+                  type="tel"
+                  placeholder="Mobile number"
+                  className="bg-white mt-1"
+                />
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Order Summary */}
-        <div>
-          <Card className="p-6 sticky top-6">
-            <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
+        {/* Order Summary Section */}
+        <div className="space-y-6">
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
-            <div className="space-y-3">
-              {selectedProducts.map((item, index) => (
-                <div key={index} className="flex justify-between text-sm">
-                  <span className="text-gray-600">{item.product}</span>
-                  <span>{item.subtotal.toFixed(2)}</span>
-                </div>
-              ))}
+            <div className="space-y-4">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-sm text-gray-600">
+                    <th className="text-left pb-2">Product</th>
+                    <th className="text-center pb-2">Quantity</th>
+                    <th className="text-right pb-2">Unit Price</th>
+                    <th className="text-right pb-2">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {selectedProducts.map((product, index) => (
+                    <tr key={index} className="text-sm">
+                      <td className="py-2">{product.name}</td>
+                      <td className="text-center py-2">{product.quantity}</td>
+                      <td className="text-right py-2">
+                        {product.unitPrice.toFixed(2)}
+                      </td>
+                      <td className="text-right py-2">
+                        {product.subtotal.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="font-medium">
+                    <td colSpan={3} className="pt-4 text-right">
+                      Total
+                    </td>
+                    <td className="pt-4 text-right">{total.toFixed(2)}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-
-            <div className="border-t mt-4 pt-4">
-              <div className="flex justify-between font-medium">
-                <span>Total</span>
-                <span>Rs. {total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            {/* Payment Method */}
-            <div className="mt-6">
-              <h4 className="font-medium mb-3">Payment Method</h4>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="payment"
-                  className="form-radio text-primary-600"
-                  defaultChecked
-                />
-                <span>Pay On delivery</span>
-              </label>
-            </div>
-
-            <Button className="w-full mt-6" onClick={handlePlaceOrder}>
-              Place Order
-            </Button>
           </Card>
+
+          {/* Payment Method Section */}
+          <Card className="p-6 mt-6">
+            <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
+            <div className="space-y-2">
+              <RadioGroup defaultValue="pay-on-delivery" className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value="pay-on-delivery"
+                    id="pay-on-delivery"
+                  />
+                  <Label htmlFor="pay-on-delivery">Pay On delivery</Label>
+                </div>
+              </RadioGroup>
+            </div>
+          </Card>
+
+          <Button className="w-full mt-6 bg-primary text-white hover:bg-primary/90">
+            Place Order
+          </Button>
         </div>
       </div>
     </div>
