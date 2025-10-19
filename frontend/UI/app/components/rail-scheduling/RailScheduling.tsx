@@ -24,120 +24,98 @@ import {
 // Import dashboard layout
 import DashboardLayout from "../dashboard/DashboardLayout";
 
-// Sample train schedule data
-const scheduleData = [
-  {
-    id: "SO000001",
-    route: "Kandy - Colombo",
-    departureTime: "8:15",
-    arrivalTime: "13:15",
-    allocatedCapacity: 40,
-    availableCapacity: 80,
-  },
-  {
-    id: "SO000002",
-    route: "Kandy - Galle",
-    departureTime: "6:30",
-    arrivalTime: "14:40",
-    allocatedCapacity: 50,
-    availableCapacity: 100,
-  },
-  {
-    id: "SO000003",
-    route: "Kandy - Matara",
-    departureTime: "8:15",
-    arrivalTime: "15:30",
-    allocatedCapacity: 0,
-    availableCapacity: 90,
-  },
-  {
-    id: "SO000004",
-    route: "Kandy - Jaffna",
-    departureTime: "8:15",
-    arrivalTime: "13:15",
-    allocatedCapacity: 40,
-    availableCapacity: 80,
-  },
-  {
-    id: "SO000005",
-    route: "Kandy - Colombo",
-    departureTime: "8:15",
-    arrivalTime: "13:15",
-    allocatedCapacity: 40,
-    availableCapacity: 80,
-  },
-  {
-    id: "SO000006",
-    route: "Kandy - Colombo",
-    departureTime: "8:15",
-    arrivalTime: "13:15",
-    allocatedCapacity: 40,
-    availableCapacity: 80,
-  },
-  {
-    id: "SO000007",
-    route: "Kandy - Colombo",
-    departureTime: "8:15",
-    arrivalTime: "13:15",
-    allocatedCapacity: 40,
-    availableCapacity: 80,
-  },
-  {
-    id: "SO000008",
-    route: "Kandy - Colombo",
-    departureTime: "8:15",
-    arrivalTime: "13:15",
-    allocatedCapacity: 40,
-    availableCapacity: 80,
-  },
-  {
-    id: "SO000009",
-    route: "Kandy - Colombo",
-    departureTime: "8:15",
-    arrivalTime: "13:15",
-    allocatedCapacity: 40,
-    availableCapacity: 80,
-  },
-  {
-    id: "SO000010",
-    route: "Kandy - Colombo",
-    departureTime: "8:15",
-    arrivalTime: "13:15",
-    allocatedCapacity: 40,
-    availableCapacity: 80,
-  },
-  {
-    id: "SO000011",
-    route: "Kandy - Colombo",
-    departureTime: "8:15",
-    arrivalTime: "13:15",
-    allocatedCapacity: 40,
-    availableCapacity: 80,
-  },
-  {
-    id: "SO000012",
-    route: "Kandy - Colombo",
-    departureTime: "8:15",
-    arrivalTime: "13:15",
-    allocatedCapacity: 40,
-    availableCapacity: 80,
-  },
-];
+// TypeScript interfaces for API data
+interface TrainSchedule {
+  schedule_id: string;
+  train_id: string;
+  source_station: string;
+  destination_station: string;
+  departure_time: string;
+  arrival_time: string;
+  date: string;
+  allocated_capacity: number;
+  available_capacity: number;
+}
+
+interface Train {
+  train_id: string;
+  train_name: string;
+  capacity: number;
+}
+
+interface RailwayStation {
+  station_id: string;
+  station_name: string;
+  city: string;
+}
 
 export function RailScheduling() {
+  const [schedules, setSchedules] = useState<TrainSchedule[]>([]);
+  const [trains, setTrains] = useState<Map<string, string>>(new Map());
+  const [stations, setStations] = useState<Map<string, string>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const [routeFilter, setRouteFilter] = useState<string>("all");
   const [departureTimeFilter, setDepartureTimeFilter] = useState<string>("all");
   const [arrivalTimeFilter, setArrivalTimeFilter] = useState<string>("all");
 
+  // Fetch data from API
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const [schedulesData, trainsData, stationsData] = await Promise.all([
+          TrainSchedulesAPI.getAll(),
+          TrainsAPI.getAll(),
+          RailwayStationsAPI.getAll()
+        ]);
+        
+        setSchedules(schedulesData);
+        
+        // Create lookup maps for trains and stations
+        const trainMap = new Map<string, string>();
+        trainsData.forEach((train: Train) => {
+          trainMap.set(train.train_id, train.train_name);
+        });
+        setTrains(trainMap);
+        
+        const stationMap = new Map<string, string>();
+        stationsData.forEach((station: RailwayStation) => {
+          stationMap.set(station.station_id, station.station_name);
+        });
+        setStations(stationMap);
+        
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching train schedules:", err);
+        setError("Failed to load train schedules. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchData();
+  }, []);
+
+  // Helper function to format route name
+  const formatRoute = (sourceId: string, destId: string) => {
+    const source = stations.get(sourceId) || sourceId;
+    const dest = stations.get(destId) || destId;
+    return `${source} - ${dest}`;
+  };
+
   // Filter schedules based on selected filters
-  const filteredSchedules = scheduleData.filter((schedule) => {
-    if (routeFilter !== "all" && !schedule.route.toLowerCase().includes(routeFilter.toLowerCase())) {
+  const filteredSchedules = schedules.filter((schedule) => {
+    const route = formatRoute(schedule.source_station, schedule.destination_station);
+    
+    if (routeFilter !== "all" && !route.toLowerCase().includes(routeFilter.toLowerCase())) {
       return false;
     }
-    if (departureTimeFilter !== "all" && schedule.departureTime !== departureTimeFilter) {
+    if (departureTimeFilter !== "all" && schedule.departure_time !== departureTimeFilter) {
       return false;
     }
-    if (arrivalTimeFilter !== "all" && schedule.arrivalTime !== arrivalTimeFilter) {
+    if (arrivalTimeFilter !== "all" && schedule.arrival_time !== arrivalTimeFilter) {
       return false;
     }
     return true;
@@ -208,46 +186,65 @@ export function RailScheduling() {
 
         {/* Table */}
         <div className="rounded-md border bg-white">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead className="font-semibold text-gray-700">Schedule ID</TableHead>
-                <TableHead className="font-semibold text-gray-700">Route</TableHead>
-                <TableHead className="font-semibold text-gray-700">Departure Time</TableHead>
-                <TableHead className="font-semibold text-gray-700">Arrival Time</TableHead>
-                <TableHead className="font-semibold text-gray-700">Allocated Capacity</TableHead>
-                <TableHead className="font-semibold text-gray-700">Available Capacity</TableHead>
-                <TableHead className="font-semibold text-gray-700 w-[150px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSchedules.map((schedule) => (
-                <TableRow key={schedule.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium text-gray-900">{schedule.id}</TableCell>
-                  <TableCell className="text-gray-700">{schedule.route}</TableCell>
-                  <TableCell className="text-gray-700">{schedule.departureTime}</TableCell>
-                  <TableCell className="text-gray-700">{schedule.arrivalTime}</TableCell>
-                  <TableCell className="text-gray-700">{schedule.allocatedCapacity}</TableCell>
-                  <TableCell className="text-gray-700">{schedule.availableCapacity}</TableCell>
-                  <TableCell>
-                    <Button 
-                      className="bg-purple-600 hover:bg-purple-700 text-white w-full"
-                      size="sm"
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Assign Orders
-                    </Button>
-                  </TableCell>
+          {loading ? (
+            <div className="flex items-center justify-center p-8">
+              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+              <span className="ml-2 text-gray-600">Loading schedules...</span>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center p-8">
+              <p className="text-red-600">{error}</p>
+            </div>
+          ) : filteredSchedules.length === 0 ? (
+            <div className="flex items-center justify-center p-8">
+              <p className="text-gray-600">No schedules found</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="font-semibold text-gray-700">Schedule ID</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Route</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Departure Time</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Arrival Time</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Allocated Capacity</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Available Capacity</TableHead>
+                  <TableHead className="font-semibold text-gray-700 w-[150px]"></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredSchedules.map((schedule) => (
+                  <TableRow key={schedule.schedule_id} className="hover:bg-gray-50">
+                    <TableCell className="font-medium text-gray-900">{schedule.schedule_id}</TableCell>
+                    <TableCell className="text-gray-700">
+                      {formatRoute(schedule.source_station, schedule.destination_station)}
+                    </TableCell>
+                    <TableCell className="text-gray-700">{schedule.departure_time}</TableCell>
+                    <TableCell className="text-gray-700">{schedule.arrival_time}</TableCell>
+                    <TableCell className="text-gray-700">{schedule.allocated_capacity}</TableCell>
+                    <TableCell className="text-gray-700">{schedule.available_capacity}</TableCell>
+                    <TableCell>
+                      <Button 
+                        className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                        size="sm"
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Assign Orders
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
 
         {/* Results count */}
-        <div className="text-sm text-gray-600">
-          Showing {filteredSchedules.length} of {scheduleData.length} schedules
-        </div>
+        {!loading && !error && (
+          <div className="text-sm text-gray-600">
+            Showing {filteredSchedules.length} of {schedules.length} schedules
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

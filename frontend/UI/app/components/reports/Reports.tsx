@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Download } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Download, Loader2 } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 import { Button } from "~/components/ui/button";
@@ -13,52 +14,96 @@ import {
 } from "~/components/ui/table";
 import DashboardLayout from "../dashboard/DashboardLayout";
 import ReportsMap from "./ReportsMap";
+import { ReportsAPI } from "~/services/api";
 
-// Sample data for Quarterly Sales Report
-const quarterlySalesData = [
-  { quarter: "First", sales: 800 },
-  { quarter: "Second", sales: 950 },
-  { quarter: "Third", sales: 920 },
-  { quarter: "Fourth", sales: 1250 },
-];
-
-// Sample data for Most Ordered Items
-const mostOrderedItemsData = [
-  { name: "Sunflower Oil", value: 19, color: "#1e3a8a" },
-  { name: "Biscuit Family Pack", value: 45, color: "#ef4444" },
-  { name: "Seenigama Powder", value: 36, color: "#fef3c7" },
-];
-
-// Sample data for Working Hours Report
-const workingHoursData = [
-  { name: "A Kumaraski", hours: 20 },
-  { name: "S Fernando", hours: 40 },
-  { name: "H Pieris", hours: 28 },
-];
-
-// Sample data for Truck Usage Analysis
-const truckUsageData = [
-  { date: "15 12 23", trips: 38 },
-  { date: "21 12 23", trips: 32 },
-  { date: "27 12 23", trips: 37 },
-  { date: "3 1 24", trips: 42 },
-  { date: "9 1 24", trips: 38 },
-  { date: "15 1 24", trips: 52 },
-  { date: "21 1 24", trips: 47 },
-];
-
-// Sample data for Customer Order History
-const customerOrderHistoryData = [
-  { orderId: "I000001", status: "Delivered" },
-  { orderId: "I000002", status: "Delivered" },
-  { orderId: "I000003", status: "Delivered" },
-  { orderId: "I000004", status: "Delivered" },
-];
+// Define colors for pie chart
+const COLORS = ["#1e3a8a", "#ef4444", "#fef3c7", "#10b981", "#f59e0b", "#8b5cf6"];
 
 export default function Reports() {
+  const [quarterlySalesData, setQuarterlySalesData] = useState<any[]>([]);
+  const [mostOrderedItemsData, setMostOrderedItemsData] = useState<any[]>([]);
+  const [workingHoursData, setWorkingHoursData] = useState<any[]>([]);
+  const [truckUsageData, setTruckUsageData] = useState<any[]>([]);
+  const [customerOrderHistoryData, setCustomerOrderHistoryData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch all reports data
+  useEffect(() => {
+    async function fetchReportsData() {
+      try {
+        setLoading(true);
+        
+        const [
+          quarterlySales,
+          topItems,
+          driverHours,
+          truckUsage,
+          customerOrders
+        ] = await Promise.all([
+          ReportsAPI.quarterlySales().catch(() => []),
+          ReportsAPI.topItems().catch(() => []),
+          ReportsAPI.driverHours().catch(() => []),
+          ReportsAPI.truckUsage().catch(() => []),
+          ReportsAPI.customerOrders("C000001").catch(() => []) // TODO: Use actual customer ID
+        ]);
+        
+        // Transform quarterly sales data
+        setQuarterlySalesData(quarterlySales.map((item: any) => ({
+          quarter: `Q${item.quarter}`,
+          sales: item.total_sales
+        })));
+        
+        // Transform top items data for pie chart
+        setMostOrderedItemsData(topItems.map((item: any, index: number) => ({
+          name: item.product_name,
+          value: item.total_quantity,
+          color: COLORS[index % COLORS.length]
+        })));
+        
+        // Transform driver hours data
+        setWorkingHoursData(driverHours.map((item: any) => ({
+          name: item.driver_name,
+          hours: item.total_hours
+        })));
+        
+        // Transform truck usage data
+        setTruckUsageData(truckUsage.map((item: any) => ({
+          date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          trips: item.trip_count
+        })));
+        
+        // Transform customer orders data
+        setCustomerOrderHistoryData(customerOrders.slice(0, 4).map((item: any) => ({
+          orderId: item.order_id,
+          status: item.status
+        })));
+        
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching reports data:", err);
+        setError("Failed to load reports data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchReportsData();
+  }, []);
   return (
     <DashboardLayout>
       <div className="w-full space-y-6">
+        {loading ? (
+          <div className="flex items-center justify-center p-12">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="ml-2 text-gray-600">Loading reports...</span>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center p-12">
+            <p className="text-red-600">{error}</p>
+          </div>
+        ) : (
+          <>
         {/* First Row - Quarterly Sales, Most Ordered Items, Sales Breakdown Map */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Quarterly Sales Report */}
@@ -244,6 +289,8 @@ export default function Reports() {
             </div>
           </div>
         </div>
+        </>
+        )}
       </div>
     </DashboardLayout>
   );
