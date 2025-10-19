@@ -10,11 +10,15 @@ from app.core.database import get_db
 from app.core import model  # uses your model.Users
 from passlib.exc import UnknownHashError
 import hashlib
+from dotenv import load_dotenv
 
-# Security configuration (use env vars in production)
-SECRET_KEY = os.getenv("KANDYPACK_SECRET_KEY", "dev-secret-change-me")
-ALGORITHM = os.getenv("KANDYPACK_ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("KANDYPACK_ACCESS_TOKEN_EXPIRE_MINUTES", "100"))
+# Load environment variables from .env file
+load_dotenv()
+
+# Security configuration (loaded from .env file)
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 # Password hashing and OAuth2 scheme
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")

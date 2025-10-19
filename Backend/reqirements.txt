@@ -7,8 +7,9 @@ pymysql
 cryptography
 uuid 
 pytz
-python-jose[cryptographyp]
+python-jose[cryptography]
 passlib
 bcrypt 
-python-multipart 
+python-multipart
+python-dotenv 
 
