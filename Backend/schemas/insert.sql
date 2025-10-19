@@ -7,10 +7,10 @@ INSERT INTO users (user_id, user_name, password_hash, role, created_at) VALUES
 ('e5f6a7b8-c9d0-1234-efa1-5678901234', 'assistant1', 'hashed_password_5', 'Assistant', '2025-10-13 10:20:00');
 
 -- Customers
-INSERT INTO customers (customer_id, customer_name, phone_number, address) VALUES
-('f6a7b8c9-d0e1-2345-fab2-6789012345', 'John Perera', '+94712345678', '123 Main St, Colombo'),
-('a7b8c9d0-e1f2-3456-abc3-7890123456', 'Ama Silva', '+94712345679', '456 Beach Rd, Galle'),
-('b8c9d0e1-f2a3-4567-bcd4-8901234567', 'Kamal Fernando', '+94712345680', '789 Hill St, Kandy');
+INSERT INTO customers (customer_id, customer_user_name, customer_name, phone_number, address, password_hash) VALUES
+('f6a7b8c9-d0e1-2345-fab2-6789012345', 'john_perera', 'John Perera', '+94712345678', '123 Main St, Colombo', 'hashed_password_customer1'),
+('a7b8c9d0-e1f2-3456-abc3-7890123456', 'ama_silva', 'Ama Silva', '+94712345679', '456 Beach Rd, Galle', 'hashed_password_customer2'),
+('b8c9d0e1-f2a3-4567-bcd4-8901234567', 'kamal_fernando', 'Kamal Fernando', '+94712345680', '789 Hill St, Kandy', 'hashed_password_customer3');
 
 -- Cities (25 cities in Sri Lanka)
 INSERT INTO cities (city_id, city_name, province) VALUES

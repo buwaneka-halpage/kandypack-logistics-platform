@@ -10,9 +10,11 @@ CREATE TABLE users (
 -- Customers
 CREATE TABLE customers (
     customer_id CHAR(36) PRIMARY KEY,
+    customer_user_name VARCHAR(50) NOT NULL UNIQUE,
     customer_name VARCHAR(100) NOT NULL,
     phone_number VARCHAR(30) NOT NULL UNIQUE,
     address VARCHAR(200) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     CONSTRAINT Valid_phone_number CHECK (phone_number REGEXP '^\\+?[0-9-]+$')
 );
 
@@ -49,7 +51,7 @@ CREATE TABLE orders (
     customer_id CHAR(36),
     order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     deliver_address VARCHAR(200) NOT NULL,
-    status ENUM('PLACED','IN_PROGRESS','COMPLETED','CANCELLED') NOT NULL DEFAULT 'PLACED',
+    status ENUM('PLACED','SCHEDULED_RAIL','IN_WAREHOUSE','SCHEDULED_ROAD','DELIVERED','FAILED') NOT NULL DEFAULT 'PLACED',
     deliver_city_id CHAR(36) NOT NULL,
     full_price FLOAT NOT NULL,
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
