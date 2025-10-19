@@ -16,7 +16,8 @@ from app.api.truck_schedules import router as truckSchedules
 from app.api.allocations import router as allocations
 from app.api.reports import router as reports_router 
 from app.api.products import router as products_router
-from app.api.assistants import router as assistant_router 
+from app.api.assistants import router as assistant_router
+from app.api.drivers import router as drivers_router 
 
 api_router = APIRouter()
 api_router.include_router(customer_router, tags=["customer"])
@@ -33,6 +34,7 @@ api_router.include_router(allocations, tags = ["Allocations"])
 api_router.include_router(reports_router, tags=["reports"]) 
 api_router.include_router(products_router, tags=["products"]) 
 api_router.include_router(assistant_router, tags= ["Assistant"])
+api_router.include_router(drivers_router, tags=["Drivers"])
 api_router.include_router(trucks, tags=["Trucks"])
 
 
