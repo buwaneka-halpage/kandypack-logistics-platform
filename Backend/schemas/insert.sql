@@ -96,11 +96,18 @@ INSERT INTO stores (store_id, name, telephone_number, address, contact_person, s
 ('st4x5y6z7-a8b9-0123-bcd0-4567890123', 'Kegalle Store', '+94352345693', '240 Central Rd, Kegalle', 'Geetha Alwis', 's4a5b6c7-a8b9-0123-bcd0-4567890123'),
 ('st5y6z7a8-b9c0-1234-cde1-5678901234', 'Chilaw Store', '+94322345694', '250 Coastal Rd, Chilaw', 'Kavindra De Silva', 's5a6b7c8-b9c0-1234-cde1-5678901234');
 
--- Orders (3 orders, dates 7+ days from Oct 13, 2025)
-INSERT INTO orders (order_id, customer_id, order_date, deliver_address, status, deliver_city_id, full_price) VALUES
-('o1b2c3d4-e5f6-7890-abcd-1234567890', 'f6a7b8c9-d0e1-2345-fab2-6789012345', '2025-10-21 08:00:00', '123 Main St, Colombo', 'PLACED', 'c1d2e3f4-a5b6-7890-cdef-1234567890', 1500.50),
-('o2b3c4d5-f6a7-8901-bcde-2345678901', 'a7b8c9d0-e1f2-3456-abc3-7890123456', '2025-10-22 09:00:00', '456 Beach Rd, Galle', 'PLACED', 'c2d3e4f5-b6c7-8901-def1-2345678901', 800.75),
-('o3b4c5d6-a7b8-9012-cdef-3456789012', 'b8c9d0e1-f2a3-4567-bcd4-8901234567', '2025-10-23 10:00:00', '789 Hill St, Kandy', 'PLACED', 'c3d4e5f6-c7d8-9012-efa2-3456789012', 2000.00);
+-- Orders (8 orders: 3 unassigned for Management, 5 assigned to warehouses)
+INSERT INTO orders (order_id, customer_id, order_date, deliver_address, status, deliver_city_id, full_price, warehouse_id) VALUES
+-- Unassigned orders (PLACED status, no warehouse)
+('o1b2c3d4-e5f6-7890-abcd-1234567890', 'f6a7b8c9-d0e1-2345-fab2-6789012345', '2025-10-21 08:00:00', '123 Main St, Colombo', 'PLACED', 'c1d2e3f4-a5b6-7890-cdef-1234567890', 1500.50, NULL),
+('o2b3c4d5-f6a7-8901-bcde-2345678901', 'a7b8c9d0-e1f2-3456-abc3-7890123456', '2025-10-22 09:00:00', '456 Beach Rd, Galle', 'PLACED', 'c2d3e4f5-b6c7-8901-def1-2345678901', 800.75, NULL),
+('o3b4c5d6-a7b8-9012-cdef-3456789012', 'b8c9d0e1-f2a3-4567-bcd4-8901234567', '2025-10-23 10:00:00', '789 Hill St, Kandy', 'PLACED', 'c3d4e5f6-c7d8-9012-efa2-3456789012', 2000.00, NULL),
+-- Assigned orders (various statuses, assigned to warehouses)
+('o4c5d6e7-f8a9-0123-bcde-4567890123', 'f6a7b8c9-d0e1-2345-fab2-6789012345', '2025-10-20 14:00:00', '123 Main St, Colombo', 'IN_WAREHOUSE', 'c1d2e3f4-a5b6-7890-cdef-1234567890', 2200.00, 'st1a2b3c4-d5e6-7890-abcd-1234567890'),
+('o5d6e7f8-a9b0-1234-cdef-5678901234', 'a7b8c9d0-e1f2-3456-abc3-7890123456', '2025-10-19 11:30:00', '456 Beach Rd, Galle', 'SCHEDULED_ROAD', 'c2d3e4f5-b6c7-8901-def1-2345678901', 3500.00, 'st2b3c4d5-e6f7-8901-bcde-2345678901'),
+('o6e7f8a9-b0c1-2345-def0-6789012345', 'b8c9d0e1-f2a3-4567-bcd4-8901234567', '2025-10-18 09:15:00', '789 Hill St, Kandy', 'DELIVERED', 'c3d4e5f6-c7d8-9012-efa2-3456789012', 1200.00, 'st3c4d5e6-f7g8-9012-cdef-3456789012'),
+('o7f8a9b0-c1d2-3456-efa1-7890123456', 'f6a7b8c9-d0e1-2345-fab2-6789012345', '2025-10-17 16:45:00', '123 Main St, Colombo', 'DELIVERED', 'c1d2e3f4-a5b6-7890-cdef-1234567890', 4100.00, 'st1a2b3c4-d5e6-7890-abcd-1234567890'),
+('o8a9b0c1-d2e3-4567-fab2-8901234567', 'a7b8c9d0-e1f2-3456-abc3-7890123456', '2025-10-16 13:20:00', '456 Beach Rd, Galle', 'SCHEDULED_RAIL', 'c2d3e4f5-b6c7-8901-def1-2345678901', 2800.00, 'st2b3c4d5-e6f7-8901-bcde-2345678901');
 
 -- Products
 INSERT INTO products (product_type_id, product_name, space_consumption_rate) VALUES

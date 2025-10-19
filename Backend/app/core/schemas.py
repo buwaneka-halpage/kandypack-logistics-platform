@@ -89,6 +89,7 @@ class order(BaseModel):
     status : str 
     deliver_city_id: str 
     full_price  : float 
+    warehouse_id: str | None = None
 
     model_config = {"from_attributes": True}
 

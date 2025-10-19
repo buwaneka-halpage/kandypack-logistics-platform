@@ -54,8 +54,10 @@ CREATE TABLE orders (
     status ENUM('PLACED','SCHEDULED_RAIL','IN_WAREHOUSE','SCHEDULED_ROAD','DELIVERED','FAILED') NOT NULL DEFAULT 'PLACED',
     deliver_city_id CHAR(36) NOT NULL,
     full_price FLOAT NOT NULL,
+    warehouse_id CHAR(36),
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
     FOREIGN KEY (deliver_city_id) REFERENCES cities(city_id),
+    FOREIGN KEY (warehouse_id) REFERENCES stores(store_id),
     CONSTRAINT positive_price CHECK (full_price >= 0)
 );
 

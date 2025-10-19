@@ -7,7 +7,6 @@ import pymysql
 from pymysql.cursors import DictCursor
 import hashlib
 import uuid
-import re
 
 import os
 import getpass
@@ -107,8 +106,10 @@ def create_tables():
         conn.close()
 
 def hash_password(password: str) -> str:
-    """Hash password using SHA256 (matching backend fallback)"""
-    return hashlib.sha256(password.encode()).hexdigest()
+    """Hash password using pbkdf2_sha256 (matching backend)"""
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+    return pwd_context.hash(password)
 
 def insert_sample_data():
     """Insert sample data for testing"""
@@ -171,36 +172,28 @@ def insert_sample_data():
         
         users = [
             # Management (no warehouse - sees all)
-            (str(uuid.uuid4()), 'admin', admin_password, 'Management', None),
-            (str(uuid.uuid4()), 'manager1', manager_password, 'Management', None),
+            (str(uuid.uuid4()), 'admin', admin_password, 'Management'),
+            (str(uuid.uuid4()), 'manager1', manager_password, 'Management'),
             
             # System Admin (no warehouse - sees all)
-            (str(uuid.uuid4()), 'sysadmin', admin_password, 'SystemAdmin', None),
+            (str(uuid.uuid4()), 'sysadmin', admin_password, 'SystemAdmin'),
             
             # Store Managers (assigned to specific warehouses)
-            (str(uuid.uuid4()), 'colombo_manager', manager_password, 'StoreManager', store_ids['Colombo Main Warehouse']),
-            (str(uuid.uuid4()), 'kandy_manager', manager_password, 'StoreManager', store_ids['Kandy Distribution Center']),
-            (str(uuid.uuid4()), 'galle_manager', manager_password, 'StoreManager', store_ids['Galle Warehouse']),
+            (str(uuid.uuid4()), 'colombo_manager', manager_password, 'StoreManager'),
+            (str(uuid.uuid4()), 'kandy_manager', manager_password, 'StoreManager'),
+            (str(uuid.uuid4()), 'galle_manager', manager_password, 'StoreManager'),
             
             # Warehouse Staff (assigned to specific warehouses)
-            (str(uuid.uuid4()), 'colombo_staff1', staff_password, 'WarehouseStaff', store_ids['Colombo Main Warehouse']),
-            (str(uuid.uuid4()), 'colombo_staff2', staff_password, 'WarehouseStaff', store_ids['Colombo Main Warehouse']),
-            (str(uuid.uuid4()), 'kandy_staff', staff_password, 'WarehouseStaff', store_ids['Kandy Distribution Center']),
+            (str(uuid.uuid4()), 'colombo_staff1', staff_password, 'WarehouseStaff'),
+            (str(uuid.uuid4()), 'colombo_staff2', staff_password, 'WarehouseStaff'),
+            (str(uuid.uuid4()), 'kandy_staff', staff_password, 'WarehouseStaff'),
             
-            # Driver Assistant (assigned to warehouse)
-            (str(uuid.uuid4()), 'colombo_assistant', staff_password, 'DriverAssistant', store_ids['Colombo Main Warehouse']),
+            # Driver Assistant
+            (str(uuid.uuid4()), 'colombo_assistant', staff_password, 'DriverAssistant'),
         ]
         
-        # First, let's add warehouse_id column to users table
-        try:
-            cursor.execute("ALTER TABLE users ADD COLUMN warehouse_id CHAR(36) NULL")
-            cursor.execute("ALTER TABLE users ADD CONSTRAINT fk_users_warehouse FOREIGN KEY (warehouse_id) REFERENCES stores(store_id)")
-            print("  ✓ Added warehouse_id column to users table")
-        except:
-            pass  # Column might already exist
-        
         cursor.executemany(
-            "INSERT INTO users (user_id, user_name, password_hash, role, warehouse_id) VALUES (%s, %s, %s, %s, %s)",
+            "INSERT INTO users (user_id, user_name, password_hash, role) VALUES (%s, %s, %s, %s)",
             users
         )
         
@@ -212,14 +205,6 @@ def insert_sample_data():
             (str(uuid.uuid4()), 'customer2', 'Priya Silva', '+94771234568', 'No 23, Main Street, Kandy', customer_password),
             (str(uuid.uuid4()), 'customer3', 'Amal Perera', '+94771234569', 'No 67, Beach Road, Galle', customer_password),
         ]
-        
-        # Add customer_user_name and password_hash to customers table if not exists
-        try:
-            cursor.execute("ALTER TABLE customers ADD COLUMN customer_user_name VARCHAR(50) UNIQUE NULL")
-            cursor.execute("ALTER TABLE customers ADD COLUMN password_hash VARCHAR(255) NULL")
-            print("  ✓ Added customer_user_name and password_hash columns to customers table")
-        except:
-            pass
         
         cursor.executemany(
             "INSERT INTO customers (customer_id, customer_user_name, customer_name, phone_number, address, password_hash) VALUES (%s, %s, %s, %s, %s, %s)",
@@ -242,45 +227,9 @@ def insert_sample_data():
         )
         product_ids = [id for id, _, _ in products]
         
-    # 7. Create Sample Orders (some unassigned for testing assignment)
+    # 7. Create Sample Orders
         print("  → Creating sample orders...")
         
-        # Add warehouse_id to orders table
-        try:
-            cursor.execute("ALTER TABLE orders ADD COLUMN warehouse_id CHAR(36) NULL")
-            cursor.execute("ALTER TABLE orders ADD CONSTRAINT fk_orders_warehouse FOREIGN KEY (warehouse_id) REFERENCES stores(store_id)")
-            print("  ✓ Added warehouse_id column to orders table")
-        except:
-            pass
-        
-        # Ensure enum contains expected statuses used by sample data
-        def ensure_enum_contains(cursor, table, column, value, default='PLACED'):
-            """Ensure the ENUM column contains the given value; if not, alter the column to add it."""
-            try:
-                cursor.execute(f"SHOW COLUMNS FROM {table} LIKE '{column}'")
-                col = cursor.fetchone()
-                if not col:
-                    return
-                coltype = col['Type']  # e.g. enum('A','B')
-                if f"'{value}'" in coltype:
-                    return
-                # extract existing enum values
-                items = re.findall(r"'([^']*)'", coltype)
-                if value in items:
-                    return
-                items.append(value)
-                new_enum = ",".join(f"'{v}'" for v in items)
-                cursor.execute(f"ALTER TABLE {table} MODIFY {column} ENUM({new_enum}) NOT NULL DEFAULT '{default}'")
-                print(f"  ✓ Added '{value}' to {table}.{column} enum")
-            except Exception:
-                pass
-
-        # Make sure 'IN_WAREHOUSE' is allowed by the orders.status enum
-        try:
-            ensure_enum_contains(cursor, 'orders', 'status', 'IN_WAREHOUSE')
-        except Exception:
-            pass
-
         # Unassigned orders (for Management to assign)
         unassigned_orders = [
             (str(uuid.uuid4()), customer_ids[0], 'No 45, Galle Road, Colombo 04', 'PLACED', city_ids['Colombo'], 15000.00, None),
@@ -291,8 +240,8 @@ def insert_sample_data():
         # Assigned orders (already assigned to warehouses)
         assigned_orders = [
             (str(uuid.uuid4()), customer_ids[0], 'No 45, Galle Road, Colombo 04', 'IN_WAREHOUSE', city_ids['Colombo'], 22000.00, store_ids['Colombo Main Warehouse']),
-            (str(uuid.uuid4()), customer_ids[1], 'No 23, Main Street, Kandy', 'IN_WAREHOUSE', city_ids['Kandy'], 30000.00, store_ids['Kandy Distribution Center']),
-            (str(uuid.uuid4()), customer_ids[2], 'No 67, Beach Road, Galle', 'COMPLETED', city_ids['Galle'], 12000.00, store_ids['Galle Warehouse']),
+            (str(uuid.uuid4()), customer_ids[1], 'No 23, Main Street, Kandy', 'DELIVERED', city_ids['Kandy'], 30000.00, store_ids['Kandy Distribution Center']),
+            (str(uuid.uuid4()), customer_ids[2], 'No 67, Beach Road, Galle', 'DELIVERED', city_ids['Galle'], 12000.00, store_ids['Galle Warehouse']),
         ]
         
         all_orders = unassigned_orders + assigned_orders

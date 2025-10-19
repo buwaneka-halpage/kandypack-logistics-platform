@@ -154,3 +154,35 @@ def delete_order(order_id: str, db: db_dependency, current_user: dict = Depends(
     db.delete(order)
     db.commit()
     return {"detail": f"Order {order_id} deleted successfully"}
+
+
+@router.patch("/{order_id}/assign-warehouse", response_model=schemas.order, status_code=status.HTTP_200_OK)
+def assign_order_to_warehouse(order_id: str, warehouse_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
+    """Assign an order to a warehouse (Management role required)"""
+    role = current_user.get("role")
+    if role != "Management":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only Management can assign orders to warehouses"
+        )
+    
+    # Verify order exists
+    order = db.query(model.Orders).filter(model.Orders.order_id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
+    
+    # Verify warehouse exists
+    warehouse = db.query(model.Stores).filter(model.Stores.store_id == warehouse_id).first()
+    if not warehouse:
+        raise HTTPException(status_code=404, detail=f"Warehouse {warehouse_id} not found")
+    
+    # Assign warehouse to order
+    order.warehouse_id = warehouse_id
+    
+    # If order was PLACED, update status to IN_WAREHOUSE
+    if order.status == model.OrderStatus.PLACED:
+        order.status = model.OrderStatus.IN_WAREHOUSE
+    
+    db.commit()
+    db.refresh(order)
+    return order

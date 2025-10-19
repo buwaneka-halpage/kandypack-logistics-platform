@@ -56,8 +56,10 @@ class Orders(Base):
     status = Column(Enum(OrderStatus), default=OrderStatus.PLACED, nullable=False)
     deliver_city_id = Column(String(36), ForeignKey("cities.city_id"), nullable=False)
     full_price = Column(Float, nullable=False)
+    warehouse_id = Column(String(36), ForeignKey("stores.store_id"), nullable=True)
     # the relationship 
     customer = relationship("Customers", back_populates="orders")
+    warehouse = relationship("Stores")
     items = relationship("OrderItems", back_populates="order")
     rail_allocations = relationship("RailAllocations", back_populates="order")
     truck_allocations = relationship("TruckAllocations", back_populates="order")
