@@ -6,7 +6,7 @@ import { UserRole, hasPermission, hasPermissionWithScope, type Permission } from
 // Types
 interface User {
   id: string;
-  email: string;
+  username: string; // Changed from 'email' to 'username'
   name: string;
   role: UserRole;
   warehouseId?: string;  // Assigned warehouse for scoped roles
@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (email: string, password: string, userRole?: 'staff' | 'customer') => Promise<{ success: boolean; error?: string }>;
+  login: (username: string, password: string, userRole?: 'staff' | 'customer') => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   hasUserPermission: (resource: string, action: string) => boolean;
   hasUserPermissionWithScope: (resource: string, action: string, resourceWarehouseId?: string) => boolean;
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (
-    email: string, 
+    username: string, 
     password: string, 
     userRole: 'staff' | 'customer' = 'customer'
   ): Promise<{ success: boolean; error?: string }> => {
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Call appropriate login endpoint
       if (userRole === 'staff') {
-        response = await AuthAPI.loginStaff(email, password);
+        response = await AuthAPI.loginStaff(username, password);
         
         // Map backend role string to UserRole enum
         const roleMap: Record<string, UserRole> = {
@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         const user: User = {
           id: response.user_id,
-          email: email,
+          username: response.user_name, // Store username instead of email
           name: response.user_name,
           role: mappedRole,
           warehouseId: response.warehouse_id, // From backend if user is warehouse-scoped
@@ -120,11 +120,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         return { success: true };
       } else {
-        response = await AuthAPI.loginCustomer(email, password);
+        response = await AuthAPI.loginCustomer(username, password);
         
         const user: User = {
           id: response.customer_id,
-          email: email,
+          username: response.customer_user_name, // Store username instead of email
           name: response.customer_user_name,
           role: UserRole.CUSTOMER,
         };

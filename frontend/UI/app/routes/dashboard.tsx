@@ -1,5 +1,5 @@
 import type { Route } from "./+types/dashboard";
-import Dashboard from "../components/dashboard/Dashboard";
+import RoleBasedDashboard from "../components/dashboard/RoleBasedDashboard";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Suspense } from "react";
 import { DashboardSkeleton } from "../components/dashboard/DashboardSkeleton";
@@ -17,7 +17,7 @@ export default function DashboardRoute() {
     <ProtectedRoute>
       <ErrorBoundary>
         <Suspense fallback={<DashboardSkeleton />}>
-          <Dashboard />
+          <RoleBasedDashboard />
         </Suspense>
       </ErrorBoundary>
     </ProtectedRoute>

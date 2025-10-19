@@ -71,10 +71,10 @@ export default function LoginRoute() {
     event.preventDefault();
     setError(""); // Clear previous errors
     const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
+    const username = formData.get("username") as string;
     const password = formData.get("password") as string;
 
-    const result = await login(email, password, 'staff');
+    const result = await login(username, password, 'staff');
     if (!result.success) {
       setError(result.error || "Invalid credentials");
     }
@@ -121,17 +121,17 @@ export default function LoginRoute() {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email Field */}
+            {/* Username Field */}
             <div>
               <label className="block text-white text-sm font-medium mb-2">
-                Email
+                Username
               </label>
               <input 
-                type="email" 
-                name="email" 
-                placeholder="username@gmail.com"
+                type="text" 
+                name="username" 
+                placeholder="admin_user"
                 className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all text-gray-800 placeholder-gray-500"
-                defaultValue="admin@kandypack.com" 
+                defaultValue="admin" 
                 required 
               />
             </div>

@@ -71,10 +71,10 @@ export default function CustomerLoginRoute() {
     event.preventDefault();
     setError(""); // Clear previous errors
     const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
+    const username = formData.get("username") as string;
     const password = formData.get("password") as string;
 
-    const result = await login(email, password, 'customer');
+    const result = await login(username, password, 'customer');
     if (!result.success) {
       setError(result.error || "Invalid credentials");
     }
@@ -119,18 +119,18 @@ export default function CustomerLoginRoute() {
 
           {/* Login Form */}
           <Form method="post" onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
+            {/* Username Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                Email Address
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                Username
               </label>
               <input
-                type="email"
-                id="email"
-                name="email"
+                type="text"
+                id="username"
+                name="username"
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#5D5FEF] focus:border-[#5D5FEF] transition-colors bg-white/50 backdrop-blur-sm"
-                placeholder="you@example.com"
+                placeholder="customer_username"
               />
             </div>
 
