@@ -50,6 +50,7 @@ The KandyPack Logistics Platform backend is a **RESTful API** built with **FastA
 - **pytz** - Timezone handling (Asia/Colombo timezone)
 - **uuid** - UUID generation for primary keys
 - **cryptography** - Cryptographic operations
+- **python-dotenv** - Environment variable management from .env files
 
 ---
 
@@ -112,8 +113,10 @@ Backend/
 ├── scripts/                        # Utility scripts
 │   └── apply_procs.py              # Apply stored procedures to DB
 │
-├── reqirements.txt                 # Python dependencies
+├── .env                            # Environment variables (NOT in git)
+├── .env.example                    # Environment template for team
 ├── .gitignore                      # Git ignore rules
+├── reqirements.txt                 # Python dependencies
 └── README.md                       # Project readme (empty)
 ```
 
@@ -122,7 +125,11 @@ Backend/
 ## 🗄 Database Architecture
 
 ### Database: `kandypack_db`
-**Connection String:** `mysql+pymysql://root:password@localhost:3306/kandypack_db`
+**Connection:** Configured via environment variables in `.env` file
+```python
+# Database URL is built from environment variables:
+# mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}
+```
 
 ### Entity Relationship Overview
 
@@ -309,11 +316,19 @@ The backend implements **JWT (JSON Web Token)** based authentication with **dual
 
 ### JWT Configuration
 
+The JWT settings are now loaded from environment variables via the `.env` file:
+
 ```python
-SECRET_KEY = "dev-secret-change-me"  # ⚠️ Use env var in production
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 100
+# Loaded from .env file using python-dotenv
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 ```
+
+**Environment Variables:**
+- `SECRET_KEY` - JWT signing key (use `openssl rand -hex 32` to generate)
+- `ALGORITHM` - JWT algorithm (typically "HS256")
+- `ACCESS_TOKEN_EXPIRE_MINUTES` - Token expiration time (default: 30 minutes)
 
 ### Token Structure
 
@@ -945,41 +960,76 @@ pip install -r reqirements.txt
 - python-multipart
 - cryptography
 - pytz
+- python-dotenv
 
-### Step 4: Configure Database
+### Step 4: Configure Environment Variables
+
+1. **Create `.env` file** in the Backend directory:
+```bash
+# Copy the example file
+cp .env.example .env
+```
+
+2. **Edit `.env` file** with your configuration:
+```bash
+# Database Configuration
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_mysql_password
+MYSQL_DATABASE=kandypack_db
+
+# JWT Authentication
+SECRET_KEY=your-secret-key-change-this-in-production-use-openssl-rand-hex-32
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Server Configuration
+HOST=0.0.0.0
+PORT=8000
+DEBUG=True
+
+# CORS Configuration
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000
+
+# Application Metadata
+APP_NAME=KandyPack Logistics API
+APP_VERSION=1.0.0
+```
+
+⚠️ **Important:** Never commit the `.env` file to version control! It contains sensitive credentials.
+
+### Step 5: Configure Database
 
 1. **Create MySQL Database:**
 ```sql
 CREATE DATABASE kandypack_db;
 ```
 
-2. **Update Connection String** in `app/core/database.py`:
-```python
-DB_URL = "mysql+pymysql://root:YOUR_PASSWORD@localhost:3306/kandypack_db"
-```
-
-3. **Run Schema Creation:**
+2. **Run Schema Creation:**
 ```bash
 mysql -u root -p kandypack_db < schemas/createtables.sql
 mysql -u root -p kandypack_db < schemas/create_indexes.sql
 mysql -u root -p kandypack_db < schemas/insert.sql
 ```
 
-4. **Apply Stored Procedures:**
+3. **Apply Stored Procedures:**
 ```bash
 python scripts/apply_procs.py
-```
-
-### Step 5: Set Environment Variables (Production)
-```bash
-export KANDYPACK_SECRET_KEY="your-secret-key-here"
-export KANDYPACK_ALGORITHM="HS256"
-export KANDYPACK_ACCESS_TOKEN_EXPIRE_MINUTES="100"
 ```
 
 ### Step 6: Run Development Server
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+The backend will automatically load configuration from the `.env` file. You should see:
+```
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [####] using StatReload
+INFO:     Started server process [####]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
 ```
 
 ### Step 7: Test API
@@ -1095,43 +1145,99 @@ print(report.json())
 
 ## 🔒 Security Best Practices
 
-### ⚠️ Current Security Issues (TO FIX IN PRODUCTION)
+### ✅ Environment Variable Management (IMPLEMENTED)
 
-1. **Hardcoded Secret Key**
-   - Current: `SECRET_KEY = "dev-secret-change-me"`
-   - Fix: Use environment variables
+The backend now uses **python-dotenv** to manage sensitive configuration:
 
-2. **Database Password in Code**
-   - Current: Password in `database.py`
-   - Fix: Use environment variables
+#### Current Implementation
 
-3. **Weak Default Credentials**
-   - Fix: Force password change on first login
+1. **`.env` File** (NOT in version control)
+```bash
+# Database credentials
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_secure_password
+MYSQL_DATABASE=kandypack_db
 
-### ✅ Recommended Production Setup
+# JWT configuration
+SECRET_KEY=your-secret-key-min-32-chars
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Server settings
+HOST=0.0.0.0
+PORT=8000
+DEBUG=True
+
+# CORS
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+```
+
+2. **`.env.example` File** (Template for team members)
+```bash
+# Database Configuration
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_password_here
+MYSQL_DATABASE=kandypack_db
+# ... (contains all variables with placeholder values)
+```
+
+3. **`.gitignore`** (Protects sensitive files)
+```
+.env
+__pycache__/
+*.pyc
+venv/
+```
+
+#### How It Works
+
+All core files (`database.py`, `main.py`, `auth.py`) load environment variables:
 
 ```python
-# app/core/config.py
+from dotenv import load_dotenv
 import os
-from pydantic import BaseSettings
 
-class Settings(BaseSettings):
-    SECRET_KEY: str = os.getenv("SECRET_KEY")
-    DATABASE_URL: str = os.getenv("DATABASE_URL")
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    
-    class Config:
-        env_file = ".env"
+# Load .env file
+load_dotenv()
 
-settings = Settings()
+# Access environment variables
+SECRET_KEY = os.getenv("SECRET_KEY")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
 ```
 
-**.env file:**
-```bash
-SECRET_KEY=super-secret-key-min-32-chars
-DATABASE_URL=mysql+pymysql://user:pass@localhost:3306/kandypack_db
-```
+### ⚠️ Remaining Security Improvements for Production
+
+1. **Strong Secret Key Generation**
+   ```bash
+   # Generate a secure secret key
+   openssl rand -hex 32
+   ```
+
+2. **HTTPS/TLS Encryption**
+   - Use reverse proxy (Nginx) with SSL certificates
+   - Force HTTPS in production
+
+3. **Rate Limiting**
+   - Add rate limiting middleware to prevent abuse
+   - Example: `slowapi` library
+
+4. **Input Sanitization**
+   - Already implemented via Pydantic validation
+   - Add SQL injection protection (SQLAlchemy handles this)
+
+5. **Logging & Monitoring**
+   - Implement structured logging
+   - Monitor failed login attempts
+   - Alert on suspicious activity
+
+6. **Database Security**
+   - Use separate database user (not root)
+   - Grant only necessary permissions
+   - Enable MySQL audit logging
 
 ---
 
@@ -1163,8 +1269,22 @@ DATABASE_URL=mysql+pymysql://user:pass@localhost:3306/kandypack_db
 ### Error: `ModuleNotFoundError: No module named 'app'`
 **Solution:** Run from Backend directory: `cd Backend && uvicorn app.main:app --reload`
 
+### Error: `ModuleNotFoundError: No module named 'dotenv'`
+**Solution:** Install python-dotenv: `pip install python-dotenv`
+
+### Error: Backend not connecting to database
+**Solution:** 
+1. Ensure `.env` file exists in Backend directory
+2. Verify all environment variables are set correctly
+3. Check that `python-dotenv` is installed
+4. Restart the backend server to load new environment variables
+
 ### Error: `sqlalchemy.exc.OperationalError: Access denied`
-**Solution:** Check MySQL credentials in `app/core/database.py`
+**Solution:** 
+1. Check MySQL credentials in `.env` file
+2. Verify MySQL service is running
+3. Test connection: `mysql -u root -p` and enter your password
+4. Make sure `MYSQL_PASSWORD` in `.env` matches your MySQL root password
 
 ### Error: `401 Unauthorized`
 **Solution:** Include valid JWT token in Authorization header
@@ -1207,6 +1327,31 @@ See LICENSE file in repository root.
 
 ---
 
-**Last Updated:** October 18, 2025  
+## 📝 Changelog
+
+### Version 1.1 (October 19, 2025)
+- ✅ Added `.env` file support for environment variable management
+- ✅ Implemented `python-dotenv` for secure configuration
+- ✅ Created `.env.example` template file
+- ✅ Updated `database.py`, `main.py`, and `auth.py` to load from `.env`
+- ✅ Added `.gitignore` to prevent committing sensitive files
+- ✅ Changed JWT configuration variable names for consistency:
+  - `KANDYPACK_SECRET_KEY` → `SECRET_KEY`
+  - `KANDYPACK_ALGORITHM` → `ALGORITHM`
+  - `KANDYPACK_ACCESS_TOKEN_EXPIRE_MINUTES` → `ACCESS_TOKEN_EXPIRE_MINUTES`
+- ✅ Improved CORS configuration with dynamic origins from environment
+- ✅ Enhanced security by removing hardcoded credentials
+
+### Version 1.0 (October 18, 2025)
+- Initial backend implementation
+- 18 database tables with relationships
+- 8 stored procedures for reporting
+- JWT authentication system
+- Complete CRUD operations for all entities
+- Role-based access control
+
+---
+
+**Last Updated:** October 19, 2025  
 **API Version:** 1.0  
-**Documentation Version:** 1.0
+**Documentation Version:** 1.1
