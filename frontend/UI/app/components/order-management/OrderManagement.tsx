@@ -1,6 +1,7 @@
 import * as React from "react";
-import { useState } from "react";
-import { MoreHorizontal, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MoreHorizontal, ChevronDown, Loader2 } from "lucide-react";
+import { OrdersAPI, CustomersAPI } from "~/services/api";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -37,130 +38,110 @@ import {
 // Import dashboard layout
 import DashboardLayout from "../dashboard/DashboardLayout";
 
-// Sample order data
-const orderData = [
-  {
-    id: "100001",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Dispatched" as const,
-  },
-  {
-    id: "100002",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Delivered" as const,
-  },
-  {
-    id: "100003",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Pending" as const,
-  },
-  {
-    id: "100004",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Dispatched" as const,
-  },
-  {
-    id: "100005",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Dispatched" as const,
-  },
-  {
-    id: "100006",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Dispatched" as const,
-  },
-  {
-    id: "100007",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Dispatched" as const,
-  },
-  {
-    id: "100008",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Dispatched" as const,
-  },
-  {
-    id: "100009",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Dispatched" as const,
-  },
-  {
-    id: "100010",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Dispatched" as const,
-  },
-  {
-    id: "100011",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Dispatched" as const,
-  },
-  {
-    id: "100012",
-    customer: "A J Perera",
-    orderDate: "21/05/2025",
-    deliveryAddress: "53/4 ABC street, Kandy",
-    status: "Dispatched" as const,
-  },
-];
+// Types
+interface Order {
+  order_id: string;
+  customer_id: string;
+  order_date: string;
+  deliver_address: string;
+  status: string;
+  deliver_city_id: string;
+  full_price: number;
+}
 
-type OrderStatus = "Dispatched" | "Delivered" | "Pending";
+interface Customer {
+  customer_id: string;
+  customer_name: string;
+}
 
-const getStatusVariant = (status: OrderStatus) => {
-  switch (status) {
-    case "Delivered":
+type OrderStatus = "DISPATCHED" | "DELIVERED" | "PENDING" | "PLACED" | "SCHEDULED_RAIL" | "IN_WAREHOUSE" | "SCHEDULED_ROAD" | "FAILED";
+
+const getStatusVariant = (status: string) => {
+  const upperStatus = status.toUpperCase();
+  switch (upperStatus) {
+    case "DELIVERED":
       return "default"; // Green
-    case "Pending":
+    case "PENDING":
+    case "PLACED":
       return "secondary"; // Yellow/Orange
-    case "Dispatched":
+    case "DISPATCHED":
+    case "SCHEDULED_RAIL":
+    case "SCHEDULED_ROAD":
+    case "IN_WAREHOUSE":
+      return "outline"; // Blue
+    case "FAILED":
+      return "destructive"; // Red
     default:
       return "outline"; // Gray
   }
 };
 
-const getStatusColor = (status: OrderStatus) => {
-  switch (status) {
-    case "Delivered":
+const getStatusColor = (status: string) => {
+  const upperStatus = status.toUpperCase();
+  switch (upperStatus) {
+    case "DELIVERED":
       return "bg-green-100 text-green-800 border-green-200";
-    case "Pending":
+    case "PENDING":
+    case "PLACED":
       return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    case "Dispatched":
-    default:
+    case "DISPATCHED":
+    case "SCHEDULED_RAIL":
+    case "SCHEDULED_ROAD":
+    case "IN_WAREHOUSE":
       return "bg-blue-100 text-blue-800 border-blue-200";
+    case "FAILED":
+      return "bg-red-100 text-red-800 border-red-200";
+    default:
+      return "bg-gray-100 text-gray-800 border-gray-200";
   }
 };
 
 export function OrderManagement() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [customers, setCustomers] = useState<Map<string, string>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("last-30-days");
   const [cityFilter, setCityFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // Fetch orders and customers
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch orders and customers in parallel
+        const [ordersData, customersData] = await Promise.all([
+          OrdersAPI.getAll(),
+          CustomersAPI.getAll()
+        ]);
+        
+        setOrders(ordersData);
+        
+        // Create a map of customer_id to customer_name
+        const customerMap = new Map<string, string>();
+        customersData.forEach((customer: Customer) => {
+          customerMap.set(customer.customer_id, customer.customer_name);
+        });
+        setCustomers(customerMap);
+      } catch (err: any) {
+        console.error('Error fetching orders:', err);
+        setError(err.message || 'Failed to load orders');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
   // Filter orders based on selected filters
-  const filteredOrders = orderData.filter((order) => {
-    if (statusFilter !== "all" && order.status !== statusFilter) {
+  const filteredOrders = orders.filter((order) => {
+    if (statusFilter !== "all" && order.status.toUpperCase() !== statusFilter.toUpperCase()) {
       return false;
     }
     return true;
@@ -171,6 +152,20 @@ export function OrderManagement() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
 
+  // Format date function
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="w-full space-y-4">
@@ -179,19 +174,30 @@ export function OrderManagement() {
         <h1 className="text-2xl font-bold text-gray-900">Manage Orders</h1>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+          <p className="font-medium">Error loading orders</p>
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="flex items-center gap-4 py-4">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-700">Status:</span>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32">
+          <Select value={statusFilter} onValueChange={setStatusFilter} disabled={loading}>
+            <SelectTrigger className="w-40">
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Dispatched">Dispatched</SelectItem>
-              <SelectItem value="Delivered">Delivered</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
+              <SelectItem value="PLACED">Placed</SelectItem>
+              <SelectItem value="SCHEDULED_RAIL">Scheduled Rail</SelectItem>
+              <SelectItem value="IN_WAREHOUSE">In Warehouse</SelectItem>
+              <SelectItem value="SCHEDULED_ROAD">Scheduled Road</SelectItem>
+              <SelectItem value="DELIVERED">Delivered</SelectItem>
+              <SelectItem value="FAILED">Failed</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -232,49 +238,66 @@ export function OrderManagement() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Order ID</TableHead>
+              <TableHead className="w-[120px]">Order ID</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Order Date</TableHead>
               <TableHead>Delivery Address</TableHead>
+              <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedOrders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.id}</TableCell>
-                <TableCell>{order.customer}</TableCell>
-                <TableCell>{order.orderDate}</TableCell>
-                <TableCell>{order.deliveryAddress}</TableCell>
-                <TableCell>
-                  <Badge 
-                    variant="outline" 
-                    className={getStatusColor(order.status)}
-                  >
-                    {order.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>View details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit order</DropdownMenuItem>
-                      <DropdownMenuItem>Track delivery</DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
-                        Cancel order
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" />
+                  <p className="text-sm text-gray-500 mt-2">Loading orders...</p>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : paginatedOrders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  No orders found
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedOrders.map((order) => (
+                <TableRow key={order.order_id}>
+                  <TableCell className="font-medium">{order.order_id}</TableCell>
+                  <TableCell>{customers.get(order.customer_id) || order.customer_id}</TableCell>
+                  <TableCell>{formatDate(order.order_date)}</TableCell>
+                  <TableCell className="max-w-xs truncate">{order.deliver_address}</TableCell>
+                  <TableCell>Rs {order.full_price.toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant="outline" 
+                      className={getStatusColor(order.status)}
+                    >
+                      {order.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>View details</DropdownMenuItem>
+                        <DropdownMenuItem>Edit order</DropdownMenuItem>
+                        <DropdownMenuItem>Track delivery</DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600">
+                          Cancel order
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
