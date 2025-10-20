@@ -45,6 +45,10 @@ def get_all_orders_history(db: db_dependency, current_user: dict = Depends(get_c
 
 @router.get("/", response_model=List[schemas.order], status_code=status.HTTP_200_OK)
 def get_all_Orders(db: db_dependency, current_user: dict = Depends(get_current_user)):
+    """
+    Get all orders with role-based filtering and eager loading of relationships.
+    Returns a list of orders with their associated data.
+    """
     role = current_user.get("role")
     user_id = current_user.get("user_id")
     
@@ -54,31 +58,54 @@ def get_all_Orders(db: db_dependency, current_user: dict = Depends(get_current_u
             detail="StoreManager, Management or SystemAdmin role required"
         )
     
-    # Base query for orders
-    query = db.query(model.Orders)
-    
-    # Filter orders based on user role
-    if role == "StoreManager":
-        # Get the store manager's store_id
-        store_manager = db.query(model.StoreManagers).filter(model.StoreManagers.manager_id == user_id).first()
-        if not store_manager:
-            raise HTTPException(status_code=404, detail="Store manager not found")
+    try:
+        # Base query for orders with eager loading of relationships
+        query = (
+            db.query(model.Orders)
+            .join(model.Customers, model.Orders.customer_id == model.Customers.customer_id)
+            .join(model.Cities, model.Orders.deliver_city_id == model.Cities.city_id)
+            .outerjoin(model.Stores, model.Orders.warehouse_id == model.Stores.store_id)
+        )
         
-        # Only show orders assigned to the manager's store/warehouse
-        query = query.filter(model.Orders.warehouse_id == store_manager.store_id)
-    
-    # For Management and SystemAdmin, return all orders (no filter needed)
-    
-    orders_ = query.all()
-    if not orders_:
-        raise HTTPException(status_code=404, detail="No orders found")
-    
-    # Convert enum status to string value
-    for order in orders_:
-        if isinstance(order.status, model.OrderStatus):
-            order.status = order.status.value
-    
-    return orders_
+        # Filter orders based on user role
+        if role == "StoreManager":
+            # Get the store managed by this user (using contact_person field in Stores)
+            store = db.query(model.Stores).filter(model.Stores.contact_person == user_id).first()
+            if not store:
+                raise HTTPException(status_code=404, detail="Store not found for this store manager")
+            
+            # Only show orders assigned to the manager's store/warehouse 
+            query = query.filter(model.Orders.warehouse_id == store.store_id)
+        
+        # Execute query and handle results
+        orders = query.all()
+        
+        # Prepare response data
+        result = []
+        for order in orders:
+            # Convert enum status to string value
+            status_str = order.status.value if isinstance(order.status, model.OrderStatus) else str(order.status)
+            
+            order_data = {
+                "order_id": order.order_id,
+                "customer_id": order.customer_id,
+                "order_date": order.order_date,
+                "deliver_address": order.deliver_address,
+                "status": status_str,
+                "deliver_city_id": order.deliver_city_id,
+                "full_price": order.full_price,
+                "warehouse_id": order.warehouse_id
+            }
+            result.append(order_data)
+        
+        return result
+        
+    except Exception as e:
+        # Log the error here if you have logging configured
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while fetching orders: {str(e)}"
+        )
     
 @router.get("/last-mile-delivery", status_code=status.HTTP_200_OK)
 def get_last_mile_delivery(db: db_dependency, current_user: dict = Depends(get_current_user)):
@@ -244,29 +271,3 @@ def delete_order(order_id: str, db: db_dependency, current_user: dict = Depends(
     return {"detail": f"Order {order_id} deleted successfully"}
 
 
-@router.get("/assigned-to-store", status_code=status.HTTP_200_OK)
-def get_orders_assigned_to_store(db: db_dependency, current_user: dict = Depends(get_current_user)):
-    """Get all orders assigned to the StoreManager's warehouse"""
-    role = current_user.get("role")
-    user_id = current_user.get("user_id")
-    
-    if role != "StoreManager":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="StoreManager role required"
-        )
-    
-    # Get the store manager's store_id
-    store_manager = db.query(model.StoreManagers).filter(model.StoreManagers.manager_id == user_id).first()
-    if not store_manager:
-        raise HTTPException(status_code=404, detail="Store manager not found")
-    
-    # Get orders assigned to the manager's store/warehouse
-    orders = db.query(model.Orders).filter(model.Orders.warehouse_id == store_manager.store_id).all()
-    
-    # Convert enum status to string value
-    for order in orders:
-        if isinstance(order.status, model.OrderStatus):
-            order.status = order.status.value
-    
-    return orders
