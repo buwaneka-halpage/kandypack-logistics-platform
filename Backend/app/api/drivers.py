@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated, List
 from app.core.database import get_db
 from app.core import model, schemas
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, check_role_permission
 
 router = APIRouter(prefix="/drivers")
 db_dependency = Annotated[Session, Depends(get_db)]
@@ -17,10 +17,10 @@ async def get_all_drivers(
 ):
     """Get all drivers (Management role required)"""
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if not check_role_permission(role, ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Drivers"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     drivers = db.query(model.Drivers).all()
     if drivers is None:
@@ -39,10 +39,10 @@ async def get_driver(
     """Get details of a specific driver"""
     # Allow access if user is Management or is the driver themselves
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if not check_role_permission(role, ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Drivers"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     driver = db.query(model.Drivers).filter(model.Drivers.driver_id == driver_id).first()
     if not driver:
@@ -61,10 +61,10 @@ async def create_driver(
 ):
     """Create a new driver (Management role required)"""
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     
     # Check if user exists and has Driver role
@@ -112,10 +112,10 @@ async def update_driver(
 ):
     """Update driver details (Management role required)"""
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if not check_role_permission(role, ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     
     # Check if driver exists
@@ -168,10 +168,10 @@ async def delete_driver(
 ):
     """Delete a driver (Management role required)"""
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Drivers"
+            detail="Management or SystemAdmin role required"
         )
     
     # Check if driver exists

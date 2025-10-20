@@ -4,7 +4,7 @@ import app.core.model as model
 from typing import Annotated, List
 from sqlalchemy.orm import Session
 from app.core import model, schemas
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, check_role_permission
 
 
 router = APIRouter(prefix="/trains")
@@ -17,10 +17,10 @@ db_dependency = Annotated[Session, Depends(get_db)]
 def get_all_trains(db: db_dependency,  current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
    
-    if role not in [ "WarehouseStaff", "Management"]:
+    if not check_role_permission(role, ["WarehouseStaff", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not authorized to view Trains"
+            detail="WarehouseStaff, Management or SystemAdmin role required"
         )
     trains = db.query(model.Trains).all()
     return trains
@@ -29,10 +29,10 @@ def get_all_trains(db: db_dependency,  current_user: dict = Depends(get_current_
 def get_train_by_train_id(db: db_dependency, train_id: str,current_user: dict = Depends(get_current_user) ):
     role = current_user.get("role")
    
-    if role not in  ["WarehouseStaff", "Management"]:
+    if not check_role_permission(role, ["WarehouseStaff", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not authorized to view Trains"
+            detail="WarehouseStaff, Management or SystemAdmin role required"
         )
     train = db.query(model.Trains).filter(model.Trains.train_id == train_id).first()
     if train is None:

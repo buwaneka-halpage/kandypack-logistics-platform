@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, date , time
 from app.core.database import get_db
 from app.core import model, schemas
 import pytz
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, check_role_permission
 
 router = APIRouter(prefix="/trainSchedules")
 db_dependency = Annotated[Session, Depends(get_db)]
@@ -21,10 +21,10 @@ db_dependency = Annotated[Session, Depends(get_db)]
 @router.get("/", response_model=List[schemas.Train_Schedules], status_code=status.HTTP_200_OK)
 def get_all_train_Schedules(db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["StoreManager", "Management", "Admin"]:
+    if not check_role_permission(role, ["StoreManager", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Schedules"
+            detail="StoreManager, Management or SystemAdmin role required"
         )
     schedules  = db.query(model.TrainSchedules).all()
     schedules_list = []
@@ -45,10 +45,10 @@ def get_all_train_Schedules(db: db_dependency, current_user: dict = Depends(get_
 @router.get("/{scheduled_id}", response_model=schemas.Train_Schedules, status_code=status.HTTP_200_OK)
 def get_train_schedule_by_scheduled_id(scheduled_id : str, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["StoreManager", "Management", "Admin", "Assistant"]:
+    if not check_role_permission(role, ["StoreManager", "Management", "Assistant"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Schedules"
+            detail="StoreManager, Management, Assistant or SystemAdmin role required"
         )
     
     schedules = db.query(model.TrainSchedules).filter(model.TrainSchedules.schedule_id == scheduled_id).first()
@@ -61,10 +61,10 @@ def get_train_schedule_by_scheduled_id(scheduled_id : str, db: db_dependency, cu
 @router.post("/", response_model=schemas.Train_Schedules, status_code=status.HTTP_200_OK)
 def create_new_train_schedule( new_train_schedule: schemas.create_new_trainSchedule, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["StoreManager", "Management"]:
+    if not check_role_permission(role, ["StoreManager", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Schedules"
+            detail="StoreManager, Management or SystemAdmin role required"
         )
     #validate date 
     sl_tz = pytz.timezone("Asia/Colombo")
@@ -96,10 +96,10 @@ def create_new_train_schedule( new_train_schedule: schemas.create_new_trainSched
 @router.put("/{schedule_id}", response_model=schemas.Train_Schedules, status_code=status.HTTP_200_OK)
 def update_train_schedule(schedule_id: str, update_data: schemas.update_trainSchedules, db: db_dependency, current_user: dict = Depends(get_current_user) ):
     role = current_user.get("role")
-    if role != "Management":
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only Management can update train schedules."
+            detail="Management or SystemAdmin role required"
         )
     train_schedule = db.query(model.TrainSchedules).filter(model.TrainSchedules.schedule_id == schedule_id).first()
     if not train_schedule:

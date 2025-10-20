@@ -119,10 +119,20 @@ async def get_current_customer(db: Session = Depends(get_db), token: str = Depen
     return {"user_id": user.customer_id, "username": user.customer_user_name, "role": "Customer"}
 
 def require_management(current_user: Dict = Depends(get_current_user)) -> Dict:
-    """Dependency that ensures the current user has role 'Management'"""
+    """Dependency that ensures the current user has role 'Management' or 'SystemAdmin'"""
     if not current_user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     role = (current_user.get("role") or "").strip()
-    if role != "Management":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Management role required")
+    if role not in ["Management", "SystemAdmin"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Management or SystemAdmin role required")
     return current_user
+
+def is_admin_or_management(role: str) -> bool:
+    """Check if role is SystemAdmin or Management (has full privileges)"""
+    return role in ["SystemAdmin", "Management"]
+
+def check_role_permission(current_role: str, allowed_roles: list) -> bool:
+    """Check if current role has permission. SystemAdmin always has access."""
+    if current_role == "SystemAdmin":
+        return True
+    return current_role in allowed_roles

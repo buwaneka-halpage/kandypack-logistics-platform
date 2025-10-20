@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 from datetime import datetime, timedelta
 from app.core.database import get_db
 from app.core import model, schemas
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, check_role_permission
 
 
 router = APIRouter(prefix="/routs")
@@ -15,10 +15,10 @@ db_dependency = Annotated[Session, Depends(get_db)]
 @router.get("/", response_model=List[schemas.route], status_code=status.HTTP_200_OK)
 def get_all_routes(db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if not check_role_permission(role, ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     routes = db.query(model.Routes).all()
     if routes is None:
@@ -31,10 +31,10 @@ def get_all_routes(db: db_dependency, current_user: dict = Depends(get_current_u
 @router.get("/{route_id}", response_model=schemas.route, status_code=status.HTTP_200_OK)
 def get_route_by_id(route_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if not check_role_permission(role, ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     route = db.query(model.Routes).filter(model.Routes.route_id == route_id).first()
     if not route:
@@ -44,10 +44,10 @@ def get_route_by_id(route_id: str, db: db_dependency, current_user: dict = Depen
 @router.post("/", response_model=schemas.route, status_code=status.HTTP_201_CREATED)
 def create_route(route: schemas.route_create, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if not check_role_permission(role, ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     
     # validate start/end stations exist
@@ -70,10 +70,10 @@ def create_route(route: schemas.route_create, db: db_dependency, current_user: d
 @router.put("/{route_id}", response_model=schemas.route, status_code=status.HTTP_200_OK)
 def update_route(route_id: str, route_update: schemas.route_update, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if not check_role_permission(role, ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     
     route = db.query(model.Routes).filter(model.Routes.route_id == route_id).first()
@@ -92,10 +92,10 @@ def update_route(route_id: str, route_update: schemas.route_update, db: db_depen
 @router.delete("/{route_id}", status_code=status.HTTP_200_OK)
 def delete_route(route_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if not check_role_permission(role, ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     
 

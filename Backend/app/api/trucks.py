@@ -4,7 +4,7 @@ import app.core.model as model
 from typing import Annotated, List
 from sqlalchemy.orm import Session
 from app.core import model, schemas
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, check_role_permission
 
 
 router = APIRouter(prefix="/turks")
@@ -16,10 +16,10 @@ db_dependency = Annotated[Session, Depends(get_db)]
 def get_all_turks(db: db_dependency,  current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
    
-    if role not in [ "Assistant", "Management"]:
+    if not check_role_permission(role, ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not authorized to view Trucks"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     trucks = db.query(model.Trucks).all()
     if not trucks:
@@ -33,10 +33,10 @@ def get_all_turks(db: db_dependency,  current_user: dict = Depends(get_current_u
 def get_available_trucks(db: db_dependency, current_user: dict = Depends(get_current_user) ):
     role = current_user.get("role")
    
-    if role not in  ["Assistant", "Management"]:
+    if not check_role_permission(role, ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not authorized to view Trucks"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     trucks = db.query(model.Trucks).filter(model.Trucks.is_active == True).all()
     if not trucks:
@@ -53,10 +53,10 @@ def update_truck(
     current_user: dict = Depends(get_current_user),
     ):
     # Authorization
-    if current_user.get("role") not in ["Assistant", "Management"]:
+    if not check_role_permission(current_user.get("role"), ["Assistant", "Management"]):
         raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
-        detail="Only Management and Assistant can update trucks"
+        detail="Assistant, Management or SystemAdmin role required"
         )
 
     # Fetch existing truck
@@ -95,10 +95,10 @@ def update_truck(
 @router.delete("/{truck_id}", status_code=status.HTTP_200_OK)
 def delete_truck(truck_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
     # Check role
-    if current_user.get("role") not in  [ "Assistant", "Management"]:
+    if not check_role_permission(current_user.get("role"), ["Assistant", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only Management and assistant can update truck schedules"
+            detail="Assistant, Management or SystemAdmin role required"
         )
     
     # Fetch the schedule

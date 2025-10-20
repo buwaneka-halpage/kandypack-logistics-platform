@@ -4,7 +4,7 @@ import app.core.model as model
 from typing import Annotated, List
 from sqlalchemy.orm import Session
 from app.core import model, schemas
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, check_role_permission
 
 router = APIRouter(prefix="/stores")
 model.Base.metadata.create_all(bind=engine)
@@ -13,10 +13,10 @@ db_dependency = Annotated[Session, Depends(get_db)]
 @router.get("/", status_code=status.HTTP_200_OK,response_model=List[schemas.store])
 def get_all_stores(db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["WarehouseStaff", "Management"]:
+    if not check_role_permission(role, ["WarehouseStaff", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Stores"
+            detail="WarehouseStaff, Management or SystemAdmin role required"
         )
     stores = db.query(model.Stores).all()
     if stores is None :
@@ -29,10 +29,10 @@ def get_all_stores(db: db_dependency, current_user: dict = Depends(get_current_u
 @router.get("/stores{store_id}", status_code=status.HTTP_200_OK)
 def get_store_by_id(db: db_dependency, store_id: str,  current_user: dict = Depends(get_current_user) ):
     role = current_user.get("role")
-    if role not in ["WarehouseStaff", "Management"]:
+    if not check_role_permission(role, ["WarehouseStaff", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Stores"
+            detail="WarehouseStaff, Management or SystemAdmin role required"
         )
     
     store = db.query(model.Stores).filter(model.Stores.store_id == store_id).first()
@@ -47,10 +47,10 @@ def get_store_by_id(db: db_dependency, store_id: str,  current_user: dict = Depe
 @router.post("/", status_code=status.HTTP_200_OK, response_model=schemas.store)
 def create_store(store: schemas.StoreCreate, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["WarehouseStaff", "Management"]:
+    if not check_role_permission(role, ["WarehouseStaff", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Stores"
+            detail="WarehouseStaff, Management or SystemAdmin role required"
         )
     station = db.query(model.RailwayStations).filter(model.RailwayStations.station_id == store.station_id).first()
     if not station:
@@ -74,10 +74,10 @@ def create_store(store: schemas.StoreCreate, db: db_dependency, current_user: di
 @router.put("/{store_id}", status_code=status.HTTP_200_OK)
 def update_store(store_id: str , store_update: schemas.StoreUpdate, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["WarehouseStaff", "Management"]:
+    if not check_role_permission(role, ["WarehouseStaff", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Stores"
+            detail="WarehouseStaff, Management or SystemAdmin role required"
         )
     store = db.query(model.Stores).filter(model.Stores.store_id == store_id).first()
     if not store:
@@ -105,10 +105,10 @@ def update_store(store_id: str , store_update: schemas.StoreUpdate, db: db_depen
 def delete_store(store_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
 
     role = current_user.get("role")
-    if role not in ["WarehouseStaff", "Management"]:
+    if not check_role_permission(role, ["WarehouseStaff", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Stores"
+            detail="WarehouseStaff, Management or SystemAdmin role required"
         )
     store = db.query(model.Stores).filter(model.Stores.store_id == store_id).first()
     if not store:

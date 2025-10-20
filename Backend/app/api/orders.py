@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from app.core.database import get_db
 from app.core import model, schemas
 import pytz
-from app.core.auth import get_current_user, get_current_customer
+from app.core.auth import get_current_user, get_current_customer, check_role_permission
 
 router = APIRouter(prefix="/orders")
 db_dependency = Annotated[Session, Depends(get_db)]
@@ -17,10 +17,10 @@ db_dependency = Annotated[Session, Depends(get_db)]
 @router.get("/history", status_code=status.HTTP_200_OK)
 def get_all_orders_history(db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["StoreManager", "Management"]:
+    if not check_role_permission(role, ["StoreManager", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access orders"
+            detail="StoreManager, Management or SystemAdmin role required"
         )
 
     # join Orders with Customers to get customer name alongside order fields
@@ -46,10 +46,10 @@ def get_all_orders_history(db: db_dependency, current_user: dict = Depends(get_c
 @router.get("/", response_model=List[schemas.order], status_code=status.HTTP_200_OK)
 def get_all_Orders(db: db_dependency,  current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["StoreManager", "Management"]:
+    if not check_role_permission(role, ["StoreManager", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot Orders Routes"
+            detail="StoreManager, Management or SystemAdmin role required"
         )
     
     orders_= db.query(model.Orders).all()
@@ -62,10 +62,10 @@ def get_all_Orders(db: db_dependency,  current_user: dict = Depends(get_current_
 def get_order(order_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
    
     role = current_user.get("role")
-    if role not in ["StoreManager", "Management"]:
+    if not check_role_permission(role, ["StoreManager", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot Orders Routes"
+            detail="StoreManager, Management or SystemAdmin role required"
         )
     order = db.query(model.Orders).filter(model.Orders.order_id == order_id).first()
     if not order:
@@ -112,8 +112,8 @@ def create_order(order: schemas.create_new_order, db: db_dependency, current_use
 @router.put("/{order_id}", response_model=schemas.order, status_code=status.HTTP_200_OK)
 def update_order(order_id: str, order_update: schemas.update_order, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
-        raise HTTPException(status_code=403, detail="You do not have permission to update this order")
+    if not check_role_permission(role, ["Management"]):
+        raise HTTPException(status_code=403, detail="Management or SystemAdmin role required")
 
     order = db.query(model.Orders).filter(model.Orders.order_id == order_id).first()
     if not order:
@@ -144,8 +144,9 @@ def update_order(order_id: str, order_update: schemas.update_order, db: db_depen
 
 @router.delete("/{order_id}", status_code=status.HTTP_200_OK)
 def delete_order(order_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
-    if current_user.get("role") != "Management":
-        raise HTTPException(status_code=403, detail="Only Management can delete orders")
+    role = current_user.get("role")
+    if not check_role_permission(role, ["Management"]):
+        raise HTTPException(status_code=403, detail="Management or SystemAdmin role required")
 
     order = db.query(model.Orders).filter(model.Orders.order_id == order_id).first()
     if not order:
@@ -158,12 +159,12 @@ def delete_order(order_id: str, db: db_dependency, current_user: dict = Depends(
 
 @router.patch("/{order_id}/assign-warehouse", response_model=schemas.order, status_code=status.HTTP_200_OK)
 def assign_order_to_warehouse(order_id: str, warehouse_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
-    """Assign an order to a warehouse (Management role required)"""
+    """Assign an order to a warehouse (Management or SystemAdmin role required)"""
     role = current_user.get("role")
-    if role != "Management":
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only Management can assign orders to warehouses"
+            detail="Management or SystemAdmin role required"
         )
     
     # Verify order exists

@@ -1,13 +1,12 @@
 # app/api/reports.py
 from fastapi import APIRouter, Query, Depends, Security,  HTTPException, status
 from typing import List
-from app.core.auth import get_current_user, require_management
+from app.core.auth import get_current_user, require_management, check_role_permission
 from app.utils.reports_procs import (
     quarterly_sales, top_items_by_quarter, sales_by_city,
     sales_by_route, driver_work_hours, assistant_work_hours,
     truck_usage_month, customer_order_history
 )
-from app.core.auth import get_current_user
 
 router = APIRouter(prefix="/reports")
 
@@ -15,10 +14,10 @@ router = APIRouter(prefix="/reports")
 def get_quarterly_sales(year: int = Query(...), quarter: int = Query(..., ge=1, le=4),
                         current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     
     return quarterly_sales(year, quarter)
@@ -27,10 +26,10 @@ def get_quarterly_sales(year: int = Query(...), quarter: int = Query(..., ge=1, 
 def get_top_items(year: int = Query(...), quarter: int = Query(..., ge=1, le=4),
                   limit: int = Query(20), current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     return top_items_by_quarter(year, quarter, limit)
 
@@ -38,10 +37,10 @@ def get_top_items(year: int = Query(...), quarter: int = Query(..., ge=1, le=4),
 def get_sales_by_city(start_date: str = Query(...), end_date: str = Query(...),
                       current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     return sales_by_city(start_date, end_date)
 
@@ -49,10 +48,10 @@ def get_sales_by_city(start_date: str = Query(...), end_date: str = Query(...),
 def get_sales_by_route(start_date: str = Query(...), end_date: str = Query(...),
                        current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     return sales_by_route(start_date, end_date)
 
@@ -60,10 +59,10 @@ def get_sales_by_route(start_date: str = Query(...), end_date: str = Query(...),
 def get_driver_hours(start_date: str = Query(...), end_date: str = Query(...),
                      current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     
     return driver_work_hours(start_date, end_date)
@@ -72,10 +71,10 @@ def get_driver_hours(start_date: str = Query(...), end_date: str = Query(...),
 def get_assistant_hours(start_date: str = Query(...), end_date: str = Query(...),
                         current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     return assistant_work_hours(start_date, end_date)
 
@@ -83,10 +82,10 @@ def get_assistant_hours(start_date: str = Query(...), end_date: str = Query(...)
 def get_truck_usage(year: int = Query(...), month: int = Query(..., ge=1, le=12),
                     current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     return truck_usage_month(year, month)
 
@@ -94,9 +93,9 @@ def get_truck_usage(year: int = Query(...), month: int = Query(..., ge=1, le=12)
 def get_customer_orders(customer_id: str, start_date: str = Query(...), end_date: str = Query(...),
                         current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     return customer_order_history(customer_id, start_date, end_date)

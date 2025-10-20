@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated, List
 from app.core.database import get_db
 from app.core import model, schemas
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, check_role_permission
 
 router = APIRouter(prefix="/assistants")
 db_dependency = Annotated[Session, Depends(get_db)]
@@ -16,10 +16,10 @@ async def get_all_assistants(
 ):
     """Get all assistants (Management role required)"""
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     
     assistants = db.query(model.Assistants).all()
@@ -39,10 +39,10 @@ async def get_assistant(
     """Get details of a specific assistant"""
     # Allow access if user is Management or is the assistant themselves
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     
     
@@ -63,10 +63,10 @@ async def create_assistant(
 ):
     """Create a new assistant (Management role required)"""
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     # Check if user exists and has Assistant role
     user = db.query(model.Users).filter(model.Users.user_id == assistant.user_id).first()
@@ -116,10 +116,10 @@ async def update_assistant(
     """Update assistant details (Management role required)"""
     
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     # Check if assistant exists
     assistant = db.query(model.Assistants).filter(
@@ -169,10 +169,10 @@ async def delete_assistant(
 ):
     """Delete an assistant (Management role required)"""
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Assistants "
+            detail="Management or SystemAdmin role required"
         )
     
     # Check if assistant exists

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated, List
 from app.core.database import get_db
 from app.core import model, schemas
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, check_role_permission
 
 router = APIRouter(prefix="/products")
 db_dependency = Annotated[Session, Depends(get_db)]
@@ -29,10 +29,10 @@ async def get_all_products(
 ):
     """Get all products"""
     role = current_user.get("role")
-    if role not in ["Management", "StoreManager"]:
+    if not check_role_permission(role, ["Management", "StoreManager"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management, StoreManager or SystemAdmin role required"
         )
     products = db.query(model.Products).all()
     if not products:
@@ -50,10 +50,10 @@ async def get_product(
 ):
     """Get details of a specific product"""
     role = current_user.get("role")
-    if role not in ["Management", "StoreManager"]:
+    if not check_role_permission(role, ["Management", "StoreManager"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management, StoreManager or SystemAdmin role required"
         )
     product = db.query(model.Products).filter(
         model.Products.product_type_id == product_id
@@ -73,12 +73,12 @@ async def create_product(
     db: db_dependency,
     current_user: dict = Depends(get_current_user)
 ):
-    """Create a new product (requires StoreManager or Management role)"""
+    """Create a new product (requires StoreManager, Management or SystemAdmin role)"""
     role = current_user.get("role")
-    if role not in ["Management", "StoreManager"]:
+    if not check_role_permission(role, ["Management", "StoreManager"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management, StoreManager or SystemAdmin role required"
         )
     
     # Check if product with same name exists
@@ -125,12 +125,12 @@ async def update_product(
     db: db_dependency,
     current_user: dict = Depends(get_current_user)
 ):
-    """Update product details (requires Management role)"""
+    """Update product details (requires Management or SystemAdmin role)"""
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     
     
@@ -188,12 +188,12 @@ async def delete_product(
     db: db_dependency,
     current_user: dict = Depends(get_current_user)
 ):
-    """Delete a product (requires Management role)"""
+    """Delete a product (requires Management or SystemAdmin role)"""
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Routes"
+            detail="Management or SystemAdmin role required"
         )
     
     

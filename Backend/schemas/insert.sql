@@ -1,10 +1,32 @@
--- Users
+-- Users (Multiple users for each role: SystemAdmin, StoreManager, WarehouseStaff, Management, Driver, Assistant)
 INSERT INTO users (user_id, user_name, password_hash, role, created_at) VALUES
+-- System Admins (2 users - highest level access)
+('a0b1c2d3-e4f5-6789-abcd-ef0123456789', 'admin', 'hashed_password_admin', 'SystemAdmin', '2025-10-13 09:00:00'),
+('a1a2b3c4-f5g6-7890-bcde-ef1234567890', 'sysadmin', 'hashed_password_admin', 'SystemAdmin', '2025-10-13 09:01:00'),
+-- Store Managers (3 users)
 ('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'store_manager1', 'hashed_password_1', 'StoreManager', '2025-10-13 10:00:00'),
+('a2b3c4d5-f6a7-8901-bcde-ef2345678901', 'store_manager2', 'hashed_password_1', 'StoreManager', '2025-10-13 10:01:00'),
+('a3b4c5d6-a7b8-9012-cdef-ef3456789012', 'store_manager3', 'hashed_password_1', 'StoreManager', '2025-10-13 10:02:00'),
+-- Warehouse Staff (3 users)
 ('b2c3d4e5-f6a7-8901-bcde-f2345678901', 'warehouse_staff1', 'hashed_password_2', 'WarehouseStaff', '2025-10-13 10:05:00'),
+('b3c4d5e6-a7b8-9012-cdef-f3456789012', 'warehouse_staff2', 'hashed_password_2', 'WarehouseStaff', '2025-10-13 10:06:00'),
+('b4c5d6e7-b8c9-0123-def0-f4567890123', 'warehouse_staff3', 'hashed_password_2', 'WarehouseStaff', '2025-10-13 10:07:00'),
+-- Management (3 users)
 ('c3d4e5f6-a7b8-9012-cdef-3456789012', 'management1', 'hashed_password_3', 'Management', '2025-10-13 10:10:00'),
+('c4d5e6f7-b8c9-0123-def0-4567890123', 'management2', 'hashed_password_3', 'Management', '2025-10-13 10:11:00'),
+('c5d6e7f8-c9d0-1234-efa1-5678901234', 'management3', 'hashed_password_3', 'Management', '2025-10-13 10:12:00'),
+-- Drivers (5 users)
 ('d4e5f6a7-b8c9-0123-def0-4567890123', 'driver1', 'hashed_password_4', 'Driver', '2025-10-13 10:15:00'),
-('e5f6a7b8-c9d0-1234-efa1-5678901234', 'assistant1', 'hashed_password_5', 'Assistant', '2025-10-13 10:20:00');
+('d5e6f7a8-c9d0-1234-efa1-5678901234', 'driver2', 'hashed_password_4', 'Driver', '2025-10-13 10:16:00'),
+('d6e7f8a9-d0e1-2345-fab2-6789012345', 'driver3', 'hashed_password_4', 'Driver', '2025-10-13 10:17:00'),
+('d7e8f9a0-e1f2-3456-abc3-7890123456', 'driver4', 'hashed_password_4', 'Driver', '2025-10-13 10:18:00'),
+('d8e9f0a1-f2a3-4567-bcd4-8901234567', 'driver5', 'hashed_password_4', 'Driver', '2025-10-13 10:19:00'),
+-- Assistants (5 users)
+('e5f6a7b8-c9d0-1234-efa1-5678901234', 'assistant1', 'hashed_password_5', 'Assistant', '2025-10-13 10:20:00'),
+('e6f7a8b9-d0e1-2345-fab2-6789012345', 'assistant2', 'hashed_password_5', 'Assistant', '2025-10-13 10:21:00'),
+('e7f8a9b0-e1f2-3456-abc3-7890123456', 'assistant3', 'hashed_password_5', 'Assistant', '2025-10-13 10:22:00'),
+('e8f9a0b1-f2a3-4567-bcd4-8901234567', 'assistant4', 'hashed_password_5', 'Assistant', '2025-10-13 10:23:00'),
+('e9f0a1b2-a3b4-5678-cde5-9012345678', 'assistant5', 'hashed_password_5', 'Assistant', '2025-10-13 10:24:00');
 
 -- Customers
 INSERT INTO customers (customer_id, customer_user_name, customer_name, phone_number, address, password_hash) VALUES

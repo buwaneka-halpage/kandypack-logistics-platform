@@ -9,7 +9,7 @@ import pytz
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, check_role_permission
 
 
 
@@ -21,10 +21,10 @@ db_dependency = Annotated[Session, Depends(get_db)]
 def get_all_truck_schedules(db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
    
-    if role not in ["Assistant", "Management", "Driver", "WarehouseStaff"]:
+    if not check_role_permission(role, ["Assistant", "Management", "Driver", "WarehouseStaff"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not authorized to view truck schedules"
+            detail="Assistant, Management, Driver, WarehouseStaff or SystemAdmin role required"
         )
 
     truck_schedules = db.query(model.TruckSchedules).all()
@@ -41,10 +41,10 @@ def get_all_truck_schedules(db: db_dependency, current_user: dict = Depends(get_
 def get_truck_schedule_by_id( schedule_id: str,db: db_dependency, current_user: dict = Depends(get_current_user)):
     
     role = current_user.get("role")
-    if role not in ["Assistant", "Management", "Driver", "WarehouseStaff"]:
+    if not check_role_permission(role, ["Assistant", "Management", "Driver", "WarehouseStaff"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not authorized to view this truck schedule"
+            detail="Assistant, Management, Driver, WarehouseStaff or SystemAdmin role required"
         )
 
     
@@ -61,10 +61,10 @@ def get_truck_schedule_by_id( schedule_id: str,db: db_dependency, current_user: 
 @router.post("/", response_model=schemas.Truck_Schedule, status_code=status.HTTP_201_CREATED)
 def create_truck_schedule(new_truck_schedule: schemas.Truck_Schedule, db: db_dependency, current_user: dict = Depends(get_current_user)):
     # Role check
-    if current_user.get("role") != "Assistant":
+    if not check_role_permission(current_user.get("role"), ["Assistant"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only Assistant can create truck schedules"
+            detail="Assistant or SystemAdmin role required"
         )
 
     # Basic validations

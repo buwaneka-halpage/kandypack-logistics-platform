@@ -6,6 +6,7 @@ This ensures the database schema matches the SQLAlchemy models exactly.
 import pymysql
 import os
 from dotenv import load_dotenv
+from passlib.context import CryptContext
 
 # Load environment variables
 load_dotenv()
@@ -14,6 +15,13 @@ DB_HOST = os.getenv("MYSQL_HOST", os.getenv("DB_HOST", "localhost"))
 DB_USER = os.getenv("MYSQL_USER", os.getenv("DB_USER", "root"))
 DB_PASSWORD = os.getenv("MYSQL_PASSWORD", os.getenv("DB_PASSWORD"))
 DB_NAME = os.getenv("MYSQL_DATABASE", os.getenv("DB_NAME", "kandypack_db"))
+
+# Password hashing setup (same as backend)
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    """Hash a password using pbkdf2_sha256"""
+    return pwd_context.hash(password)
 
 def reset_database():
     """Drop and recreate all tables, then populate with initial data"""
@@ -106,7 +114,24 @@ def reset_database():
             
             print(f"✅ Inserted {inserted} records successfully!")
             
-            print("\n📈 Adding additional schedule data...")
+            print("\n� Hashing passwords...")
+            
+            # Hash all user passwords (replace fake hashes with real ones)
+            test_password = "password123"
+            hashed_password = hash_password(test_password)
+            
+            # Update users table
+            cursor.execute("UPDATE users SET password_hash = %s", (hashed_password,))
+            users_updated = cursor.rowcount
+            
+            # Update customers table
+            cursor.execute("UPDATE customers SET password_hash = %s", (hashed_password,))
+            customers_updated = cursor.rowcount
+            
+            connection.commit()
+            print(f"✅ Hashed {users_updated} user passwords and {customers_updated} customer passwords")
+            
+            print("\n�📈 Adding additional schedule data...")
             
             # Read and execute additional data
             try:
@@ -156,6 +181,21 @@ def reset_database():
         connection.close()
         print("\n✅ Database reset completed successfully!")
         print(f"\n🎉 Your database '{DB_NAME}' is now ready to use!")
+        
+        print("\n" + "="*60)
+        print("🔑 TEST CREDENTIALS")
+        print("="*60)
+        print("\n👥 All users (21 total) use password: password123")
+        print("\nUser Roles:")
+        print("  • SystemAdmin: admin, sysadmin")
+        print("  • StoreManager: store_manager1, store_manager2, store_manager3")
+        print("  • WarehouseStaff: warehouse_staff1, warehouse_staff2, warehouse_staff3")
+        print("  • Management: management1, management2, management3")
+        print("  • Driver: driver1, driver2, driver3, driver4, driver5")
+        print("  • Assistant: assistant1, assistant2, assistant3, assistant4, assistant5")
+        print("\n👤 Customers (3 total) also use password: password123")
+        print("  • john_perera, ama_silva, kamal_fernando")
+        print("="*60)
         
     except Exception as e:
         print(f"\n❌ Error resetting database: {e}")
