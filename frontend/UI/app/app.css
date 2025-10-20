@@ -6,7 +6,8 @@
 }
 
 /* Ensure proper scrolling and layout */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -32,7 +33,7 @@ html, body {
 }
 
 .sidebar-nav-item:hover::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -12px;
   top: 50%;
@@ -45,7 +46,7 @@ html, body {
 }
 
 .sidebar-nav-item.active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -12px;
   top: 50%;
@@ -66,6 +67,87 @@ html, body {
 .sidebar-tooltip.show {
   transform: translateX(4px) scale(1);
   opacity: 1;
+}
+
+/* Define the custom angle property for the animation */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Keyframes for the border rotation */
+@keyframes rotate {
+  to {
+    --angle: 360deg;
+  }
+}
+
+/* Specific styling for the animated inputs */
+.animated-input,
+.animated-box {
+  /* Set transparent border to accommodate the gradient border-box */
+  border: 3px solid transparent !important;
+  border-radius: 5px !important; /* Ensure original corner radius is kept */
+
+  /* Apply the animated gradient border effect */
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(var(--angle), #2c2d5b, #f67366) border-box;
+
+  /* Apply the rotation animation */
+  animation: 4s rotate linear infinite;
+
+  /* Ensure text color is readable over the white background */
+  color: #333;
+}
+
+/* Rainbow overlay for hero banner */
+.hero-rainbow-overlay {
+  position: relative;
+  isolation: isolate; /* Ensures z-index stacking works as expected */
+}
+
+.hero-rainbow-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #ff0000,
+    #ff7f00,
+    #ffff00,
+    #00ff00,
+    #0000ff,
+    #4b0082,
+    #9400d3
+  );
+  background-size: 400% 400%;
+  animation: rainbow 8s ease infinite;
+  mix-blend-mode: overlay;
+  opacity: 0.2;
+  pointer-events: none; /* Allows clicks through the overlay */
+  z-index: 2; /* Sits above the content but below the inputs/buttons */
+  filter: blur(24px);
+}
+
+@keyframes rainbow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.hero-bg {
+  background-image: url("/heroBg.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 /* 
@@ -99,84 +181,198 @@ Examples:
 /* Define custom color utilities for Tailwind v4 */
 @layer utilities {
   /* Primary colors */
-  .text-primary-coral { color: oklch(0.72 0.15 25); }
-  .bg-primary-coral { background-color: oklch(0.72 0.15 25); }
-  .border-primary-coral { border-color: oklch(0.72 0.15 25); }
-  
-  .text-primary-navy { color: oklch(0.208 0.042 265.755); }
-  .bg-primary-navy { background-color: oklch(0.208 0.042 265.755); }
-  .border-primary-navy { border-color: oklch(0.208 0.042 265.755); }
-  
+  .text-primary-coral {
+    color: oklch(0.72 0.15 25);
+  }
+  .bg-primary-coral {
+    background-color: oklch(0.72 0.15 25);
+  }
+  .border-primary-coral {
+    border-color: oklch(0.72 0.15 25);
+  }
+
+  .text-primary-navy {
+    color: oklch(0.208 0.042 265.755);
+  }
+  .bg-primary-navy {
+    background-color: oklch(0.208 0.042 265.755);
+  }
+  .border-primary-navy {
+    border-color: oklch(0.208 0.042 265.755);
+  }
+
   /* Dashboard specific colors */
-  .text-dashboard-accent { color: oklch(0.72 0.15 25); }
-  .bg-dashboard-accent { background-color: oklch(0.72 0.15 25); }
-  .border-dashboard-accent { border-color: oklch(0.72 0.15 25); }
-  
-  .text-dashboard-sidebar { color: oklch(0.984 0.003 247.858); }
-  .bg-dashboard-sidebar { background-color: oklch(0.208 0.042 265.755); }
-  .border-dashboard-sidebar { border-color: oklch(0.208 0.042 265.755); }
-  
-  .text-dashboard-chart { color: white; }
-  .bg-dashboard-chart { background-color: oklch(0.65 0.18 260); }
-  .border-dashboard-chart { border-color: oklch(0.65 0.18 260); }
-  
-  .bg-dashboard-bg { background-color: oklch(0.98 0.005 250); }
-  
-  .text-dashboard-success { color: white; }
-  .bg-dashboard-success { background-color: oklch(0.65 0.15 140); }
-  .border-dashboard-success { border-color: oklch(0.65 0.15 140); }
-  
-  .text-dashboard-warning { color: white; }
-  .bg-dashboard-warning { background-color: oklch(0.75 0.15 60); }
-  .border-dashboard-warning { border-color: oklch(0.75 0.15 60); }
-  
-  .text-dashboard-info { color: white; }
-  .bg-dashboard-info { background-color: oklch(0.65 0.15 220); }
-  .border-dashboard-info { border-color: oklch(0.65 0.15 220); }
-  
+  .text-dashboard-accent {
+    color: oklch(0.72 0.15 25);
+  }
+  .bg-dashboard-accent {
+    background-color: oklch(0.72 0.15 25);
+  }
+  .border-dashboard-accent {
+    border-color: oklch(0.72 0.15 25);
+  }
+
+  .text-dashboard-sidebar {
+    color: oklch(0.984 0.003 247.858);
+  }
+  .bg-dashboard-sidebar {
+    background-color: oklch(0.208 0.042 265.755);
+  }
+  .border-dashboard-sidebar {
+    border-color: oklch(0.208 0.042 265.755);
+  }
+
+  .text-dashboard-chart {
+    color: white;
+  }
+  .bg-dashboard-chart {
+    background-color: oklch(0.65 0.18 260);
+  }
+  .border-dashboard-chart {
+    border-color: oklch(0.65 0.18 260);
+  }
+
+  .bg-dashboard-bg {
+    background-color: oklch(0.98 0.005 250);
+  }
+
+  .text-dashboard-success {
+    color: white;
+  }
+  .bg-dashboard-success {
+    background-color: oklch(0.65 0.15 140);
+  }
+  .border-dashboard-success {
+    border-color: oklch(0.65 0.15 140);
+  }
+
+  .text-dashboard-warning {
+    color: white;
+  }
+  .bg-dashboard-warning {
+    background-color: oklch(0.75 0.15 60);
+  }
+  .border-dashboard-warning {
+    border-color: oklch(0.75 0.15 60);
+  }
+
+  .text-dashboard-info {
+    color: white;
+  }
+  .bg-dashboard-info {
+    background-color: oklch(0.65 0.15 220);
+  }
+  .border-dashboard-info {
+    border-color: oklch(0.65 0.15 220);
+  }
+
   /* Status indicators */
-  .bg-status-shipped { background-color: oklch(0.65 0.15 140); }
-  .bg-status-pending { background-color: oklch(0.75 0.15 60); }
-  .bg-status-delivered { background-color: oklch(0.65 0.15 220); }
-  .bg-status-cancelled { background-color: oklch(0.577 0.245 27.325); }
-  .text-status-delivered { color: oklch(0.65 0.15 220); }
-  .text-status-cancelled { color: oklch(0.577 0.245 27.325); }
-  
+  .bg-status-shipped {
+    background-color: oklch(0.65 0.15 140);
+  }
+  .bg-status-pending {
+    background-color: oklch(0.75 0.15 60);
+  }
+  .bg-status-delivered {
+    background-color: oklch(0.65 0.15 220);
+  }
+  .bg-status-cancelled {
+    background-color: oklch(0.577 0.245 27.325);
+  }
+  .text-status-delivered {
+    color: oklch(0.65 0.15 220);
+  }
+  .text-status-cancelled {
+    color: oklch(0.577 0.245 27.325);
+  }
+
   /* Additional dashboard utilities */
-  .bg-dashboard-white { background-color: oklch(1 0 0); }
-  .text-dashboard-white { color: oklch(1 0 0); }
-  .border-dashboard-border { border-color: oklch(0.929 0.013 255.508); }
-  .text-dashboard-text-primary { color: oklch(0.129 0.042 264.695); }
-  .text-dashboard-text-secondary { color: oklch(0.554 0.046 257.417); }
-  .bg-dashboard-hover { background-color: oklch(0.25 0.045 265.755); }
-  
+  .bg-dashboard-white {
+    background-color: oklch(1 0 0);
+  }
+  .text-dashboard-white {
+    color: oklch(1 0 0);
+  }
+  .border-dashboard-border {
+    border-color: oklch(0.929 0.013 255.508);
+  }
+  .text-dashboard-text-primary {
+    color: oklch(0.129 0.042 264.695);
+  }
+  .text-dashboard-text-secondary {
+    color: oklch(0.554 0.046 257.417);
+  }
+  .bg-dashboard-hover {
+    background-color: oklch(0.25 0.045 265.755);
+  }
+
   /* Hover variants */
-  .hover\:bg-primary-coral:hover { background-color: oklch(0.68 0.14 25); }
-  .hover\:bg-primary-navy:hover { background-color: oklch(0.25 0.045 265.755); }
-  .hover\:bg-dashboard-accent:hover { background-color: oklch(0.68 0.14 25); }
-  .hover\:bg-dashboard-sidebar:hover { background-color: oklch(0.25 0.045 265.755); }
-  .hover\:bg-dashboard-chart:hover { background-color: oklch(0.6 0.16 260); }
-  .hover\:bg-dashboard-success:hover { background-color: oklch(0.6 0.14 140); }
-  .hover\:bg-dashboard-warning:hover { background-color: oklch(0.7 0.14 60); }
-  .hover\:bg-dashboard-info:hover { background-color: oklch(0.6 0.14 220); }
-  
+  .hover\:bg-primary-coral:hover {
+    background-color: oklch(0.68 0.14 25);
+  }
+  .hover\:bg-primary-navy:hover {
+    background-color: oklch(0.25 0.045 265.755);
+  }
+  .hover\:bg-dashboard-accent:hover {
+    background-color: oklch(0.68 0.14 25);
+  }
+  .hover\:bg-dashboard-sidebar:hover {
+    background-color: oklch(0.25 0.045 265.755);
+  }
+  .hover\:bg-dashboard-chart:hover {
+    background-color: oklch(0.6 0.16 260);
+  }
+  .hover\:bg-dashboard-success:hover {
+    background-color: oklch(0.6 0.14 140);
+  }
+  .hover\:bg-dashboard-warning:hover {
+    background-color: oklch(0.7 0.14 60);
+  }
+  .hover\:bg-dashboard-info:hover {
+    background-color: oklch(0.6 0.14 220);
+  }
+
   /* Focus variants */
-  .focus\:ring-primary-coral:focus { --tw-ring-color: oklch(0.72 0.15 25); }
-  .focus\:ring-primary-navy:focus { --tw-ring-color: oklch(0.208 0.042 265.755); }
-  .focus\:ring-dashboard-accent:focus { --tw-ring-color: oklch(0.72 0.15 25); }
-  
+  .focus\:ring-primary-coral:focus {
+    --tw-ring-color: oklch(0.72 0.15 25);
+  }
+  .focus\:ring-primary-navy:focus {
+    --tw-ring-color: oklch(0.208 0.042 265.755);
+  }
+  .focus\:ring-dashboard-accent:focus {
+    --tw-ring-color: oklch(0.72 0.15 25);
+  }
+
   /* Dark mode variants */
-  .dark .bg-dashboard-sidebar { background-color: oklch(0.15 0.04 265); }
-  .dark .bg-dashboard-accent { background-color: oklch(0.65 0.12 25); }
-  .dark .bg-dashboard-chart { background-color: oklch(0.55 0.15 260); }
-  .dark .bg-dashboard-bg { background-color: oklch(0.13 0.04 265); }
-  .dark .bg-dashboard-success { background-color: oklch(0.55 0.12 140); }
-  .dark .bg-dashboard-warning { background-color: oklch(0.65 0.12 60); }
-  .dark .bg-dashboard-info { background-color: oklch(0.55 0.12 220); }
-  
+  .dark .bg-dashboard-sidebar {
+    background-color: oklch(0.15 0.04 265);
+  }
+  .dark .bg-dashboard-accent {
+    background-color: oklch(0.65 0.12 25);
+  }
+  .dark .bg-dashboard-chart {
+    background-color: oklch(0.55 0.15 260);
+  }
+  .dark .bg-dashboard-bg {
+    background-color: oklch(0.13 0.04 265);
+  }
+  .dark .bg-dashboard-success {
+    background-color: oklch(0.55 0.12 140);
+  }
+  .dark .bg-dashboard-warning {
+    background-color: oklch(0.65 0.12 60);
+  }
+  .dark .bg-dashboard-info {
+    background-color: oklch(0.55 0.12 220);
+  }
+
   /* Dark mode hover variants */
-  .dark .hover\:bg-dashboard-accent:hover { background-color: oklch(0.7 0.13 25); }
-  .dark .hover\:bg-dashboard-sidebar:hover { background-color: oklch(0.18 0.045 265); }
+  .dark .hover\:bg-dashboard-accent:hover {
+    background-color: oklch(0.7 0.13 25);
+  }
+  .dark .hover\:bg-dashboard-sidebar:hover {
+    background-color: oklch(0.18 0.045 265);
+  }
 }
 
 /* Custom properties for CSS variable usage (keeping for legacy support) */
@@ -202,7 +398,7 @@ Examples:
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
   --ring: oklch(0.129 0.042 264.695);
-  
+
   /* Custom colors for your logistics dashboard */
   --dashboard-sidebar: oklch(0.208 0.042 265.755); /* Deep navy */
   --dashboard-accent: oklch(0.72 0.15 25); /* Coral/orange-red */
@@ -233,7 +429,7 @@ Examples:
   --border: oklch(0.279 0.041 260.031);
   --input: oklch(0.279 0.041 260.031);
   --ring: oklch(0.551 0.027 264.364);
-  
+
   /* Dark mode dashboard colors */
   --dashboard-sidebar: oklch(0.15 0.04 265);
   --dashboard-accent: oklch(0.65 0.12 25);
@@ -245,7 +441,8 @@ Examples:
 }
 
 /* Base styles */
-html, body {
+html,
+body {
   background-color: oklch(var(--background));
   color: oklch(var(--foreground));
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -296,14 +493,24 @@ html, body {
   border: 1px solid oklch(var(--border));
   border-radius: var(--radius);
   padding: 1.5rem;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.1),
+    0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
 
 /* Status indicator styles */
-.status-shipped { background-color: oklch(var(--dashboard-success)); }
-.status-pending { background-color: oklch(var(--dashboard-warning)); }
-.status-delivered { background-color: oklch(var(--dashboard-info)); }
-.status-cancelled { background-color: oklch(var(--destructive)); }
+.status-shipped {
+  background-color: oklch(var(--dashboard-success));
+}
+.status-pending {
+  background-color: oklch(var(--dashboard-warning));
+}
+.status-delivered {
+  background-color: oklch(var(--dashboard-info));
+}
+.status-cancelled {
+  background-color: oklch(var(--destructive));
+}
 
 /* Sidebar transition styles */
 .sidebar-transition {
@@ -325,7 +532,9 @@ html, body {
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s, visibility 0.2s;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
   z-index: 50;
   pointer-events: none;
 }

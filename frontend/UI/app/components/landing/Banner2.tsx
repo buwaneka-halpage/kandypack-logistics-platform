@@ -2,7 +2,7 @@ const Banner2 = () => {
   return (
     <div className="min-h-[59dvh] md:min-h-[67dvh] mt-0 mb-7 sm:mb-12 w-full">
       <div className="mx-3.5 sm:mx-8 md:mx-6">
-        <div className="lg:mb-4 flex flex-row justify-center items-center gap-4 mb-[-10px]">
+        <div className="lg:mb-0 flex flex-row justify-center items-center gap-4 mb-[-10px]">
           <div className="flex-1 sm:flex-[2]">
             <img
               className="size-15 md:w-20 md:h-20"
@@ -19,8 +19,8 @@ const Banner2 = () => {
             </span>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-y-10 sm:gap-y-0 gap-x-5 lg:gap-x-8 items-center lg:items-start">
-          <div className="relative">
+        <div className="grid grid-cols-2 gap-y-10 sm:gap-y-0 gap-x-5 lg:gap-x-8 items-center">
+          <div className="hover-animate-section relative">
             <h3 className="text-[10px] sm:text-[11px] md:text-[14px] lg:text-[22px] leading-6 md:leading-10 lg:leading-12 font-bold">
               <span className="px-2 py-1 text-[10px] sm:text-[12px] md:text-[14px] text-white rounded-[20px] bg-[#2C2D5B]">
                 1
@@ -39,7 +39,7 @@ const Banner2 = () => {
           </div>
           <div>
             <img
-              className="size-12/12 lg:h-90 lg:w-150"
+              className="size-12/12 lg:h-90 lg:w-150 "
               src="/banner2Logo1.png"
               alt="order placement"
             />
@@ -66,7 +66,7 @@ const Banner2 = () => {
               Excess quantities are scheduled for the next available trip.
             </p>
             <img
-              className="absolute top-24 right-47 size-8/12 sm:top-30 sm:right-55 md:size-10/12 lg:size-12/12 lg:right-75 lg:top-55"
+              className="absolute top-24 right-47 size-8/12 sm:top-30 sm:right-55 md:size-10/12 lg:size-12/12 lg:right-85 lg:top-45"
               src="/banner2Vector2.png"
               alt="vector"
             />
@@ -97,7 +97,7 @@ const Banner2 = () => {
               available trip.
             </p>
             <img
-              className="absolute bottom-13 right-6 size-20 md:size-29 lg:size-55 lg:bottom-25"
+              className="absolute bottom-13 right-6 size-20 md:size-29 lg:size-50 lg:bottom-20"
               src="/banner2Vector3.png"
               alt="vector"
             />

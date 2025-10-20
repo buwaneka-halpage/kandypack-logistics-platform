@@ -1,6 +1,7 @@
 import { Train, Truck, CalendarCheck } from "lucide-react";
 import MainButton from "./MainButton";
 import { Link } from "react-router";
+import "app/app.css";
 
 const Banner1 = () => {
   const handleRequestQuote = () => {
@@ -10,7 +11,7 @@ const Banner1 = () => {
   return (
     <div
       className="min-h-[35dvh] mt-4 w-full sm:pb-4"
-      style={{ backgroundColor: "#F8FAFB" }}
+      style={{ backgroundColor: "white" }}
     >
       <div className="mx-3.5 sm:mx-8 md:mx-6">
         <div className="flex flex-col justify-start items-center gap-1">
@@ -33,7 +34,7 @@ const Banner1 = () => {
           </div>
           <div className="flex flex-row justify-center items-start gap-8 lg:gap-30">
             {/* Rail Freight Card */}
-            <div className="flex-1 flex flex-col justify-center items-center">
+            <div className="p-5 animated-box flex-1 flex flex-col justify-center items-center">
               <div className="flex-1 bg-white px-1 inline-block rounded-xl">
                 <Train
                   className="text-[15px] sm:text-[16px] md:text-[25px] lg:text-[40px] w-8 h-8 lg:w-12 lg:h-12"
@@ -55,7 +56,7 @@ const Banner1 = () => {
             </div>
 
             {/* Last-Mile Delivery Card */}
-            <div className="flex-1 flex flex-col justify-center items-center">
+            <div className="p-5 animated-box flex-1 flex flex-col justify-center items-center">
               <div className="flex-1 bg-white px-1 inline-block rounded-xl">
                 <Truck
                   className="text-[15px] sm:text-[16px] md:text-[25px] lg:text-[40px] w-8 h-8 lg:w-12 lg:h-12"
@@ -77,7 +78,7 @@ const Banner1 = () => {
             </div>
 
             {/* Order Scheduling & Tracking Card */}
-            <div className="flex-1 flex flex-col justify-center items-center">
+            <div className="p-5 animated-box flex-1 flex flex-col justify-center items-center">
               <div className="flex-1 bg-white px-1 inline-block rounded-xl">
                 <CalendarCheck
                   className="text-[15px] sm:text-[16px] md:text-[25px] lg:text-[40px] w-8 h-8 lg:w-12 lg:h-12"
