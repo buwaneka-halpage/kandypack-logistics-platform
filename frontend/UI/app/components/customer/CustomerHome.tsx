@@ -186,7 +186,7 @@ export default function CustomerHome() {
                           <span className="text-sm font-medium text-gray-900">{order.order_id}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-600">{order.deliver_address}, {order.deliver_city}</span>
+                          <span className="text-sm text-gray-600">{order.deliver_address}</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm font-medium text-gray-900">Rs. {order.full_price.toFixed(2)}</span>
@@ -246,7 +246,7 @@ export default function CustomerHome() {
                           <span className="text-sm font-medium text-gray-900">{order.order_id}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-600">{order.deliver_address}, {order.deliver_city}</span>
+                          <span className="text-sm text-gray-600">{order.deliver_address}</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm font-medium text-gray-900">Rs. {order.full_price.toFixed(2)}</span>
