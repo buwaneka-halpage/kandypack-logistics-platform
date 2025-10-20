@@ -44,17 +44,34 @@ def get_all_orders_history(db: db_dependency, current_user: dict = Depends(get_c
     return results
 
 @router.get("/", response_model=List[schemas.order], status_code=status.HTTP_200_OK)
-def get_all_Orders(db: db_dependency,  current_user: dict = Depends(get_current_user)):
+def get_all_Orders(db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if not check_role_permission(role, ["StoreManager", "Management"]):
+    user_id = current_user.get("user_id")
+    
+    if not check_role_permission(role, ["StoreManager", "Management", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="StoreManager, Management or SystemAdmin role required"
         )
     
-    orders_= db.query(model.Orders).all()
-    if orders_ is None:
-        raise HTTPException(status_code=404, detail=f"Order history not found")
+    # Base query for orders
+    query = db.query(model.Orders)
+    
+    # Filter orders based on user role
+    if role == "StoreManager":
+        # Get the store manager's store_id
+        store_manager = db.query(model.StoreManagers).filter(model.StoreManagers.manager_id == user_id).first()
+        if not store_manager:
+            raise HTTPException(status_code=404, detail="Store manager not found")
+        
+        # Only show orders assigned to the manager's store/warehouse
+        query = query.filter(model.Orders.warehouse_id == store_manager.store_id)
+    
+    # For Management and SystemAdmin, return all orders (no filter needed)
+    
+    orders_ = query.all()
+    if not orders_:
+        raise HTTPException(status_code=404, detail="No orders found")
     
     # Convert enum status to string value
     for order in orders_:
@@ -227,33 +244,29 @@ def delete_order(order_id: str, db: db_dependency, current_user: dict = Depends(
     return {"detail": f"Order {order_id} deleted successfully"}
 
 
-@router.patch("/{order_id}/assign-warehouse", response_model=schemas.order, status_code=status.HTTP_200_OK)
-def assign_order_to_warehouse(order_id: str, warehouse_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
-    """Assign an order to a warehouse (Management or SystemAdmin role required)"""
+@router.get("/assigned-to-store", status_code=status.HTTP_200_OK)
+def get_orders_assigned_to_store(db: db_dependency, current_user: dict = Depends(get_current_user)):
+    """Get all orders assigned to the StoreManager's warehouse"""
     role = current_user.get("role")
-    if not check_role_permission(role, ["Management"]):
+    user_id = current_user.get("user_id")
+    
+    if role != "StoreManager":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Management or SystemAdmin role required"
+            detail="StoreManager role required"
         )
     
-    # Verify order exists
-    order = db.query(model.Orders).filter(model.Orders.order_id == order_id).first()
-    if not order:
-        raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
+    # Get the store manager's store_id
+    store_manager = db.query(model.StoreManagers).filter(model.StoreManagers.manager_id == user_id).first()
+    if not store_manager:
+        raise HTTPException(status_code=404, detail="Store manager not found")
     
-    # Verify warehouse exists
-    warehouse = db.query(model.Stores).filter(model.Stores.store_id == warehouse_id).first()
-    if not warehouse:
-        raise HTTPException(status_code=404, detail=f"Warehouse {warehouse_id} not found")
+    # Get orders assigned to the manager's store/warehouse
+    orders = db.query(model.Orders).filter(model.Orders.warehouse_id == store_manager.store_id).all()
     
-    # Assign warehouse to order
-    order.warehouse_id = warehouse_id
+    # Convert enum status to string value
+    for order in orders:
+        if isinstance(order.status, model.OrderStatus):
+            order.status = order.status.value
     
-    # If order was PLACED, update status to IN_WAREHOUSE
-    if order.status == model.OrderStatus.PLACED:
-        order.status = model.OrderStatus.IN_WAREHOUSE
-    
-    db.commit()
-    db.refresh(order)
-    return order
+    return orders
