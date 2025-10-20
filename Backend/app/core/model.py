@@ -162,13 +162,15 @@ class TrainSchedules(Base):
     __tablename__ = "train_schedules"
     schedule_id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
     train_id = Column(String(36), ForeignKey("trains.train_id"), nullable=False)
-    station_id = Column(String(36), ForeignKey("railway_stations.station_id"), nullable=False)
+    source_station_id = Column(String(36), ForeignKey("railway_stations.station_id"), nullable=False)
+    destination_station_id = Column(String(36), ForeignKey("railway_stations.station_id"), nullable=False)
     scheduled_date = Column(Date, nullable=False)
     departure_time = Column(Time, nullable=False)
     arrival_time = Column(Time, nullable=False)
     status = Column(Enum(ScheduleStatus), default=ScheduleStatus.PLANNED, nullable=False)
     train = relationship("Trains")
-    station = relationship("RailwayStations")
+    source_station = relationship("RailwayStations", foreign_keys=[source_station_id])
+    destination_station = relationship("RailwayStations", foreign_keys=[destination_station_id])
     rail_allocations = relationship("RailAllocations", back_populates="schedule", cascade="all, delete")
 
 

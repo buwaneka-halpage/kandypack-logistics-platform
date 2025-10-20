@@ -190,7 +190,8 @@ class Train_Schedules(BaseModel):
     
     schedule_id : str 
     train_id : str 
-    station_id : str 
+    source_station_id : str 
+    destination_station_id : str
     scheduled_date : date
     departure_time : time
     arrival_time : time
@@ -379,7 +380,8 @@ class route_update(route):
     
 class create_new_trainSchedule(Train_Schedules):
     train_id : str 
-    station_id : str 
+    source_station_id : str 
+    destination_station_id : str
     scheduled_date: datetime 
     arrival_time  : time
     departure_time : time
@@ -409,7 +411,8 @@ class Trucks(BaseModel):
 
 class update_trainSchedules(Train_Schedules):
     train_id : str 
-    station_id : str 
+    source_station_id : str 
+    destination_station_id : str
     scheduled_date: datetime 
     arrival_time  : time
     departure_time : time

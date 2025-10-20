@@ -115,17 +115,19 @@ CREATE TABLE trains (
     CONSTRAINT positive_train_capacity CHECK (capacity > 0)
 );
 
--- Train Schedules
+-- Train Schedules (Enhanced with source/destination stations for proper routes)
 CREATE TABLE train_schedules (
     schedule_id CHAR(36) PRIMARY KEY,
     train_id CHAR(36) NOT NULL,
-    station_id CHAR(36) NOT NULL,
+    source_station_id CHAR(36) NOT NULL,
+    destination_station_id CHAR(36) NOT NULL,
     scheduled_date DATE NOT NULL,
     departure_time TIME NOT NULL,
     arrival_time TIME NOT NULL,
     status ENUM('PLANNED','IN_PROGRESS','COMPLETED','CANCELLED') NOT NULL DEFAULT 'PLANNED',
     FOREIGN KEY (train_id) REFERENCES trains(train_id),
-    FOREIGN KEY (station_id) REFERENCES railway_stations(station_id)
+    FOREIGN KEY (source_station_id) REFERENCES railway_stations(station_id),
+    FOREIGN KEY (destination_station_id) REFERENCES railway_stations(station_id)
 );
 
 -- Rail Allocations
