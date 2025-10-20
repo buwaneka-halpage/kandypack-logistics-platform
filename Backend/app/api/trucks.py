@@ -7,7 +7,7 @@ from app.core import model, schemas
 from app.core.auth import get_current_user, check_role_permission
 
 
-router = APIRouter(prefix="/turks")
+router = APIRouter(prefix="/trucks")
 model.Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 
