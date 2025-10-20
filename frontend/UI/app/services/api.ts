@@ -236,6 +236,29 @@ export const OrdersAPI = {
   },
 };
 
+// Users API (Staff Management)
+export const UsersAPI = {
+  async getAll() {
+    return httpClient.get<any[]>('/users');
+  },
+
+  async getById(userId: string) {
+    return httpClient.get<any>(`/users/${userId}`);
+  },
+
+  async create(userData: any) {
+    return httpClient.post<any>('/users', userData);
+  },
+
+  async update(userId: string, updateData: any) {
+    return httpClient.put<any>(`/users/${userId}`, updateData);
+  },
+
+  async delete(userId: string) {
+    return httpClient.delete<any>(`/users/${userId}`);
+  },
+};
+
 // Customers API
 export const CustomersAPI = {
   async getAll() {
@@ -615,6 +638,7 @@ export const ReportsAPI = {
 export default {
   Auth: AuthAPI,
   Orders: OrdersAPI,
+  Users: UsersAPI,
   Customers: CustomersAPI,
   Cities: CitiesAPI,
   RailwayStations: RailwayStationsAPI,

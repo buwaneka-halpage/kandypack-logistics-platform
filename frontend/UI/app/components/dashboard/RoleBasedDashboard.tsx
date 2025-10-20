@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '~/hooks/useAuth';
 import { UserRole, getRoleName } from '~/types/roles';
 import { 
@@ -14,6 +14,17 @@ import {
   ClipboardList,
   Navigation,
 } from 'lucide-react';
+
+// Import API services
+import { 
+  UsersAPI, 
+  OrdersAPI, 
+  StoresAPI, 
+  DriversAPI, 
+  AssistantsAPI,
+  TrucksAPI,
+  RoutesAPI 
+} from '~/services/api';
 
 // Import existing components
 import StatsCard from './StatsCard';
@@ -140,15 +151,49 @@ const ManagementDashboard: React.FC<{ user: any }> = ({ user }) => {
 
 // System Admin Dashboard - Same as Management with System Focus
 const SystemAdminDashboard: React.FC<{ user: any }> = ({ user }) => {
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    systemHealth: '99.8%',
+    activeWarehouses: 0,
+    pendingTasks: 0,
+    loading: true
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch real data from APIs
+        const [usersData, storesData, ordersData] = await Promise.all([
+          UsersAPI.getAll().catch(() => []),
+          StoresAPI.getAll().catch(() => []),
+          OrdersAPI.getAll({ status: 'PLACED' }).catch(() => [])
+        ]);
+
+        setStats({
+          totalUsers: usersData?.length || 0,
+          systemHealth: '99.8%', // This would come from a health endpoint
+          activeWarehouses: storesData?.length || 0,
+          pendingTasks: ordersData?.length || 0,
+          loading: false
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        setStats(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <DashboardLayout>
       {/* Welcome Message */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">
-          Welcome, {user.name}
+          Welcome,
         </h1>
         <p className="text-gray-600 mt-1">
-          {getRoleName(user.role)} Dashboard - System Administration
+          System Administrator Dashboard - System Administration
         </p>
       </div>
 
@@ -156,22 +201,22 @@ const SystemAdminDashboard: React.FC<{ user: any }> = ({ user }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
         <StatsCard
           title="Total Users"
-          value="47"
+          value={stats.loading ? '...' : stats.totalUsers.toString()}
           icon={<Users className="w-5 h-5 sm:w-6 sm:h-6 text-dashboard-chart" />}
         />
         <StatsCard
           title="System Health"
-          value="99.8%"
+          value={stats.systemHealth}
           icon={<BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />}
         />
         <StatsCard
           title="Active Warehouses"
-          value="12"
+          value={stats.loading ? '...' : stats.activeWarehouses.toString()}
           icon={<Warehouse className="w-5 h-5 sm:w-6 sm:h-6 text-primary-navy" />}
         />
         <StatsCard
           title="Pending Tasks"
-          value="3"
+          value={stats.loading ? '...' : stats.pendingTasks.toString()}
           icon={<ClipboardList className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />}
         />
       </div>
