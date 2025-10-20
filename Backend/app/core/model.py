@@ -162,14 +162,20 @@ class TrainSchedules(Base):
     __tablename__ = "train_schedules"
     schedule_id = Column(String(36), primary_key=True, index=True, default=generate_uuid)
     train_id = Column(String(36), ForeignKey("trains.train_id"), nullable=False)
-    station_id = Column(String(36), ForeignKey("railway_stations.station_id"), nullable=False)
+    source_station_id = Column(String(36), ForeignKey("railway_stations.station_id"), nullable=False)
+    destination_station_id = Column(String(36), ForeignKey("railway_stations.station_id"), nullable=False)
     scheduled_date = Column(Date, nullable=False)
     departure_time = Column(Time, nullable=False)
     arrival_time = Column(Time, nullable=False)
+    cargo_capacity = Column(Float, nullable=False)
     status = Column(Enum(ScheduleStatus), default=ScheduleStatus.PLANNED, nullable=False)
     train = relationship("Trains")
-    station = relationship("RailwayStations")
+    source_station = relationship("RailwayStations", foreign_keys=[source_station_id])
+    destination_station = relationship("RailwayStations", foreign_keys=[destination_station_id])
     rail_allocations = relationship("RailAllocations", back_populates="schedule", cascade="all, delete")
+    __table_args__ = (
+        CheckConstraint("cargo_capacity > 0", name="positive_cargo_capacity"),
+    )
 
 
 class RailAllocations(Base):
@@ -178,9 +184,13 @@ class RailAllocations(Base):
     order_id = Column(String(36), ForeignKey("orders.order_id"), nullable=False)
     schedule_id = Column(String(36), ForeignKey("train_schedules.schedule_id"), nullable=False)
     shipment_date = Column(Date, nullable=False)
+    allocated_space = Column(Float, nullable=False)
     status = Column(Enum(ScheduleStatus), default=ScheduleStatus.PLANNED, nullable=False)
     order = relationship("Orders", back_populates="rail_allocations")
     schedule = relationship("TrainSchedules", back_populates="rail_allocations")
+    __table_args__ = (
+        CheckConstraint("allocated_space > 0", name="positive_allocated_space"),
+    )
      
     @validates("shipment_date")
     def validate_shipment_date(self, key, value):

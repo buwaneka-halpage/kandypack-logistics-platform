@@ -236,6 +236,11 @@ export function OrderManagement() {
     }
 
     fetchData();
+    
+    // Auto-refresh every 30 seconds to catch status updates from other pages
+    const interval = setInterval(fetchData, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   // Reset pagination when filters change

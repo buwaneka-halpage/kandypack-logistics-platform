@@ -308,23 +308,23 @@ export const CitiesAPI = {
 // Railway Stations API
 export const RailwayStationsAPI = {
   async getAll() {
-    return httpClient.get<any[]>('/railway-stations');
+    return httpClient.get<any[]>('/railway_stations');
   },
 
   async getById(stationId: string) {
-    return httpClient.get<any>(`/railway-stations/${stationId}`);
+    return httpClient.get<any>(`/railway_stations/${stationId}`);
   },
 
   async create(stationData: any) {
-    return httpClient.post<any>('/railway-stations', stationData);
+    return httpClient.post<any>('/railway_stations', stationData);
   },
 
   async update(stationId: string, updateData: any) {
-    return httpClient.put<any>(`/railway-stations/${stationId}`, updateData);
+    return httpClient.put<any>(`/railway_stations/${stationId}`, updateData);
   },
 
   async delete(stationId: string) {
-    return httpClient.delete<any>(`/railway-stations/${stationId}`);
+    return httpClient.delete<any>(`/railway_stations/${stationId}`);
   },
 };
 
@@ -423,23 +423,23 @@ export const TrainsAPI = {
 // Train Schedules API
 export const TrainSchedulesAPI = {
   async getAll() {
-    return httpClient.get<any[]>('/train-schedules');
+    return httpClient.get<any[]>('/trainSchedules');
   },
 
   async getById(scheduleId: string) {
-    return httpClient.get<any>(`/train-schedules/${scheduleId}`);
+    return httpClient.get<any>(`/trainSchedules/${scheduleId}`);
   },
 
   async create(scheduleData: any) {
-    return httpClient.post<any>('/train-schedules', scheduleData);
+    return httpClient.post<any>('/trainSchedules', scheduleData);
   },
 
   async update(scheduleId: string, updateData: any) {
-    return httpClient.put<any>(`/train-schedules/${scheduleId}`, updateData);
+    return httpClient.put<any>(`/trainSchedules/${scheduleId}`, updateData);
   },
 
   async delete(scheduleId: string) {
-    return httpClient.delete<any>(`/train-schedules/${scheduleId}`);
+    return httpClient.delete<any>(`/trainSchedules/${scheduleId}`);
   },
 };
 
@@ -537,50 +537,67 @@ export const AssistantsAPI = {
 
 // Allocations API
 export const AllocationsAPI = {
-  // Rail allocations
-  rail: {
-    async getAll() {
-      return httpClient.get<any[]>('/allocations/rail');
-    },
-
-    async getById(allocationId: string) {
-      return httpClient.get<any>(`/allocations/rail/${allocationId}`);
-    },
-
-    async create(allocationData: any) {
-      return httpClient.post<any>('/allocations/rail', allocationData);
-    },
-
-    async update(allocationId: string, updateData: any) {
-      return httpClient.put<any>(`/allocations/rail/${allocationId}`, updateData);
-    },
-
-    async delete(allocationId: string) {
-      return httpClient.delete<any>(`/allocations/rail/${allocationId}`);
-    },
+  // Get all allocations (both rail and truck)
+  async getAll() {
+    return httpClient.get<any[]>('/allocations');
   },
 
-  // Truck allocations
-  truck: {
-    async getAll() {
-      return httpClient.get<any[]>('/allocations/truck');
-    },
+  async getById(allocationId: string) {
+    return httpClient.get<any>(`/allocations/${allocationId}`);
+  },
 
-    async getById(allocationId: string) {
-      return httpClient.get<any>(`/allocations/truck/${allocationId}`);
-    },
+  async create(allocationData: {
+    order_id: string;
+    schedule_id: string;
+    allocation_type: 'Rail' | 'Truck';
+    shipment_date: string;
+  }) {
+    // Backend expects query parameters, not body
+    const params = new URLSearchParams({
+      order_id: allocationData.order_id,
+      schedule_id: allocationData.schedule_id,
+      allocation_type: allocationData.allocation_type,
+      shipment_date: allocationData.shipment_date,
+    });
+    return httpClient.post<any>(`/allocations?${params.toString()}`);
+  },
 
-    async create(allocationData: any) {
-      return httpClient.post<any>('/allocations/truck', allocationData);
-    },
+  async update(allocationId: string, updateData: any) {
+    return httpClient.put<any>(`/allocations/${allocationId}`, updateData);
+  },
 
-    async update(allocationId: string, updateData: any) {
-      return httpClient.put<any>(`/allocations/truck/${allocationId}`, updateData);
-    },
+  async delete(allocationId: string) {
+    return httpClient.delete<any>(`/allocations/${allocationId}`);
+  },
 
-    async delete(allocationId: string) {
-      return httpClient.delete<any>(`/allocations/truck/${allocationId}`);
-    },
+  // Get capacity information for a train schedule
+  async getScheduleCapacity(scheduleId: string) {
+    return httpClient.get<{
+      schedule_id: string;
+      cargo_capacity: number;
+      allocated_space: number;
+      available_space: number;
+      utilization_percentage: number;
+      is_full: boolean;
+    }>(`/allocations/schedule/${scheduleId}/capacity`);
+  },
+
+  // Get all orders allocated to a specific schedule
+  async getScheduleAllocatedOrders(scheduleId: string) {
+    return httpClient.get<{
+      schedule_id: string;
+      total_allocations: number;
+      allocations: Array<{
+        allocation_id: string;
+        order_id: string;
+        customer_id: string;
+        deliver_city_id: string;
+        full_price: number;
+        allocated_space: number;
+        shipment_date: string;
+        status: string;
+      }>;
+    }>(`/allocations/schedule/${scheduleId}/allocated-orders`);
   },
 };
 

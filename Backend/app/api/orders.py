@@ -257,3 +257,33 @@ def assign_order_to_warehouse(order_id: str, warehouse_id: str, db: db_dependenc
     db.commit()
     db.refresh(order)
     return order
+
+
+@router.get("/{order_id}/space", status_code=status.HTTP_200_OK)
+def get_order_space(
+    order_id: str,
+    db: db_dependency,
+    current_user: dict = Depends(get_current_user)
+):
+    """Calculate the space consumption for an order"""
+    role = current_user.get("role")
+    if not check_role_permission(role, ["StoreManager", "Management"]):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions"
+        )
+    
+    # Import capacity calculator
+    from app.utils.capacity_calculator import calculate_order_space
+    
+    try:
+        space = calculate_order_space(db, order_id)
+        return {
+            "order_id": order_id,
+            "space": space
+        }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )

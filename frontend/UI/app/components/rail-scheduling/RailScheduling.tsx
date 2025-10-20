@@ -23,18 +23,20 @@ import {
 
 // Import dashboard layout
 import DashboardLayout from "../dashboard/DashboardLayout";
+// Import AssignOrdersDialog
+import { AssignOrdersDialog } from "./AssignOrdersDialog";
 
 // TypeScript interfaces for API data
 interface TrainSchedule {
   schedule_id: string;
   train_id: string;
-  source_station: string;
-  destination_station: string;
+  source_station_id: string;  // Changed from source_station
+  destination_station_id: string;  // Changed from destination_station
+  scheduled_date: string;  // Changed from date
   departure_time: string;
   arrival_time: string;
-  date: string;
-  allocated_capacity: number;
-  available_capacity: number;
+  cargo_capacity: number;  // NEW: Cargo capacity in units
+  status: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";  // Fixed type
 }
 
 interface Train {
@@ -46,7 +48,7 @@ interface Train {
 interface RailwayStation {
   station_id: string;
   station_name: string;
-  city: string;
+  city_id: string;  // Backend uses city_id, not city
 }
 
 export function RailScheduling() {
@@ -59,6 +61,10 @@ export function RailScheduling() {
   const [routeFilter, setRouteFilter] = useState<string>("all");
   const [departureTimeFilter, setDepartureTimeFilter] = useState<string>("all");
   const [arrivalTimeFilter, setArrivalTimeFilter] = useState<string>("all");
+
+  // Dialog state for assign orders
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<TrainSchedule | null>(null);
 
   // Fetch data from API
   useEffect(() => {
@@ -105,9 +111,21 @@ export function RailScheduling() {
     return `${source} - ${dest}`;
   };
 
+  // Handler for assign orders button
+  const handleAssignOrders = (schedule: TrainSchedule) => {
+    setSelectedSchedule(schedule);
+    setDialogOpen(true);
+  };
+
+  // Handler for when allocations are successfully created
+  const handleAllocationSuccess = () => {
+    // Optionally refresh schedules or show a notification
+    console.log("Allocations created successfully");
+  };
+
   // Filter schedules based on selected filters
   const filteredSchedules = schedules.filter((schedule) => {
-    const route = formatRoute(schedule.source_station, schedule.destination_station);
+    const route = formatRoute(schedule.source_station_id, schedule.destination_station_id);
     
     if (routeFilter !== "all" && !route.toLowerCase().includes(routeFilter.toLowerCase())) {
       return false;
@@ -203,30 +221,41 @@ export function RailScheduling() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
-                  <TableHead className="font-semibold text-gray-700">Schedule ID</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Train</TableHead>
                   <TableHead className="font-semibold text-gray-700">Route</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Departure Time</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Arrival Time</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Allocated Capacity</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Available Capacity</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Date</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Departure</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Arrival</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Status</TableHead>
                   <TableHead className="font-semibold text-gray-700 w-[150px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredSchedules.map((schedule) => (
                   <TableRow key={schedule.schedule_id} className="hover:bg-gray-50">
-                    <TableCell className="font-medium text-gray-900">{schedule.schedule_id}</TableCell>
-                    <TableCell className="text-gray-700">
-                      {formatRoute(schedule.source_station, schedule.destination_station)}
+                    <TableCell className="font-medium text-gray-900">
+                      {trains.get(schedule.train_id) || schedule.train_id}
                     </TableCell>
+                    <TableCell className="text-gray-700">
+                      {formatRoute(schedule.source_station_id, schedule.destination_station_id)}
+                    </TableCell>
+                    <TableCell className="text-gray-700">{schedule.scheduled_date}</TableCell>
                     <TableCell className="text-gray-700">{schedule.departure_time}</TableCell>
                     <TableCell className="text-gray-700">{schedule.arrival_time}</TableCell>
-                    <TableCell className="text-gray-700">{schedule.allocated_capacity}</TableCell>
-                    <TableCell className="text-gray-700">{schedule.available_capacity}</TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={schedule.status === 'PLANNED' ? 'default' : 
+                                schedule.status === 'IN_PROGRESS' ? 'secondary' : 
+                                schedule.status === 'COMPLETED' ? 'outline' : 'destructive'}
+                      >
+                        {schedule.status}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <Button 
                         className="bg-purple-600 hover:bg-purple-700 text-white w-full"
                         size="sm"
+                        onClick={() => handleAssignOrders(schedule)}
                       >
                         <Plus className="h-4 w-4 mr-1" />
                         Assign Orders
@@ -244,6 +273,19 @@ export function RailScheduling() {
           <div className="text-sm text-gray-600">
             Showing {filteredSchedules.length} of {schedules.length} schedules
           </div>
+        )}
+
+        {/* Assign Orders Dialog */}
+        {selectedSchedule && (
+          <AssignOrdersDialog
+            isOpen={dialogOpen}
+            onClose={() => setDialogOpen(false)}
+            schedule={selectedSchedule}
+            trainName={trains.get(selectedSchedule.train_id) || selectedSchedule.train_id}
+            sourceStationName={stations.get(selectedSchedule.source_station_id) || selectedSchedule.source_station_id}
+            destinationStationName={stations.get(selectedSchedule.destination_station_id) || selectedSchedule.destination_station_id}
+            onSuccess={handleAllocationSuccess}
+          />
         )}
       </div>
     </DashboardLayout>
