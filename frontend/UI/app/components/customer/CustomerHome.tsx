@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { OrdersAPI } from "~/services/api";
+import { useAuth } from "~/hooks/useAuth";
 
 // TypeScript interface for Order
 interface Order {
@@ -10,27 +11,27 @@ interface Order {
   customer_id: string;
   order_date: string;
   deliver_address: string;
-  deliver_city: string;
+  deliver_city_id: string;
   full_price: number;
   status: string;
+  warehouse_id: string | null;
 }
 
 export default function CustomerHome() {
+  const { user } = useAuth();
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
   const [deliveredOrders, setDeliveredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [customerName, setCustomerName] = useState("User");
+  
+  const customerName = user?.name || user?.username || "User";
 
-  // Fetch orders from API
+  // Fetch customer's orders from API
   useEffect(() => {
     async function fetchOrders() {
       try {
         setLoading(true);
-        const ordersData = await OrdersAPI.getAll();
-        
-        // TODO: Filter by actual logged-in customer ID
-        // For now, we'll show all orders but split by status
+        const ordersData = await OrdersAPI.getMyOrders();
         
         // Active orders: not DELIVERED or FAILED
         const active = ordersData.filter((order: Order) => 
@@ -45,9 +46,9 @@ export default function CustomerHome() {
         setDeliveredOrders(delivered);
         
         setError(null);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching orders:", err);
-        setError("Failed to load orders. Please try again later.");
+        setError(err.message || "Failed to load orders. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -185,7 +186,7 @@ export default function CustomerHome() {
                           <span className="text-sm font-medium text-gray-900">{order.order_id}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-600">{order.deliver_address}, {order.deliver_city}</span>
+                          <span className="text-sm text-gray-600">{order.deliver_address}</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm font-medium text-gray-900">Rs. {order.full_price.toFixed(2)}</span>
@@ -245,7 +246,7 @@ export default function CustomerHome() {
                           <span className="text-sm font-medium text-gray-900">{order.order_id}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-600">{order.deliver_address}, {order.deliver_city}</span>
+                          <span className="text-sm text-gray-600">{order.deliver_address}</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm font-medium text-gray-900">Rs. {order.full_price.toFixed(2)}</span>

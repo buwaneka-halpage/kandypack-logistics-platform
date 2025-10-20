@@ -18,6 +18,13 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   login: (username: string, password: string, userRole?: 'staff' | 'customer') => Promise<{ success: boolean; error?: string }>;
+  signup: (signupData: {
+    customer_user_name: string;
+    customer_name: string;
+    phone_number: string;
+    address: string;
+    password: string;
+  }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   hasUserPermission: (resource: string, action: string) => boolean;
   hasUserPermissionWithScope: (resource: string, action: string, resourceWarehouseId?: string) => boolean;
@@ -155,6 +162,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const signup = async (
+    signupData: {
+      customer_user_name: string;
+      customer_name: string;
+      phone_number: string;
+      address: string;
+      password: string;
+    }
+  ): Promise<{ success: boolean; error?: string }> => {
+    setLoading(true);
+    try {
+      const response = await AuthAPI.signupCustomer(signupData);
+      
+      const user: User = {
+        id: response.customer_id,
+        username: response.customer_user_name,
+        name: response.customer_user_name,
+        role: UserRole.CUSTOMER,
+      };
+      
+      // Store token and user
+      TokenService.setToken(response.access_token);
+      TokenService.setUser(user);
+      setUser(user);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Signup error:', error);
+      
+      if (error instanceof ApiError) {
+        return { 
+          success: false, 
+          error: error.message || 'Registration failed' 
+        };
+      }
+      
+      return { 
+        success: false, 
+        error: 'Network error. Please check your connection.' 
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     TokenService.clear();
@@ -189,6 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!user,
     loading,
     login,
+    signup,
     logout,
     hasUserPermission,
     hasUserPermissionWithScope

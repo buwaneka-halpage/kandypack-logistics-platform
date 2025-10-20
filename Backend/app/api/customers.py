@@ -22,6 +22,60 @@ model.Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
+@router.post("/signup", status_code=status.HTTP_201_CREATED)
+async def signup(customer: schemas.CustomerCreate, db: Session = Depends(get_db)):
+    """Public endpoint for customer registration"""
+    # Check if username already exists
+    existing_user = db.query(model.Customers).filter(
+        model.Customers.customer_user_name == customer.customer_user_name
+    ).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already registered"
+        )
+    
+    # Check if phone number already exists
+    existing_phone = db.query(model.Customers).filter(
+        model.Customers.phone_number == customer.phone_number
+    ).first()
+    if existing_phone:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Phone number already registered"
+        )
+    
+    # Create new customer with hashed password
+    hashed_password = get_password_hash(customer.password)
+    new_customer = model.Customers(
+        customer_user_name=customer.customer_user_name,
+        customer_name=customer.customer_name,
+        phone_number=customer.phone_number,
+        address=customer.address,
+        password_hash=hashed_password
+    )
+    
+    db.add(new_customer)
+    db.commit()
+    db.refresh(new_customer)
+    
+    # Automatically log in the new customer
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    token = create_access_token(
+        data={"sub": new_customer.customer_id, "role": "Customer"}, 
+        expires_delta=access_token_expires
+    )
+    
+    return {
+        "message": "Customer registered successfully",
+        "access_token": token,
+        "token_type": "bearer",
+        "customer_id": new_customer.customer_id,
+        "customer_user_name": new_customer.customer_user_name,
+        "role": "Customer",
+    }
+
+
 @router.post("/login")
 async def login(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
     """Authenticate user and return JWT token"""
