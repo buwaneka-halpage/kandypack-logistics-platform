@@ -62,7 +62,62 @@ def get_all_Orders(db: db_dependency,  current_user: dict = Depends(get_current_
             order.status = order.status.value
     
     return orders_
-
+    
+@router.get("/last-mile-delivery", status_code=status.HTTP_200_OK)
+def get_last_mile_delivery(db: db_dependency, current_user: dict = Depends(get_current_user)):
+    """Get last mile delivery information based on user role"""
+    role = current_user.get("role")
+    user_id = current_user.get("user_id")
+    
+    # Base query joining Orders and Customers
+    query = (
+        db.query(model.Orders, model.Customers)
+        .join(model.Customers, model.Orders.customer_id == model.Customers.customer_id)
+    )
+    
+    # Apply role-based filters
+    if role == "Customer":
+        # Customers can only see their own orders
+        query = query.filter(model.Orders.customer_id == user_id)
+    elif role in ["Management", "SystemAdmin"]:
+        # Management and SystemAdmin can see all orders
+        pass
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access restricted to Customers, Management, or SystemAdmin"
+        )
+    
+    # Get only orders that are out for delivery or delivered recently
+    query = query.filter(
+        model.Orders.status.in_([
+            model.OrderStatus.SCHEDULED_ROAD,
+            model.OrderStatus.DELIVERED,
+            model.OrderStatus.IN_WAREHOUSE,
+            model.OrderStatus.SCHEDULED_RAIL,
+            model.OrderStatus.FAILED,
+            model.OrderStatus.PLACED
+        ])
+    )
+    
+    orders = query.all()
+    results = []
+    for order, customer in orders:
+        # Convert enum status to string value
+        order_status = order.status.value if isinstance(order.status, model.OrderStatus) else order.status
+        
+        # Create response with required fields
+        delivery_info = {
+            "order_id": order.order_id,
+            "status": order_status,
+            "customer_name": customer.customer_name,
+            "deliver_address": order.deliver_address,
+            "order_date": order.order_date,
+            "customer_phone": customer.phone_number
+        }
+        results.append(delivery_info)
+    
+    return results
 
 @router.get("/{order_id}", response_model=schemas.order, status_code=status.HTTP_200_OK)
 def get_order(order_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):

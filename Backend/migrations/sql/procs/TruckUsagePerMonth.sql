@@ -6,7 +6,7 @@ CREATE PROCEDURE sp_truck_usage_month(
 )
 BEGIN
   SELECT
-    t.truck_id,
+    t.truck_id, 
     t.license_num,
     COUNT(ts.schedule_id) AS trips,
     COALESCE(SUM(ts.duration),0) AS total_duration,
@@ -16,7 +16,7 @@ BEGIN
   JOIN trucks t ON t.truck_id = ts.truck_id
   WHERE YEAR(ts.scheduled_date) = in_year
     AND MONTH(ts.scheduled_date) = in_month
-  GROUP BY t.truck_id, t.license_num
+  GROUP BY t.truck_id, t.license_num 
   ORDER BY trips DESC;
 END
 --  $$
