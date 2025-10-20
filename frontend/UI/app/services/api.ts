@@ -199,6 +199,24 @@ export const AuthAPI = {
       role: string;
     }>('/customers/login', formData as any);
   },
+
+  // Customer signup
+  async signupCustomer(signupData: {
+    customer_user_name: string;
+    customer_name: string;
+    phone_number: string;
+    address: string;
+    password: string;
+  }) {
+    return httpClient.post<{
+      message: string;
+      access_token: string;
+      token_type: string;
+      customer_id: string;
+      customer_user_name: string;
+      role: string;
+    }>('/customers/signup', signupData);
+  },
 };
 
 // Orders API

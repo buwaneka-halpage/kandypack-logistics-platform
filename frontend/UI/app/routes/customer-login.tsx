@@ -237,7 +237,7 @@ export default function CustomerLoginRoute() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-300">
               Don't have an account?{' '}
-              <a href="#" className="text-[#5D5FEF] hover:text-[#4a4bc7] font-medium">
+              <a href="/signup" className="text-[#5D5FEF] hover:text-[#4a4bc7] font-medium">
                 Sign up now
               </a>
             </p>
