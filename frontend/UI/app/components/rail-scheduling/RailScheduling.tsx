@@ -23,6 +23,8 @@ import {
 
 // Import dashboard layout
 import DashboardLayout from "../dashboard/DashboardLayout";
+// Import AssignOrdersDialog
+import { AssignOrdersDialog } from "./AssignOrdersDialog";
 
 // TypeScript interfaces for API data
 interface TrainSchedule {
@@ -33,7 +35,8 @@ interface TrainSchedule {
   scheduled_date: string;  // Changed from date
   departure_time: string;
   arrival_time: string;
-  status: string;  // Added status field
+  cargo_capacity: number;  // NEW: Cargo capacity in units
+  status: "PLANNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";  // Fixed type
 }
 
 interface Train {
@@ -58,6 +61,10 @@ export function RailScheduling() {
   const [routeFilter, setRouteFilter] = useState<string>("all");
   const [departureTimeFilter, setDepartureTimeFilter] = useState<string>("all");
   const [arrivalTimeFilter, setArrivalTimeFilter] = useState<string>("all");
+
+  // Dialog state for assign orders
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<TrainSchedule | null>(null);
 
   // Fetch data from API
   useEffect(() => {
@@ -102,6 +109,18 @@ export function RailScheduling() {
     const source = stations.get(sourceId) || sourceId;
     const dest = stations.get(destId) || destId;
     return `${source} - ${dest}`;
+  };
+
+  // Handler for assign orders button
+  const handleAssignOrders = (schedule: TrainSchedule) => {
+    setSelectedSchedule(schedule);
+    setDialogOpen(true);
+  };
+
+  // Handler for when allocations are successfully created
+  const handleAllocationSuccess = () => {
+    // Optionally refresh schedules or show a notification
+    console.log("Allocations created successfully");
   };
 
   // Filter schedules based on selected filters
@@ -236,6 +255,7 @@ export function RailScheduling() {
                       <Button 
                         className="bg-purple-600 hover:bg-purple-700 text-white w-full"
                         size="sm"
+                        onClick={() => handleAssignOrders(schedule)}
                       >
                         <Plus className="h-4 w-4 mr-1" />
                         Assign Orders
@@ -253,6 +273,19 @@ export function RailScheduling() {
           <div className="text-sm text-gray-600">
             Showing {filteredSchedules.length} of {schedules.length} schedules
           </div>
+        )}
+
+        {/* Assign Orders Dialog */}
+        {selectedSchedule && (
+          <AssignOrdersDialog
+            isOpen={dialogOpen}
+            onClose={() => setDialogOpen(false)}
+            schedule={selectedSchedule}
+            trainName={trains.get(selectedSchedule.train_id) || selectedSchedule.train_id}
+            sourceStationName={stations.get(selectedSchedule.source_station_id) || selectedSchedule.source_station_id}
+            destinationStationName={stations.get(selectedSchedule.destination_station_id) || selectedSchedule.destination_station_id}
+            onSuccess={handleAllocationSuccess}
+          />
         )}
       </div>
     </DashboardLayout>

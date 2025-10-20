@@ -537,50 +537,60 @@ export const AssistantsAPI = {
 
 // Allocations API
 export const AllocationsAPI = {
-  // Rail allocations
-  rail: {
-    async getAll() {
-      return httpClient.get<any[]>('/allocations/rail');
-    },
-
-    async getById(allocationId: string) {
-      return httpClient.get<any>(`/allocations/rail/${allocationId}`);
-    },
-
-    async create(allocationData: any) {
-      return httpClient.post<any>('/allocations/rail', allocationData);
-    },
-
-    async update(allocationId: string, updateData: any) {
-      return httpClient.put<any>(`/allocations/rail/${allocationId}`, updateData);
-    },
-
-    async delete(allocationId: string) {
-      return httpClient.delete<any>(`/allocations/rail/${allocationId}`);
-    },
+  // Get all allocations (both rail and truck)
+  async getAll() {
+    return httpClient.get<any[]>('/allocations');
   },
 
-  // Truck allocations
-  truck: {
-    async getAll() {
-      return httpClient.get<any[]>('/allocations/truck');
-    },
+  async getById(allocationId: string) {
+    return httpClient.get<any>(`/allocations/${allocationId}`);
+  },
 
-    async getById(allocationId: string) {
-      return httpClient.get<any>(`/allocations/truck/${allocationId}`);
-    },
+  async create(allocationData: {
+    order_id: string;
+    schedule_id: string;
+    allocation_type: 'Rail' | 'Truck';
+    shipment_date: string;
+  }) {
+    return httpClient.post<any>('/allocations', allocationData);
+  },
 
-    async create(allocationData: any) {
-      return httpClient.post<any>('/allocations/truck', allocationData);
-    },
+  async update(allocationId: string, updateData: any) {
+    return httpClient.put<any>(`/allocations/${allocationId}`, updateData);
+  },
 
-    async update(allocationId: string, updateData: any) {
-      return httpClient.put<any>(`/allocations/truck/${allocationId}`, updateData);
-    },
+  async delete(allocationId: string) {
+    return httpClient.delete<any>(`/allocations/${allocationId}`);
+  },
 
-    async delete(allocationId: string) {
-      return httpClient.delete<any>(`/allocations/truck/${allocationId}`);
-    },
+  // Get capacity information for a train schedule
+  async getScheduleCapacity(scheduleId: string) {
+    return httpClient.get<{
+      schedule_id: string;
+      cargo_capacity: number;
+      allocated_space: number;
+      available_space: number;
+      utilization_percentage: number;
+      is_full: boolean;
+    }>(`/allocations/schedule/${scheduleId}/capacity`);
+  },
+
+  // Get all orders allocated to a specific schedule
+  async getScheduleAllocatedOrders(scheduleId: string) {
+    return httpClient.get<{
+      schedule_id: string;
+      total_allocations: number;
+      allocations: Array<{
+        allocation_id: string;
+        order_id: string;
+        customer_id: string;
+        deliver_city_id: string;
+        full_price: number;
+        allocated_space: number;
+        shipment_date: string;
+        status: string;
+      }>;
+    }>(`/allocations/schedule/${scheduleId}/allocated-orders`);
   },
 };
 
