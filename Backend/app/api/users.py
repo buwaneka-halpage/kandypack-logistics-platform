@@ -78,3 +78,68 @@ async def create_user(user: schemas.UserCreate, db: db_dependency, current_user:
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/", response_model=List[schemas.UserResponse])
+async def get_all_users(db: db_dependency, current_user: dict = Security(get_current_user)):
+    """Get all users (requires authentication)"""
+    users = db.query(model.Users).all()
+    return users
+
+
+@router.get("/{user_id}", response_model=schemas.UserResponse)
+async def get_user(user_id: str, db: db_dependency, current_user: dict = Security(get_current_user)):
+    """Get a specific user by ID (requires authentication)"""
+    user = db.query(model.Users).filter(model.Users.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
+
+
+@router.put("/{user_id}", response_model=schemas.UserResponse)
+async def update_user(user_id: str, user_update: schemas.UserUpdate, db: db_dependency, current_user: dict = Security(require_management)):
+    """Update a user (Management role required)"""
+    user = db.query(model.Users).filter(model.Users.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    
+    # Update fields
+    if user_update.user_name is not None:
+        # Check if new username already exists
+        existing = db.query(model.Users).filter(
+            model.Users.user_name == user_update.user_name,
+            model.Users.user_id != user_id
+        ).first()
+        if existing:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already exists")
+        user.user_name = user_update.user_name
+    
+    if user_update.password is not None:
+        user.password_hash = get_password_hash(user_update.password)
+    
+    if user_update.role is not None:
+        user.role = user_update.role
+    
+    try:
+        db.commit()
+        db.refresh(user)
+        return user
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(user_id: str, db: db_dependency, current_user: dict = Security(require_management)):
+    """Delete a user (Management role required)"""
+    user = db.query(model.Users).filter(model.Users.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    
+    try:
+        db.delete(user)
+        db.commit()
+        return None
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

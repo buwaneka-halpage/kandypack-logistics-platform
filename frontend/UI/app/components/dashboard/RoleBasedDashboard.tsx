@@ -164,10 +164,23 @@ const SystemAdminDashboard: React.FC<{ user: any }> = ({ user }) => {
       try {
         // Fetch real data from APIs
         const [usersData, storesData, ordersData] = await Promise.all([
-          UsersAPI.getAll().catch(() => []),
-          StoresAPI.getAll().catch(() => []),
-          OrdersAPI.getAll({ status: 'PLACED' }).catch(() => [])
+          UsersAPI.getAll().catch((err) => {
+            console.error('Error fetching users:', err);
+            return [];
+          }),
+          StoresAPI.getAll().catch((err) => {
+            console.error('Error fetching stores:', err);
+            return [];
+          }),
+          OrdersAPI.getAll({ status: 'PLACED' }).catch((err) => {
+            console.error('Error fetching orders:', err);
+            return [];
+          })
         ]);
+
+        console.log('Users data:', usersData);
+        console.log('Stores data:', storesData);
+        console.log('Orders data:', ordersData);
 
         setStats({
           totalUsers: usersData?.length || 0,
