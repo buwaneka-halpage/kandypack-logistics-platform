@@ -120,6 +120,9 @@ export function OrderManagement() {
           CustomersAPI.getAll()
         ]);
         
+        console.log('Orders fetched:', ordersData.length);
+        console.log('Sample order statuses:', ordersData.slice(0, 5).map(o => o.status));
+        
         setOrders(ordersData);
         
         // Create a map of customer_id to customer_name
@@ -139,11 +142,52 @@ export function OrderManagement() {
     fetchData();
   }, []);
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, dateFilter, cityFilter]);
+
   // Filter orders based on selected filters
   const filteredOrders = orders.filter((order) => {
-    if (statusFilter !== "all" && order.status.toUpperCase() !== statusFilter.toUpperCase()) {
-      return false;
+    // Status filter - normalize both values for comparison
+    if (statusFilter !== "all") {
+      const orderStatus = order.status.toUpperCase().replace(/ /g, '_');
+      const filterStatus = statusFilter.toUpperCase();
+      
+      console.log('Comparing:', { orderStatus, filterStatus, match: orderStatus === filterStatus });
+      
+      if (orderStatus !== filterStatus) {
+        return false;
+      }
     }
+    
+    // Date filter
+    if (dateFilter !== "all-time") {
+      const orderDate = new Date(order.order_date);
+      const today = new Date();
+      const daysAgo = {
+        "last-7-days": 7,
+        "last-30-days": 30,
+        "last-90-days": 90,
+      }[dateFilter];
+      
+      if (daysAgo) {
+        const cutoffDate = new Date(today);
+        cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
+        if (orderDate < cutoffDate) {
+          return false;
+        }
+      }
+    }
+    
+    // City filter
+    if (cityFilter !== "all") {
+      // Match city filter with deliver_city_id
+      if (order.deliver_city_id?.toLowerCase() !== cityFilter.toLowerCase()) {
+        return false;
+      }
+    }
+    
     return true;
   });
 
