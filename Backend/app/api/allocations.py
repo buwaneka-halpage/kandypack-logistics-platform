@@ -139,6 +139,13 @@ def create_allocation(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Order with ID {order_id} not found"
         )
+    
+    # Validate order has a warehouse assigned
+    if not order.warehouse_id or order.warehouse_id.strip() == "":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Order {order_id} must have a warehouse assigned before it can be allocated to a schedule. Please assign a warehouse first in Order Management."
+        )
 
     # Check shipment date
     if shipment_date < date.today():
@@ -186,6 +193,10 @@ def create_allocation(
                 allocated_space=order_space,
                 status=model.ScheduleStatus.PLANNED
             )
+            
+            # Update order status to SCHEDULED_RAIL
+            order.status = model.OrderStatus.SCHEDULED_RAIL
+            
         else:
             # Validate truck schedule exists
             schedule = db.query(model.TruckSchedules).filter(
@@ -203,6 +214,9 @@ def create_allocation(
                 shipment_date=shipment_date,
                 status=model.ScheduleStatus.PLANNED
             )
+            
+            # Update order status to SCHEDULED_ROAD
+            order.status = model.OrderStatus.SCHEDULED_ROAD
 
         db.add(allocation)
         db.commit()

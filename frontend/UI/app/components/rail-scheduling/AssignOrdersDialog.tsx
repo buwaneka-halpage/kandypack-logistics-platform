@@ -113,9 +113,13 @@ export function AssignOrdersDialog({
       ]);
 
       // Filter orders that can be allocated
+      // Orders must have a warehouse assigned and be in the correct status
       const availableOrders = ordersData.filter(
         (order: Order) => 
-          order.status === 'PLACED' || order.status === 'IN_WAREHOUSE'
+          (order.status === 'PLACED' || order.status === 'IN_WAREHOUSE') &&
+          order.warehouse_id !== null && 
+          order.warehouse_id !== undefined &&
+          order.warehouse_id.trim() !== ''
       );
 
       setOrders(availableOrders);
@@ -301,9 +305,15 @@ export function AssignOrdersDialog({
           ) : orders.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
               <Package className="h-12 w-12 text-slate-300 mb-3" />
-              <p className="text-slate-500">No available orders to assign</p>
+              <p className="text-slate-500 font-medium">No available orders to assign</p>
               <p className="text-sm text-slate-400 mt-1">
                 Orders must have status PLACED or IN_WAREHOUSE
+              </p>
+              <p className="text-sm text-slate-400">
+                and must have a warehouse assigned
+              </p>
+              <p className="text-xs text-slate-400 mt-3 bg-slate-100 px-3 py-2 rounded">
+                💡 Tip: Go to Order Management to assign warehouses to orders first
               </p>
             </div>
           ) : (
