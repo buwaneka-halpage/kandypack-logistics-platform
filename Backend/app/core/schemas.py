@@ -437,4 +437,22 @@ class update_truckSchedules(Truck_Schedule):
     status : ScheduleStatus
     
     model_config = {"from_attributes": True, "use_enum_values" :True} 
+
+
+# Customer order creation with items
+class OrderItemCreate(BaseModel):
+    product_type_id: str
+    quantity: int
+    unit_price: float
+
+    model_config = {"from_attributes": True}
+
+
+class CreateOrderWithItems(BaseModel):
+    deliver_address: str
+    deliver_city_id: str
+    order_date: datetime
+    items: list[OrderItemCreate]
+
+    model_config = {"from_attributes": True}
     

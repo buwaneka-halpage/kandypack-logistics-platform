@@ -4,7 +4,7 @@ import app.core.model as model
 from typing import Annotated, List
 from sqlalchemy.orm import Session
 from app.core import model, schemas
-from app.core.auth import get_current_user, check_role_permission
+from app.core.auth import get_current_user, get_current_customer, check_role_permission
 
 
 router = APIRouter(prefix="/cities")
@@ -12,6 +12,11 @@ model.Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
+@router.get("/list", status_code=status.HTTP_200_OK, response_model=List[schemas.City])
+def get_cities_for_customers(db: db_dependency, current_user: dict = Depends(get_current_customer)):
+    """Get all cities for customers (for delivery address selection)"""
+    cities = db.query(model.Cities).all()
+    return cities
 
 @router.get("/", status_code=status.HTTP_200_OK,response_model=List[schemas.City])
 def get_all_cities(db: db_dependency,  current_user: dict = Depends(get_current_user)):

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated, List
 from app.core.database import get_db
 from app.core import model, schemas
-from app.core.auth import get_current_user, check_role_permission
+from app.core.auth import get_current_user, get_current_customer, check_role_permission
 
 router = APIRouter(prefix="/products")
 db_dependency = Annotated[Session, Depends(get_db)]
@@ -21,6 +21,17 @@ def check_product_access(current_user: dict):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Requires Management or StoreManager role"
         )
+
+@router.get("/catalog", response_model=List[schemas.ProductResponse], status_code=status.HTTP_200_OK)
+async def get_products_catalog(
+    db: db_dependency,
+    current_user: dict = Depends(get_current_customer)
+):
+    """Get all products catalog for customers"""
+    products = db.query(model.Products).all()
+    if not products:
+        return []  # Return empty list instead of 404 for better UX
+    return products
 
 @router.get("/", response_model=List[schemas.ProductResponse], status_code=status.HTTP_200_OK)
 async def get_all_products(

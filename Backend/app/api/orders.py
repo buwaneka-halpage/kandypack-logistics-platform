@@ -156,6 +156,84 @@ def get_order(order_id: str, db: db_dependency, current_user: dict = Depends(get
     return order
 
 
+@router.post("/create-with-items", response_model=schemas.order, status_code=status.HTTP_201_CREATED)
+def create_order_with_items(
+    order_data: schemas.CreateOrderWithItems, 
+    db: db_dependency, 
+    current_user: dict = Depends(get_current_customer)
+):
+    """
+    Create a new order with items for customers.
+    Automatically uses the logged-in customer's ID.
+    """
+    customer_id = current_user.get("user_id")
+    
+    # Validate date (must be at least 7 days from today)
+    sl_tz = pytz.timezone("Asia/Colombo")
+    now = datetime.now(sl_tz)
+    order_date_obj = order_data.order_date
+    if order_date_obj.tzinfo is None:
+        order_date_obj = sl_tz.localize(order_date_obj)
+    if order_date_obj < now + timedelta(days=7):
+        raise HTTPException(
+            status_code=400,
+            detail="Order date must be at least 7 days from today."
+        )
+    
+    # Validate customer exists
+    customer = db.query(model.Customers).filter(model.Customers.customer_id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail=f"Customer not found")
+    
+    # Validate city exists
+    city = db.query(model.Cities).filter(model.Cities.city_id == order_data.deliver_city_id).first()
+    if not city:
+        raise HTTPException(status_code=404, detail=f"City not found")
+    
+    # Validate all products exist
+    if not order_data.items or len(order_data.items) == 0:
+        raise HTTPException(status_code=400, detail="Order must have at least one item")
+    
+    for item in order_data.items:
+        product = db.query(model.Products).filter(
+            model.Products.product_type_id == item.product_type_id
+        ).first()
+        if not product:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Product {item.product_type_id} not found"
+            )
+    
+    # Calculate total price
+    total_price = sum(item.quantity * item.unit_price for item in order_data.items)
+    
+    # Create the order
+    new_order = model.Orders(
+        customer_id=customer_id,
+        order_date=order_date_obj,
+        deliver_address=order_data.deliver_address,
+        deliver_city_id=order_data.deliver_city_id,
+        full_price=total_price,
+        status=model.OrderStatus.PLACED
+    )
+    
+    db.add(new_order)
+    db.flush()  # Flush to get the order_id before committing
+    
+    # Note: OrderItems will require store_id. For now, we'll skip creating order items
+    # as the store assignment happens later in the workflow.
+    # You may want to add order items creation here if you have a default store
+    # or if customers can select stores.
+    
+    db.commit()
+    db.refresh(new_order)
+    
+    # Convert enum status to string value
+    if isinstance(new_order.status, model.OrderStatus):
+        new_order.status = new_order.status.value
+    
+    return new_order
+
 
 @router.post("/", response_model=schemas.order, status_code=status.HTTP_201_CREATED)
 def create_order(order: schemas.create_new_order, db: db_dependency, current_user: dict = Depends(get_current_customer)):

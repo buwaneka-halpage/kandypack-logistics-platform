@@ -226,6 +226,20 @@ export const OrdersAPI = {
     return httpClient.get<any[]>('/orders/my-orders');
   },
 
+  // Create order with items for customers
+  async createWithItems(orderData: {
+    deliver_address: string;
+    deliver_city_id: string;
+    order_date: string;
+    items: Array<{
+      product_type_id: string;
+      quantity: number;
+      unit_price: number;
+    }>;
+  }) {
+    return httpClient.post<any>('/orders/create-with-items', orderData);
+  },
+
   async getAll(params?: { status?: string; customer_id?: string; warehouse_id?: string }) {
     return httpClient.get<any[]>('/orders', params);
   },
@@ -307,6 +321,11 @@ export const CustomersAPI = {
 
 // Cities API
 export const CitiesAPI = {
+  // Get cities list for customers (for delivery address selection)
+  async getList() {
+    return httpClient.get<any[]>('/cities/list');
+  },
+
   async getAll() {
     return httpClient.get<any[]>('/cities');
   },
@@ -376,6 +395,11 @@ export const StoresAPI = {
 
 // Products API
 export const ProductsAPI = {
+  // Get products catalog for customers (no staff permissions required)
+  async getCatalog() {
+    return httpClient.get<any[]>('/products/catalog');
+  },
+
   async getAll() {
     return httpClient.get<any[]>('/products');
   },
