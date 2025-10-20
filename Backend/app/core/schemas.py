@@ -195,6 +195,7 @@ class Train_Schedules(BaseModel):
     scheduled_date : date
     departure_time : time
     arrival_time : time
+    cargo_capacity : float
     status : ScheduleStatus
 
 class RailwayAllocationBase(BaseModel):
@@ -202,6 +203,7 @@ class RailwayAllocationBase(BaseModel):
     order_id : str 
     schedule_id : str 
     shipment_date : str 
+    allocated_space : float
     status : str 
 
     model_config = {"from_attributes": True}
@@ -385,6 +387,7 @@ class create_new_trainSchedule(Train_Schedules):
     scheduled_date: datetime 
     arrival_time  : time
     departure_time : time
+    cargo_capacity : float
     status: ScheduleStatus
     model_config = {"from_attributes": True, "use_enum_values": True}
     
@@ -416,6 +419,7 @@ class update_trainSchedules(Train_Schedules):
     scheduled_date: datetime 
     arrival_time  : time
     departure_time : time
+    cargo_capacity : float
     status: ScheduleStatus
     
     model_config = {"from_attributes": True, "use_enum_values" :True} 

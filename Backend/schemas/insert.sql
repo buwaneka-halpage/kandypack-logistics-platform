@@ -178,31 +178,33 @@ INSERT INTO trains (train_id, train_name, capacity) VALUES
 ('t0a1b2c3-w4x5-6789-cde6-0123456789', 'Coastal Line', 750);
 
 -- Train Schedules (Real routes with source/destination stations - dates 7+ days from Oct 20, 2025)
-INSERT INTO train_schedules (schedule_id, train_id, source_station_id, destination_station_id, scheduled_date, departure_time, arrival_time, status) VALUES
--- Samudra Devi (Colombo Fort → Galle) - Express service
-('ts-samudra-1', 'train-samudra-devi', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's2a3b4c5-e6f7-8901-bcde-2345678901', '2025-10-30', '07:45:00', '10:30:00', 'PLANNED'),
-('ts-samudra-2', 'train-samudra-devi', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's2a3b4c5-e6f7-8901-bcde-2345678901', '2025-11-06', '07:45:00', '10:30:00', 'PLANNED'),
--- Podi Menike (Colombo Fort → Galle) - Observation saloon available
-('ts-podi-1', 'train-podi-menike', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's2a3b4c5-e6f7-8901-bcde-2345678901', '2025-10-31', '06:55:00', '09:50:00', 'PLANNED'),
-('ts-podi-2', 'train-podi-menike', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's2a3b4c5-e6f7-8901-bcde-2345678901', '2025-11-07', '06:55:00', '09:50:00', 'PLANNED'),
--- Deyata Kirula (Colombo Fort → Matara) - Long distance
-('ts-deyata-1', 'train-deyata-kirula', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-11-01', '16:20:00', '19:50:00', 'PLANNED'),
-('ts-deyata-2', 'train-deyata-kirula', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-11-08', '16:20:00', '19:50:00', 'PLANNED'),
--- Ruhunu Kumari (Colombo Fort → Matara) - Popular route
-('ts-ruhunu-1', 'train-ruhunu-kumari', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-11-02', '11:10:00', '14:45:00', 'PLANNED'),
-('ts-ruhunu-2', 'train-ruhunu-kumari', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-11-09', '11:10:00', '14:45:00', 'PLANNED'),
--- Intercity Express (Colombo Fort → Matara) - Early morning
-('ts-intercity-1', 'train-intercity-express', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-10-30', '04:40:00', '08:15:00', 'PLANNED'),
-('ts-intercity-2', 'train-intercity-express', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-11-06', '04:40:00', '08:15:00', 'PLANNED'),
--- Additional trains for variety
-('ts-udarata-1', 't1a2b3c4-d5e6-7890-abcd-1234567890', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's3a4b5c6-f7g8-9012-cdef-3456789012', '2025-10-31', '08:00:00', '12:00:00', 'PLANNED'),
-('ts-yaldevi-1', 't3a4b5c6-f7g8-9012-cdef-3456789012', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's4a5b6c7-g8h9-0123-def0-4567890123', '2025-11-01', '09:00:00', '16:30:00', 'PLANNED');
+INSERT INTO train_schedules (schedule_id, train_id, source_station_id, destination_station_id, scheduled_date, departure_time, arrival_time, cargo_capacity, status) VALUES
+-- Samudra Devi (Colombo Fort → Galle) - Express service - Capacity: 500 units
+('ts-samudra-1', 'train-samudra-devi', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's2a3b4c5-e6f7-8901-bcde-2345678901', '2025-10-30', '07:45:00', '10:30:00', 500.0, 'PLANNED'),
+('ts-samudra-2', 'train-samudra-devi', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's2a3b4c5-e6f7-8901-bcde-2345678901', '2025-11-06', '07:45:00', '10:30:00', 500.0, 'PLANNED'),
+-- Podi Menike (Colombo Fort → Galle) - Observation saloon available - Capacity: 600 units
+('ts-podi-1', 'train-podi-menike', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's2a3b4c5-e6f7-8901-bcde-2345678901', '2025-10-31', '06:55:00', '09:50:00', 600.0, 'PLANNED'),
+('ts-podi-2', 'train-podi-menike', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's2a3b4c5-e6f7-8901-bcde-2345678901', '2025-11-07', '06:55:00', '09:50:00', 600.0, 'PLANNED'),
+-- Deyata Kirula (Colombo Fort → Matara) - Long distance - Capacity: 450 units
+('ts-deyata-1', 'train-deyata-kirula', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-11-01', '16:20:00', '19:50:00', 450.0, 'PLANNED'),
+('ts-deyata-2', 'train-deyata-kirula', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-11-08', '16:20:00', '19:50:00', 450.0, 'PLANNED'),
+-- Ruhunu Kumari (Colombo Fort → Matara) - Popular route - Capacity: 550 units
+('ts-ruhunu-1', 'train-ruhunu-kumari', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-11-02', '11:10:00', '14:45:00', 550.0, 'PLANNED'),
+('ts-ruhunu-2', 'train-ruhunu-kumari', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-11-09', '11:10:00', '14:45:00', 550.0, 'PLANNED'),
+-- Intercity Express (Colombo Fort → Matara) - Early morning - Capacity: 400 units
+('ts-intercity-1', 'train-intercity-express', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-10-30', '04:40:00', '08:15:00', 400.0, 'PLANNED'),
+('ts-intercity-2', 'train-intercity-express', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's8a9b0c1-k2l3-4567-bcd4-8901234567', '2025-11-06', '04:40:00', '08:15:00', 400.0, 'PLANNED'),
+-- Additional trains for variety - Capacity: 350 units each
+('ts-udarata-1', 't1a2b3c4-d5e6-7890-abcd-1234567890', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's3a4b5c6-f7g8-9012-cdef-3456789012', '2025-10-31', '08:00:00', '12:00:00', 350.0, 'PLANNED'),
+('ts-yaldevi-1', 't3a4b5c6-f7g8-9012-cdef-3456789012', 's1a2b3c4-d5e6-7890-abcd-1234567890', 's4a5b6c7-g8h9-0123-def0-4567890123', '2025-11-01', '09:00:00', '16:30:00', 350.0, 'PLANNED');
 
--- Rail Allocations
-INSERT INTO rail_allocations (allocation_id, order_id, schedule_id, shipment_date, status) VALUES
-('ra1a2b3c4-d5e6-7890-abcd-1234567890', 'o1b2c3d4-e5f6-7890-abcd-1234567890', 'ts1a2b3c4-d5e6-7890-abcd-1234567890', '2025-10-21', 'PLANNED'),
-('ra2a3b4c5-e6f7-8901-bcde-2345678901', 'o2b3c4d5-f6a7-8901-bcde-2345678901', 'ts2a3b4c5-e6f7-8901-bcde-2345678901', '2025-10-22', 'PLANNED'),
-('ra3a4b5c6-f7g8-9012-cdef-3456789012', 'o3b4c5d6-a7b8-9012-cdef-3456789012', 'ts3a4b5c6-f7g8-9012-cdef-3456789012', '2025-10-23', 'PLANNED');
+-- Rail Allocations (with calculated allocated_space based on order items)
+-- Note: allocated_space is calculated from order_items quantity * product space_consumption_rate
+-- Example: Order o1 has 100 units of Rice (0.5 space rate) = 50 space units
+INSERT INTO rail_allocations (allocation_id, order_id, schedule_id, shipment_date, allocated_space, status) VALUES
+('ra1a2b3c4-d5e6-7890-abcd-1234567890', 'o1b2c3d4-e5f6-7890-abcd-1234567890', 'ts1a2b3c4-d5e6-7890-abcd-1234567890', '2025-10-21', 50.0, 'PLANNED'),
+('ra2a3b4c5-e6f7-8901-bcde-2345678901', 'o2b3c4d5-f6a7-8901-bcde-2345678901', 'ts2a3b4c5-e6f7-8901-bcde-2345678901', '2025-10-22', 15.0, 'PLANNED'),
+('ra3a4b5c6-f7g8-9012-cdef-3456789012', 'o3b4c5d6-a7b8-9012-cdef-3456789012', 'ts3a4b5c6-f7g8-9012-cdef-3456789012', '2025-10-23', 40.0, 'PLANNED');
 
 -- Drivers
 INSERT INTO drivers (driver_id, name, weekly_working_hours, user_id) VALUES

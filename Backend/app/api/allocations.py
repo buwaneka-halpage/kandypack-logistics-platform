@@ -7,6 +7,12 @@ from app.core import model, schemas
 import pytz
 from enum import Enum
 from app.core.auth import get_current_user
+from app.utils.capacity_calculator import (
+    calculate_order_space,
+    check_capacity_available,
+    get_schedule_available_space,
+    get_schedule_capacity_info
+)
 
 router = APIRouter(prefix="/allocations")
 db_dependency = Annotated[Session, Depends(get_db)]
@@ -42,6 +48,7 @@ def get_all_allocations(
             "order_id": rail.order_id,
             "schedule_id": rail.schedule_id,
             "shipment_date": rail.shipment_date,
+            "allocated_space": rail.allocated_space,
             "status": rail.status.value,
             "allocation_type": "Rail"
         })
@@ -83,6 +90,7 @@ def get_allocation_by_id(
             "order_id": rail_allocation.order_id,
             "schedule_id": rail_allocation.schedule_id,
             "shipment_date": rail_allocation.shipment_date,
+            "allocated_space": rail_allocation.allocated_space,
             "status": rail_allocation.status.value,
             "allocation_type": "Rail"
         }
@@ -151,10 +159,31 @@ def create_allocation(
                     detail=f"Train schedule with ID {schedule_id} not found"
                 )
 
+            # Calculate order space consumption
+            try:
+                order_space = calculate_order_space(db, order_id)
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=str(e)
+                )
+
+            # Check capacity availability
+            is_available, available_space, required_space = check_capacity_available(
+                db, schedule_id, order_space
+            )
+
+            if not is_available:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Insufficient capacity on train schedule. Required: {required_space} units, Available: {available_space} units. Please assign to next available trip or reduce order quantity."
+                )
+
             allocation = model.RailAllocations(
                 order_id=order_id,
                 schedule_id=schedule_id,
                 shipment_date=shipment_date,
+                allocated_space=order_space,
                 status=model.ScheduleStatus.PLANNED
             )
         else:
@@ -179,7 +208,7 @@ def create_allocation(
         db.commit()
         db.refresh(allocation)
 
-        return {
+        response = {
             "allocation_id": allocation.allocation_id,
             "order_id": allocation.order_id,
             "schedule_id": allocation.schedule_id,
@@ -187,6 +216,12 @@ def create_allocation(
             "status": allocation.status.value,
             "allocation_type": allocation_type.value
         }
+
+        # Add allocated_space to response for rail allocations
+        if allocation_type == AllocationType.RAIL:
+            response["allocated_space"] = allocation.allocated_space
+
+        return response
 
     except Exception as e:
         db.rollback()
@@ -308,3 +343,83 @@ def delete_allocation(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+
+
+@router.get("/schedule/{schedule_id}/capacity", status_code=status.HTTP_200_OK)
+def get_schedule_capacity(
+    schedule_id: str,
+    db: db_dependency,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get capacity information for a train schedule"""
+    role = current_user.get("role")
+    if role not in ["Assistant", "Management"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You cannot access capacity information"
+        )
+
+    try:
+        capacity_info = get_schedule_capacity_info(db, schedule_id)
+        return capacity_info
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
+
+
+@router.get("/schedule/{schedule_id}/allocated-orders", status_code=status.HTTP_200_OK)
+def get_schedule_allocated_orders(
+    schedule_id: str,
+    db: db_dependency,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all orders allocated to a specific train schedule"""
+    role = current_user.get("role")
+    if role not in ["Assistant", "Management"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You cannot access allocations"
+        )
+
+    # Verify schedule exists
+    schedule = db.query(model.TrainSchedules).filter(
+        model.TrainSchedules.schedule_id == schedule_id
+    ).first()
+    if not schedule:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Schedule {schedule_id} not found"
+        )
+
+    # Get all allocations for this schedule
+    allocations = db.query(model.RailAllocations).filter(
+        model.RailAllocations.schedule_id == schedule_id,
+        model.RailAllocations.status.in_(['PLANNED', 'IN_PROGRESS'])
+    ).all()
+
+    # Get order details for each allocation
+    result = []
+    for allocation in allocations:
+        order = db.query(model.Orders).filter(
+            model.Orders.order_id == allocation.order_id
+        ).first()
+        
+        if order:
+            result.append({
+                "allocation_id": allocation.allocation_id,
+                "order_id": order.order_id,
+                "customer_id": order.customer_id,
+                "deliver_city_id": order.deliver_city_id,
+                "full_price": order.full_price,
+                "allocated_space": allocation.allocated_space,
+                "shipment_date": allocation.shipment_date,
+                "status": allocation.status.value
+            })
+
+    return {
+        "schedule_id": schedule_id,
+        "total_allocations": len(result),
+        "allocations": result
+    }

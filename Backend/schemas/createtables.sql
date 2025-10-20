@@ -124,10 +124,12 @@ CREATE TABLE train_schedules (
     scheduled_date DATE NOT NULL,
     departure_time TIME NOT NULL,
     arrival_time TIME NOT NULL,
+    cargo_capacity FLOAT NOT NULL,
     status ENUM('PLANNED','IN_PROGRESS','COMPLETED','CANCELLED') NOT NULL DEFAULT 'PLANNED',
     FOREIGN KEY (train_id) REFERENCES trains(train_id),
     FOREIGN KEY (source_station_id) REFERENCES railway_stations(station_id),
-    FOREIGN KEY (destination_station_id) REFERENCES railway_stations(station_id)
+    FOREIGN KEY (destination_station_id) REFERENCES railway_stations(station_id),
+    CONSTRAINT positive_cargo_capacity CHECK (cargo_capacity > 0)
 );
 
 -- Rail Allocations
@@ -136,9 +138,11 @@ CREATE TABLE rail_allocations (
     order_id CHAR(36) NOT NULL,
     schedule_id CHAR(36) NOT NULL,
     shipment_date DATE NOT NULL,
+    allocated_space FLOAT NOT NULL,
     status ENUM('PLANNED','IN_PROGRESS','COMPLETED','CANCELLED') NOT NULL DEFAULT 'PLANNED',
     FOREIGN KEY (order_id) REFERENCES orders(order_id),
-    FOREIGN KEY (schedule_id) REFERENCES train_schedules(schedule_id)
+    FOREIGN KEY (schedule_id) REFERENCES train_schedules(schedule_id),
+    CONSTRAINT positive_allocated_space CHECK (allocated_space > 0)
 );
 
 -- Drivers

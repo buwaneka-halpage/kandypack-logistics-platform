@@ -37,6 +37,7 @@ def get_all_train_Schedules(db: db_dependency, current_user: dict = Depends(get_
             "scheduled_date": schedule.scheduled_date,  # keep as datetime
             "departure_time": schedule.departure_time,  # keep as time
             "arrival_time": schedule.arrival_time,      # keep as time
+            "cargo_capacity": schedule.cargo_capacity,  # cargo capacity
             "status": schedule.status.value             # enum -> string
         })
     
@@ -85,6 +86,7 @@ def create_new_train_schedule( new_train_schedule: schemas.create_new_trainSched
         scheduled_date = new_train_schedule.scheduled_date,
         departure_time = new_train_schedule.departure_time, 
         arrival_time = new_train_schedule.arrival_time,
+        cargo_capacity = new_train_schedule.cargo_capacity,
         status = new_train_schedule.status
         ) 
     db.add(new_train_schedule)
