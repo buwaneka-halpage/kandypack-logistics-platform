@@ -1,7 +1,7 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Loader2, Package, AlertCircle, CheckCircle2 } from "lucide-react";
-import { OrdersAPI, AllocationsAPI } from "~/services/api";
+import { OrdersAPI, AllocationsAPI, ProductsAPI, httpClient } from "~/services/api";
 import type { 
   TrainSchedule, 
   Order, 
@@ -52,6 +52,7 @@ export function AssignOrdersDialog({
 }: AssignOrdersDialogProps) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [orderSpaces, setOrderSpaces] = useState<Map<string, number>>(new Map());
   const [capacityInfo, setCapacityInfo] = useState<ScheduleCapacityInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -65,10 +66,38 @@ export function AssignOrdersDialog({
     } else {
       // Reset state when dialog closes
       setSelectedOrders(new Set());
+      setOrderSpaces(new Map());
       setError(null);
       setSuccess(false);
     }
   }, [isOpen, schedule]);
+
+  // Calculate total space for selected orders
+  const selectedOrdersSpace = useMemo(() => {
+    let total = 0;
+    selectedOrders.forEach(orderId => {
+      total += orderSpaces.get(orderId) || 0;
+    });
+    return total;
+  }, [selectedOrders, orderSpaces]);
+
+  // Calculate updated capacity info with selected orders
+  const updatedCapacityInfo = useMemo(() => {
+    if (!capacityInfo) return null;
+    
+    const newAllocatedSpace = capacityInfo.allocated_space + selectedOrdersSpace;
+    const newAvailableSpace = capacityInfo.cargo_capacity - newAllocatedSpace;
+    const newUtilizationPercentage = (newAllocatedSpace / capacityInfo.cargo_capacity) * 100;
+    const newIsFull = newAvailableSpace <= 0;
+
+    return {
+      ...capacityInfo,
+      allocated_space: newAllocatedSpace,
+      available_space: newAvailableSpace,
+      utilization_percentage: newUtilizationPercentage,
+      is_full: newIsFull,
+    };
+  }, [capacityInfo, selectedOrdersSpace]);
 
   async function fetchData() {
     if (!schedule) return;
@@ -91,6 +120,24 @@ export function AssignOrdersDialog({
 
       setOrders(availableOrders);
       setCapacityInfo(capacityData);
+
+      // Fetch space consumption for each order
+      const spacesMap = new Map<string, number>();
+      await Promise.all(
+        availableOrders.map(async (order: Order) => {
+          try {
+            // Call backend to calculate order space
+            const response: any = await httpClient.get(`/orders/${order.order_id}/space`);
+            spacesMap.set(order.order_id, response.space || 0);
+          } catch (err) {
+            console.error(`Failed to get space for order ${order.order_id}:`, err);
+            // Use estimated space based on full_price (rough estimate)
+            spacesMap.set(order.order_id, order.full_price / 100);
+          }
+        })
+      );
+      setOrderSpaces(spacesMap);
+
     } catch (err: any) {
       console.error("Error fetching data:", err);
       setError(err.message || "Failed to load data");
@@ -157,9 +204,11 @@ export function AssignOrdersDialog({
 
   if (!schedule) return null;
 
-  const utilizationPercentage = capacityInfo?.utilization_percentage || 0;
-  const availableSpace = capacityInfo?.available_space || 0;
-  const cargoCapacity = capacityInfo?.cargo_capacity || 0;
+  const displayCapacityInfo = updatedCapacityInfo || capacityInfo;
+  const utilizationPercentage = displayCapacityInfo?.utilization_percentage || 0;
+  const availableSpace = displayCapacityInfo?.available_space || 0;
+  const cargoCapacity = displayCapacityInfo?.cargo_capacity || 0;
+  const allocatedSpace = displayCapacityInfo?.allocated_space || 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -174,12 +223,12 @@ export function AssignOrdersDialog({
         </DialogHeader>
 
         {/* Capacity Information */}
-        {capacityInfo && (
+        {displayCapacityInfo && (
           <div className="space-y-3 bg-slate-50 p-4 rounded-lg">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Cargo Capacity Utilization</span>
               <span className="text-sm font-semibold">
-                {capacityInfo.allocated_space.toFixed(1)} / {cargoCapacity.toFixed(1)} units
+                {allocatedSpace.toFixed(1)} / {cargoCapacity.toFixed(1)} units
                 ({utilizationPercentage.toFixed(1)}%)
               </span>
             </div>
@@ -193,19 +242,31 @@ export function AssignOrdersDialog({
               </div>
               <div>
                 <p className="text-muted-foreground">Already Allocated</p>
-                <p className="font-semibold">{capacityInfo.allocated_space.toFixed(1)} units</p>
+                <p className="font-semibold">
+                  {allocatedSpace.toFixed(1)} units
+                  {selectedOrdersSpace > 0 && (
+                    <span className="text-purple-600 ml-1">
+                      (+{selectedOrdersSpace.toFixed(1)})
+                    </span>
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-muted-foreground">Available Space</p>
-                <p className="font-semibold text-green-600">{availableSpace.toFixed(1)} units</p>
+                <p className={`font-semibold ${availableSpace < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {availableSpace.toFixed(1)} units
+                </p>
               </div>
             </div>
 
-            {capacityInfo.is_full && (
+            {displayCapacityInfo.is_full && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  This train schedule is at full capacity. No more orders can be allocated.
+                  {availableSpace < 0 
+                    ? `Selected orders exceed available capacity by ${Math.abs(availableSpace).toFixed(1)} units. Please reduce selection.`
+                    : 'This train schedule is at full capacity. No more orders can be allocated.'
+                  }
                 </AlertDescription>
               </Alert>
             )}
@@ -258,6 +319,7 @@ export function AssignOrdersDialog({
                   <TableHead>Customer</TableHead>
                   <TableHead>Delivery City</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Space</TableHead>
                   <TableHead className="text-right">Price</TableHead>
                 </TableRow>
               </TableHeader>
@@ -279,6 +341,12 @@ export function AssignOrdersDialog({
                       <Badge variant={order.status === 'PLACED' ? 'default' : 'secondary'}>
                         {order.status.replace('_', ' ')}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-sm">
+                      {orderSpaces.has(order.order_id) 
+                        ? `${orderSpaces.get(order.order_id)?.toFixed(1)} units`
+                        : <Loader2 className="h-3 w-3 animate-spin inline" />
+                      }
                     </TableCell>
                     <TableCell className="text-right font-semibold">
                       LKR {order.full_price.toLocaleString()}
@@ -303,7 +371,11 @@ export function AssignOrdersDialog({
               </Button>
               <Button 
                 onClick={handleAssign} 
-                disabled={selectedOrders.size === 0 || submitting || capacityInfo?.is_full}
+                disabled={
+                  selectedOrders.size === 0 || 
+                  submitting || 
+                  (displayCapacityInfo?.is_full && availableSpace < 0)
+                }
               >
                 {submitting ? (
                   <>
