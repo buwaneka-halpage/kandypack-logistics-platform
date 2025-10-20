@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Annotated
 from app.core.database import engine
 import app.core.model as model
@@ -78,16 +78,16 @@ class CustomerCreate(BaseModel):
 
 # order 
 class order(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     order_id : str 
     customer_id: str 
     order_date: datetime
     deliver_address  : str 
-    status : OrderStatus
+    status : str  # Accept string for responses (enum values will be serialized to strings)
     deliver_city_id: str 
     full_price  : float 
     warehouse_id: str | None = None
-
-    model_config = {"from_attributes": True, "use_enum_values": True}
 
 class store(BaseModel):
     store_id : str 
@@ -186,6 +186,8 @@ class Train(BaseModel):
 
 
 class Train_Schedules(BaseModel):
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+    
     schedule_id : str 
     train_id : str 
     station_id : str 
@@ -193,9 +195,6 @@ class Train_Schedules(BaseModel):
     departure_time : time
     arrival_time : time
     status : ScheduleStatus
-
-    model_config = {"from_attributes": True, "use_enum_values": True}
-    
 
 class RailwayAllocationBase(BaseModel):
     allocation_id : str 
@@ -267,6 +266,8 @@ class AssistantResponse(AssistantBase):
     model_config = {"from_attributes": True}
 
 class Truck_Schedule(BaseModel):
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+    
     schedule_id : str 
     route_id : str 
     truck_id : str 
@@ -276,8 +277,6 @@ class Truck_Schedule(BaseModel):
     departure_time : time
     duration : int  
     status : ScheduleStatus
-
-    model_config = {"from_attributes": True, "use_enum_values": True} 
     
 class Truck_allocationBase(BaseModel):
     allocation_id : str 

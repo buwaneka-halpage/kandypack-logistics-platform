@@ -55,6 +55,12 @@ def get_all_Orders(db: db_dependency,  current_user: dict = Depends(get_current_
     orders_= db.query(model.Orders).all()
     if orders_ is None:
         raise HTTPException(status_code=404, detail=f"Order history not found")
+    
+    # Convert enum status to string value
+    for order in orders_:
+        if isinstance(order.status, model.OrderStatus):
+            order.status = order.status.value
+    
     return orders_
 
 
@@ -70,6 +76,11 @@ def get_order(order_id: str, db: db_dependency, current_user: dict = Depends(get
     order = db.query(model.Orders).filter(model.Orders.order_id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
+    
+    # Convert enum status to string value
+    if isinstance(order.status, model.OrderStatus):
+        order.status = order.status.value
+    
     return order
 
 
