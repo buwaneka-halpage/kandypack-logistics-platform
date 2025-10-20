@@ -103,6 +103,17 @@ class store(BaseModel):
 
     model_config = {"from_attributes": True}
 
+class StoreWithCity(BaseModel):
+    store_id : str 
+    name : str 
+    telephone_number : str 
+    address : str 
+    contact_person : str 
+    station_id : str
+    city_name: str | None = None  # Nested city name from station relationship
+
+    model_config = {"from_attributes": True}
+
 
 class route(BaseModel):
     route_id  : str 

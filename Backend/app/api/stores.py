@@ -10,7 +10,7 @@ router = APIRouter(prefix="/stores")
 model.Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@router.get("/", status_code=status.HTTP_200_OK,response_model=List[schemas.store])
+@router.get("/", status_code=status.HTTP_200_OK, response_model=List[schemas.StoreWithCity])
 def get_all_stores(db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
     if not check_role_permission(role, ["WarehouseStaff", "Management"]):
@@ -19,12 +19,32 @@ def get_all_stores(db: db_dependency, current_user: dict = Depends(get_current_u
             detail="WarehouseStaff, Management or SystemAdmin role required"
         )
     stores = db.query(model.Stores).all()
-    if stores is None :
+    if stores is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"stores not found."
         )
-    return stores
+    
+    # Enrich stores with city names
+    result = []
+    for store in stores:
+        store_dict = {
+            "store_id": store.store_id,
+            "name": store.name,
+            "telephone_number": store.telephone_number,
+            "address": store.address,
+            "contact_person": store.contact_person,
+            "station_id": store.station_id,
+            "city_name": None
+        }
+        
+        # Get city name through station relationship
+        if store.station and store.station.city:
+            store_dict["city_name"] = store.station.city.city_name
+        
+        result.append(store_dict)
+    
+    return result
 
 @router.get("/stores{store_id}", status_code=status.HTTP_200_OK)
 def get_store_by_id(db: db_dependency, store_id: str,  current_user: dict = Depends(get_current_user) ):

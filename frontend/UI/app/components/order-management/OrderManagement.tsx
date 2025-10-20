@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { MoreHorizontal, ChevronDown, Loader2, X } from "lucide-react";
-import { OrdersAPI, CustomersAPI } from "~/services/api";
+import { OrdersAPI, CustomersAPI, StoresAPI, CitiesAPI } from "~/services/api";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -75,6 +75,22 @@ interface Customer {
   customer_name: string;
 }
 
+interface Store {
+  store_id: string;
+  name: string;
+  address: string;
+  telephone_number: string;
+  contact_person: string;
+  station_id: string;
+  city_name?: string | null; // City name from backend
+}
+
+interface City {
+  city_id: string;
+  city_name: string;
+  province: string;
+}
+
 type OrderStatus = "DISPATCHED" | "DELIVERED" | "PENDING" | "PLACED" | "SCHEDULED_RAIL" | "IN_WAREHOUSE" | "SCHEDULED_ROAD" | "FAILED";
 
 // Status mapping - Frontend keys to Backend enum values
@@ -140,6 +156,8 @@ const getStatusColor = (status: string) => {
 export function OrderManagement() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customers, setCustomers] = useState<Map<string, string>>(new Map());
+  const [stores, setStores] = useState<Store[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -154,6 +172,7 @@ export function OrderManagement() {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isAssignWarehouseDialogOpen, setIsAssignWarehouseDialogOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   
@@ -162,28 +181,37 @@ export function OrderManagement() {
     deliver_address: '',
     deliver_city_id: '',
     full_price: 0,
+    order_date: '',
   });
   
   // Status update state
   const [newStatus, setNewStatus] = useState<string>('');
+  
+  // Warehouse assignment state
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
 
-  // Fetch orders and customers
+  // Fetch orders, customers, stores, and cities
   useEffect(() => {
     async function fetchData() {
       try {
         setLoading(true);
         setError(null);
         
-        // Fetch orders and customers in parallel
-        const [ordersData, customersData] = await Promise.all([
+        // Fetch all data in parallel
+        const [ordersData, customersData, storesData, citiesData] = await Promise.all([
           OrdersAPI.getAll(),
-          CustomersAPI.getAll()
+          CustomersAPI.getAll(),
+          StoresAPI.getAll(),  // Now returns city_name for each store
+          CitiesAPI.getAll()
         ]);
         
         console.log('Orders fetched:', ordersData.length);
-        console.log('Sample order statuses:', ordersData.slice(0, 5).map(o => o.status));
+        console.log('Sample order statuses:', ordersData.slice(0, 5).map((o: any) => o.status));
+        console.log('Sample stores with cities:', storesData.slice(0, 3));
         
         setOrders(ordersData);
+        setStores(storesData);
+        setCities(citiesData);
         
         // Create a map of customer_id to customer_name
         const customerMap = new Map<string, string>();
@@ -192,8 +220,8 @@ export function OrderManagement() {
         });
         setCustomers(customerMap);
       } catch (err: any) {
-        console.error('Error fetching orders:', err);
-        setError(err.message || 'Failed to load orders');
+        console.error('Error fetching data:', err);
+        setError(err.message || 'Failed to load data');
       } finally {
         setLoading(false);
       }
@@ -219,6 +247,7 @@ export function OrderManagement() {
       deliver_address: order.deliver_address,
       deliver_city_id: order.deliver_city_id || '',
       full_price: order.full_price,
+      order_date: order.order_date.split('T')[0], // Convert to date only
     });
     setIsEditDialogOpen(true);
     setActionError(null);
@@ -236,6 +265,13 @@ export function OrderManagement() {
     setIsDeleteDialogOpen(true);
     setActionError(null);
   };
+  
+  const handleAssignWarehouse = (order: Order) => {
+    setSelectedOrder(order);
+    setSelectedWarehouseId(order.warehouse_id || '');
+    setIsAssignWarehouseDialogOpen(true);
+    setActionError(null);
+  };
 
   const confirmEditOrder = async () => {
     if (!selectedOrder) return;
@@ -250,24 +286,21 @@ export function OrderManagement() {
       const updatePayload = {
         order_id: selectedOrder.order_id, // Required by schema inheritance
         customer_id: selectedOrder.customer_id, // Required by schema inheritance
-        order_date: selectedOrder.order_date.split('T')[0], // Convert to date only
+        order_date: editForm.order_date, // Use edited date
         deliver_address: editForm.deliver_address,
         status: statusEnumValue, // Send as enum VALUE
         deliver_city_id: editForm.deliver_city_id,
         full_price: editForm.full_price,
-        warehouse_id: selectedOrder.warehouse_id || null // Optional field
+        warehouse_id: selectedOrder.warehouse_id || null // Keep existing warehouse
       };
       
       console.log('Update order payload:', updatePayload);
       
       await OrdersAPI.update(selectedOrder.order_id, updatePayload);
       
-      // Update local state
-      setOrders(orders.map(o => 
-        o.order_id === selectedOrder.order_id 
-          ? { ...o, ...editForm }
-          : o
-      ));
+      // Refresh data
+      const ordersData = await OrdersAPI.getAll();
+      setOrders(ordersData);
       
       setIsEditDialogOpen(false);
       setSelectedOrder(null);
@@ -367,6 +400,55 @@ export function OrderManagement() {
       setActionLoading(false);
     }
   };
+  
+  const confirmAssignWarehouse = async () => {
+    if (!selectedOrder) return;
+    
+    try {
+      setActionLoading(true);
+      setActionError(null);
+      
+      // Backend expects full order update schema
+      const statusEnumValue = STATUS_TO_ENUM[selectedOrder.status] || selectedOrder.status;
+      
+      const updatePayload = {
+        order_id: selectedOrder.order_id,
+        customer_id: selectedOrder.customer_id,
+        order_date: selectedOrder.order_date.split('T')[0],
+        deliver_address: selectedOrder.deliver_address,
+        status: statusEnumValue,
+        deliver_city_id: selectedOrder.deliver_city_id || '',
+        full_price: selectedOrder.full_price,
+        warehouse_id: selectedWarehouseId || null // Update warehouse
+      };
+      
+      console.log('Assign warehouse payload:', updatePayload);
+      
+      await OrdersAPI.update(selectedOrder.order_id, updatePayload);
+      
+      // Refresh data
+      const ordersData = await OrdersAPI.getAll();
+      setOrders(ordersData);
+      
+      setIsAssignWarehouseDialogOpen(false);
+      setSelectedOrder(null);
+    } catch (err: any) {
+      console.error('Error assigning warehouse:', err);
+      
+      let errorMessage = 'Failed to assign warehouse';
+      if (err.data?.detail && Array.isArray(err.data.detail)) {
+        errorMessage = err.data.detail.map((e: any) => `${e.loc?.join('.')}: ${e.msg}`).join(', ');
+      } else if (typeof err.data?.detail === 'string') {
+        errorMessage = err.data.detail;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setActionError(errorMessage);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // Filter orders based on selected filters
   const filteredOrders = orders.filter((order) => {
@@ -429,6 +511,14 @@ export function OrderManagement() {
     } catch {
       return dateString;
     }
+  };
+  
+  // Helper function to get warehouse city (now directly from store object)
+  const getWarehouseCity = (warehouseId: string | null | undefined): string | null => {
+    if (!warehouseId) return null;
+    
+    const store = stores.find(s => s.store_id === warehouseId);
+    return store?.city_name || null;
   };
 
   return (
@@ -507,6 +597,7 @@ export function OrderManagement() {
               <TableHead>Customer</TableHead>
               <TableHead>Order Date</TableHead>
               <TableHead>Delivery Address</TableHead>
+              <TableHead>Warehouse/Store</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[50px]"></TableHead>
@@ -515,24 +606,46 @@ export function OrderManagement() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={8} className="text-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" />
                   <p className="text-sm text-gray-500 mt-2">Loading orders...</p>
                 </TableCell>
               </TableRow>
             ) : paginatedOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                   No orders found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedOrders.map((order) => (
+              paginatedOrders.map((order) => {
+                const warehouseName = order.warehouse_id 
+                  ? stores.find(s => s.store_id === order.warehouse_id)?.name 
+                  : null;
+                const warehouseCity = getWarehouseCity(order.warehouse_id);
+                const orderStatus = order.status.toUpperCase();
+                const isPlaced = orderStatus === 'PLACED' || orderStatus === 'PENDING';
+                
+                return (
                 <TableRow key={order.order_id}>
                   <TableCell className="font-medium">{order.order_id}</TableCell>
                   <TableCell>{customers.get(order.customer_id) || order.customer_id}</TableCell>
                   <TableCell>{formatDate(order.order_date)}</TableCell>
                   <TableCell className="max-w-xs truncate">{order.deliver_address}</TableCell>
+                  <TableCell>
+                    {isPlaced ? (
+                      <span className="text-xs text-gray-400 italic">Not required yet</span>
+                    ) : warehouseName && warehouseCity ? (
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{warehouseName}</span>
+                        <span className="text-xs text-gray-500">{warehouseCity}</span>
+                      </div>
+                    ) : warehouseName ? (
+                      <span className="text-sm">{warehouseName}</span>
+                    ) : (
+                      <span className="text-sm text-red-500 font-medium">⚠ Not assigned</span>
+                    )}
+                  </TableCell>
                   <TableCell>Rs {order.full_price.toLocaleString()}</TableCell>
                   <TableCell>
                     <Badge 
@@ -560,6 +673,9 @@ export function OrderManagement() {
                         <DropdownMenuItem onClick={() => handleUpdateStatus(order)}>
                           Update status
                         </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleAssignWarehouse(order)}>
+                          Assign warehouse
+                        </DropdownMenuItem>
                         <DropdownMenuItem 
                           className="text-red-600"
                           onClick={() => handleDeleteOrder(order)}
@@ -570,7 +686,8 @@ export function OrderManagement() {
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              ))
+              );
+              })
             )}
           </TableBody>
         </Table>
@@ -669,12 +786,37 @@ export function OrderManagement() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium">City</Label>
-                  <p className="text-sm text-gray-700 mt-1">{selectedOrder.deliver_city_id || 'N/A'}</p>
+                  <Label className="text-sm font-medium">Delivery City</Label>
+                  <p className="text-sm text-gray-700 mt-1">
+                    {cities.find(c => c.city_id === selectedOrder.deliver_city_id)?.city_name || selectedOrder.deliver_city_id || 'N/A'}
+                  </p>
                 </div>
+                <div>
+                  <Label className="text-sm font-medium">Warehouse/Store</Label>
+                  {selectedOrder.warehouse_id ? (
+                    <div className="mt-1">
+                      <p className="text-sm text-gray-700 font-medium">
+                        {stores.find(s => s.store_id === selectedOrder.warehouse_id)?.name || selectedOrder.warehouse_id}
+                      </p>
+                      {getWarehouseCity(selectedOrder.warehouse_id) && (
+                        <p className="text-xs text-gray-500">
+                          City: {getWarehouseCity(selectedOrder.warehouse_id)}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400 italic mt-1">Not assigned</p>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium">Price</Label>
                   <p className="text-sm text-gray-700 mt-1">Rs {selectedOrder.full_price.toLocaleString()}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Customer ID</Label>
+                  <p className="text-xs text-gray-500 mt-1 font-mono">{selectedOrder.customer_id}</p>
                 </div>
               </div>
             </div>
@@ -712,7 +854,7 @@ export function OrderManagement() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="deliver_city_id">City</Label>
+              <Label htmlFor="deliver_city_id">Delivery City</Label>
               <Select 
                 value={editForm.deliver_city_id} 
                 onValueChange={(value) => setEditForm({ ...editForm, deliver_city_id: value })}
@@ -721,12 +863,22 @@ export function OrderManagement() {
                   <SelectValue placeholder="Select city" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="kandy">Kandy</SelectItem>
-                  <SelectItem value="colombo">Colombo</SelectItem>
-                  <SelectItem value="galle">Galle</SelectItem>
-                  <SelectItem value="negombo">Negombo</SelectItem>
+                  {cities.map((city) => (
+                    <SelectItem key={city.city_id} value={city.city_id}>
+                      {city.city_name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="order_date">Order Date</Label>
+              <Input
+                id="order_date"
+                type="date"
+                value={editForm.order_date}
+                onChange={(e) => setEditForm({ ...editForm, order_date: e.target.value })}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="full_price">Price (Rs)</Label>
@@ -857,6 +1009,76 @@ export function OrderManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Assign Warehouse Dialog */}
+      <Dialog open={isAssignWarehouseDialogOpen} onOpenChange={setIsAssignWarehouseDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Warehouse/Store</DialogTitle>
+            <DialogDescription>
+              Assign a warehouse/store to order {selectedOrder?.order_id}
+            </DialogDescription>
+          </DialogHeader>
+          {actionError && (
+            <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded text-sm">
+              {actionError}
+            </div>
+          )}
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="warehouse_select">Select Warehouse/Store</Label>
+              <Select 
+                value={selectedWarehouseId} 
+                onValueChange={(value) => setSelectedWarehouseId(value)}
+              >
+                <SelectTrigger id="warehouse_select">
+                  <SelectValue placeholder="Select a warehouse/store" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None (Clear assignment)</SelectItem>
+                  {stores.map((store) => {
+                    const storeCity = getWarehouseCity(store.store_id);
+                    return (
+                      <SelectItem key={store.store_id} value={store.store_id}>
+                        {store.name} {storeCity ? `(${storeCity})` : ''} - {store.address}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              {selectedWarehouseId && (() => {
+                const selectedStore = stores.find(s => s.store_id === selectedWarehouseId);
+                const selectedCity = getWarehouseCity(selectedWarehouseId);
+                return (
+                  <div className="text-xs text-gray-600 mt-1 bg-gray-50 p-2 rounded">
+                    <p className="font-medium">Selected: {selectedStore?.name || 'Unknown'}</p>
+                    {selectedCity && <p className="text-gray-500">City: {selectedCity}</p>}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsAssignWarehouseDialogOpen(false)}
+              disabled={actionLoading}
+            >
+              Cancel
+            </Button>
+            <Button onClick={confirmAssignWarehouse} disabled={actionLoading}>
+              {actionLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Assigning...
+                </>
+              ) : (
+                'Assign Warehouse'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       </div>
     </DashboardLayout>
