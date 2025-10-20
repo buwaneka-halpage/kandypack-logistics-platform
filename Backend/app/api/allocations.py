@@ -29,7 +29,7 @@ def get_all_allocations(
 ):
     """Get all allocations (both rail and truck)"""
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if role not in ["SystemAdmin", "Assistant", "Management"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot access Routes"
@@ -126,7 +126,7 @@ def create_allocation(
 ):
     """Create a new allocation"""
     role = current_user.get("role")
-    if role not in ["Assistant"]:
+    if role not in ["SystemAdmin", "Assistant", "Management"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot access Routes"
@@ -240,7 +240,7 @@ def update_allocation(
 ):
     """Update an allocation"""
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if role not in ["SystemAdmin", "Assistant", "Management"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot access Allocations"
@@ -306,7 +306,7 @@ def delete_allocation(
 ):
     """Delete an allocation"""
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if role not in ["SystemAdmin", "Assistant", "Management"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot access Routes"
@@ -353,7 +353,7 @@ def get_schedule_capacity(
 ):
     """Get capacity information for a train schedule"""
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if role not in ["SystemAdmin", "Assistant", "Management"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot access capacity information"
@@ -377,7 +377,7 @@ def get_schedule_allocated_orders(
 ):
     """Get all orders allocated to a specific train schedule"""
     role = current_user.get("role")
-    if role not in ["Assistant", "Management"]:
+    if role not in ["SystemAdmin", "Assistant", "Management"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You cannot access allocations"
