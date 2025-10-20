@@ -1,244 +1,466 @@
 import * as React from "react";
-import { useState } from "react";
-import { MoreHorizontal, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Loader2, Pencil, Trash2, AlertCircle } from "lucide-react";
+import { StoresAPI, RailwayStationsAPI } from "~/services/api"; // Assuming APIs are in this file
 
+// Import shadcn/ui components
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "~/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "~/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+
+// Import dashboard layout
 import DashboardLayout from "../dashboard/DashboardLayout";
 
-// Sample data for stores
-const storeData = [
-  {
-    storeId: "M00001",
-    city: "Colombo",
-    storeManager: "S G Herath",
-    contact: "0112345678",
-    totalCapacity: 400,
-    availableCapacity: 300,
-  },
-  {
-    storeId: "M00002",
-    city: "Kandy",
-    storeManager: "S G Herath",
-    contact: "0112345678",
-    totalCapacity: 300,
-    availableCapacity: 300,
-  },
-  {
-    storeId: "M00003",
-    city: "Negombo",
-    storeManager: "S G Herath",
-    contact: "0112345678",
-    totalCapacity: 400,
-    availableCapacity: 300,
-  },
-  {
-    storeId: "M00004",
-    city: "Jaffna",
-    storeManager: "S G Herath",
-    contact: "0112345678",
-    totalCapacity: 400,
-    availableCapacity: 300,
-  },
-  {
-    storeId: "M00005",
-    city: "Matara",
-    storeManager: "S G Herath",
-    contact: "0112345678",
-    totalCapacity: 400,
-    availableCapacity: 300,
-  },
-  {
-    storeId: "M00006",
-    city: "Galle",
-    storeManager: "S G Herath",
-    contact: "0112345678",
-    totalCapacity: 400,
-    availableCapacity: 300,
-  },
-  {
-    storeId: "M00007",
-    city: "Trincomalee",
-    storeManager: "S G Herath",
-    contact: "0112345678",
-    totalCapacity: 400,
-    availableCapacity: 300,
-  },
-  {
-    storeId: "M00008",
-    city: "Colombo",
-    storeManager: "S G Herath",
-    contact: "0112345678",
-    totalCapacity: 400,
-    availableCapacity: 300,
-  },
-];
-
-export default function StoreManagement() {
-  const [selectedCityFilter, setSelectedCityFilter] = useState<string>("all");
-  const [selectedManagerFilter, setSelectedManagerFilter] = useState<string>("all");
-
-  return (
-    <DashboardLayout>
-      <div className="w-full space-y-4">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Manage Stores</h1>
-          
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-            {/* City Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 whitespace-nowrap">City:</span>
-              <Select value={selectedCityFilter} onValueChange={setSelectedCityFilter}>
-                <SelectTrigger className="w-[140px] bg-white">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
-                  <SelectItem value="colombo">Colombo</SelectItem>
-                  <SelectItem value="kandy">Kandy</SelectItem>
-                  <SelectItem value="negombo">Negombo</SelectItem>
-                  <SelectItem value="jaffna">Jaffna</SelectItem>
-                  <SelectItem value="matara">Matara</SelectItem>
-                  <SelectItem value="galle">Galle</SelectItem>
-                  <SelectItem value="trincomalee">Trincomalee</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Store Manager Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 whitespace-nowrap">Store Manager:</span>
-              <Select value={selectedManagerFilter} onValueChange={setSelectedManagerFilter}>
-                <SelectTrigger className="w-[140px] bg-white">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Managers</SelectItem>
-                  <SelectItem value="herath">S G Herath</SelectItem>
-                  <SelectItem value="silva">R Silva</SelectItem>
-                  <SelectItem value="fernando">M Fernando</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Add Store Button */}
-            <Button className="bg-primary-navy hover:bg-primary-navy/90 text-white whitespace-nowrap">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Store
-            </Button>
-          </div>
-        </div>
-
-        {/* Table Section */}
-        <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50 hover:bg-gray-50">
-                  <TableHead className="font-semibold text-gray-700">Store ID</TableHead>
-                  <TableHead className="font-semibold text-gray-700">City</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Store Manager</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Contact</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Total Capacity</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Available Capacity</TableHead>
-                  <TableHead className="font-semibold text-gray-700 text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {storeData.map((store, index) => (
-                  <TableRow key={index} className="hover:bg-gray-50">
-                    {/* Store ID */}
-                    <TableCell className="font-medium text-gray-900">
-                      {store.storeId}
-                    </TableCell>
-
-                    {/* City */}
-                    <TableCell>
-                      <div className="text-sm text-gray-700">
-                        {store.city}
-                      </div>
-                    </TableCell>
-
-                    {/* Store Manager */}
-                    <TableCell>
-                      <div className="text-sm text-gray-700">
-                        {store.storeManager}
-                      </div>
-                    </TableCell>
-
-                    {/* Contact */}
-                    <TableCell>
-                      <div className="text-sm text-gray-700">
-                        {store.contact}
-                      </div>
-                    </TableCell>
-
-                    {/* Total Capacity */}
-                    <TableCell>
-                      <div className="text-sm text-gray-700">
-                        {store.totalCapacity}
-                      </div>
-                    </TableCell>
-
-                    {/* Available Capacity */}
-                    <TableCell>
-                      <div className="text-sm text-gray-700">
-                        {store.availableCapacity}
-                      </div>
-                    </TableCell>
-
-                    {/* Actions */}
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <button className="hover:bg-gray-100 rounded p-1 transition-colors">
-                              <MoreHorizontal className="w-4 h-4 text-gray-500" />
-                            </button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Edit Store</DropdownMenuItem>
-                            <DropdownMenuItem>View Inventory</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">Delete Store</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button 
-                          className="bg-primary-navy hover:bg-primary-navy/90 text-white text-sm px-4"
-                          size="sm"
-                        >
-                          Manage Capacity
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-      </div>
-    </DashboardLayout>
-  );
+// TypeScript interfaces
+interface Store {
+  store_id: string;
+  name: string;
+  telephone_number: string;
+  address: string;
+  contact_person: string;
+  station_id: string;
+  city_name: string;
 }
+
+interface RailwayStation {
+  station_id: string;
+  station_name: string;
+  city_id: string;
+}
+
+interface StoreFormData {
+  store_id: string;
+  name: string;
+  telephone_number: string;
+  address: string;
+  contact_person: string;
+  station_id: string;
+}
+
+const EMPTY_FORM_DATA: StoreFormData = {
+  store_id: "string",
+  name: "",
+  telephone_number: "",
+  address: "",
+  contact_person: "",
+  station_id: "",
+};
+
+export function StoreManagement() {
+  const [stores, setStores] = useState<Store[]>([]);
+  const [stations, setStations] = useState<RailwayStation[]>([]);
+  const [stationMap, setStationMap] = useState<Map<string, string>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Dialog states
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [selectedStore, setSelectedStore] = useState<Store | null>(null);
+  const [storeToDelete, setStoreToDelete] = useState<Store | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // For delete loading
+
+  // Fetch data from API
+  async function fetchData() {
+    try {
+      setLoading(true);
+      const [storesData, stationsData] = await Promise.all([
+        StoresAPI.getAll(),
+        RailwayStationsAPI.getAll(),
+      ]);
+
+      setStores(storesData);
+      setStations(stationsData);
+
+      // Create lookup map for stations
+      const newStationMap = new Map<string, string>();
+      stationsData.forEach((station: RailwayStation) => {
+        newStationMap.set(station.station_id, station.station_name);
+      });
+      setStationMap(newStationMap);
+
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Failed to load data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // --- Handlers ---
+
+  const handleAddNew = () => {
+    setSelectedStore(null);
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (store: Store) => {
+    setSelectedStore(store);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (store: Store) => {
+    setStoreToDelete(store);
+    setIsDeleteAlertOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!storeToDelete) return;
+
+    setIsSubmitting(true);
+    try {
+      await StoresAPI.delete(storeToDelete.store_id);
+      setStores(stores.filter((s) => s.store_id !== storeToDelete.store_id));
+      setIsDeleteAlertOpen(false);
+      setStoreToDelete(null);
+    } catch (err) {
+      console.error("Error deleting store:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Callback for when the form dialog succeeds
+  const handleFormSuccess = () => {
+    setIsFormOpen(false);
+    setSelectedStore(null);
+    fetchData(); // Refetch all data to get the new/updated list
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="w-full space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Store Management</h1>
+          <Button
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+            onClick={handleAddNew}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Store
+          </Button>
+        </div>
+
+        {/* Table */}
+        <div className="rounded-md border bg-white">
+          {loading ? (
+            <div className="flex items-center justify-center p-8">
+              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+              <span className="ml-2 text-gray-600">Loading stores...</span>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center p-8 text-red-600">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              <p>{error}</p>
+            </div>
+          ) : stores.length === 0 ? (
+            <div className="flex items-center justify-center p-8">
+              <p className="text-gray-600">No stores found. Add one to get started!</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="font-semibold text-gray-700">Store Name</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Contact Person</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Telephone</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Address</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Station</TableHead>
+                  <TableHead className="font-semibold text-gray-700">City</TableHead>
+                  <TableHead className="font-semibold text-gray-700 w-[180px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stores.map((store) => (
+                  <TableRow key={store.store_id} className="hover:bg-gray-50">
+                    <TableCell className="font-medium text-gray-900">{store.name}</TableCell>
+                    <TableCell className="text-gray-700">{store.contact_person}</TableCell>
+                    <TableCell className="text-gray-700">{store.telephone_number}</TableCell>
+                    <TableCell className="text-gray-700">{store.address}</TableCell>
+                    <TableCell className="text-gray-700">
+                      {stationMap.get(store.station_id) || store.station_id}
+                    </TableCell>
+                    <TableCell className="text-gray-700">{store.city_name}</TableCell>
+                    <TableCell className="space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(store)}
+                      >
+                        <Pencil className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(store)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </TableCell>
+            .map     </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      </div>
+
+      {/* Add/Edit Store Dialog */}
+      <StoreFormDialog
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSuccess={handleFormSuccess}
+        store={selectedStore}
+        stations={stations}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              store <strong>{storeToDelete?.name}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : null}
+              Delete
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </DashboardLayout>
+  );
+}
+
+// --- Helper Component: StoreFormDialog ---
+
+interface StoreFormDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  store: Store | null;
+  stations: RailwayStation[];
+}
+
+function StoreFormDialog({
+  isOpen,
+  onClose,
+  onSuccess,
+  store,
+  stations,
+}: StoreFormDialogProps) {
+  const [formData, setFormData] = useState<StoreFormData>(EMPTY_FORM_DATA);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Populate form when 'store' (for editing) changes
+  useEffect(() => {
+    if (store) {
+      setFormData({
+        store_id: "string",
+        name: store.name,
+        telephone_number: store.telephone_number,
+        address: store.address,
+        contact_person: store.contact_person,
+        station_id: store.station_id,
+      });
+    } else {
+      setFormData(EMPTY_FORM_DATA); // Reset for 'Add New'
+    }
+    setFormError(null); // Reset error on open
+  }, [store, isOpen]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleStationChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, station_id: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setFormError(null);
+
+    try {
+      if (store) {
+        // Update existing store
+        await StoresAPI.update(store.store_id, formData);
+      } else {
+        // Create new store
+        await StoresAPI.create(formData);
+      }
+      onSuccess(); // Notify parent to refetch
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      setFormError("Failed to save store. Please check the details and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{store ? "Edit Store" : "Add New Store"}</DialogTitle>
+          {store && (
+            <DialogDescription>
+              Make changes to the store details. Click save when you're done.
+            </DialogDescription>
+          )}
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Name
+            </Label>
+            <Input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="contact_person" className="text-right">
+              Contact
+            </Label>
+            <Input
+              id="contact_person"
+              name="contact_person"
+              value={formData.contact_person}
+              onChange={handleChange}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="telephone_number" className="text-right">
+              Telephone
+            </Label>
+            <Input
+              id="telephone_number"
+              name="telephone_number"
+              value={formData.telephone_number}
+              onChange={handleChange}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="address" className="text-right">
+              Address
+            </Label>
+            <Input
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              className="col-span-3"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="station_id" className="text-right">
+              Station
+            </Label>
+            <Select
+              value={formData.station_id}
+              onValueChange={handleStationChange}
+              required
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select a station" />
+              </SelectTrigger>
+              <SelectContent>
+                {stations.map((station) => (
+                  <SelectItem key={station.station_id} value={station.station_id}>
+                    {station.station_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {formError && (
+            <p className="col-span-4 text-center text-sm text-red-600">
+              {formError}
+            </p>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Save
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export default StoreManagement;

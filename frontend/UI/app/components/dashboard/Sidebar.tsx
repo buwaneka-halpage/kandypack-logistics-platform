@@ -1,22 +1,25 @@
 import { BarChart3, Calendar, Package, Truck, Users, X, ArrowLeft, Menu } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useSidebar } from "~/contexts/SidebarContext";
+import { useAuth } from "~/hooks/useAuth";
 
 export default function Sidebar() {
   const { isCollapsed, toggleSidebar, isMobileMenuOpen, setIsMobileMenuOpen } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { user } = useAuth();
+
   const navItems = [
-    { icon: BarChart3, label: "Dashboard", route: "/admin/dashboard", isActive: location.pathname === "/admin/dashboard" },
-    { icon: Package, label: "Order Management", route: "/admin/orders", isActive: location.pathname === "/admin/orders" },
-    { icon: Calendar, label: "Rail Scheduling", route: "/admin/rail-scheduling", isActive: location.pathname === "/admin/rail-scheduling" },
-    { icon: Truck, label: "Last-Mile Delivery", route: "/admin/last-mile", isActive: location.pathname === "/admin/last-mile" },
-    { icon: Package, label: "Store Management", route: "/admin/stores", isActive: location.pathname === "/admin/stores" },
-    { icon: Users, label: "Admin Management", route: "/admin/admin-management", isActive: location.pathname === "/admin/admin-management" },
-    { icon: Truck, label: "Router Management", route: "/admin/routers", isActive: location.pathname === "/admin/routers" },
-    { icon: BarChart3, label: "Reports", route: "/admin/reports", isActive: location.pathname === "/admin/reports" },
-    { icon: Package, label: "Activity Logs", route: "/admin/logs", isActive: location.pathname === "/admin/logs" },
+    { icon: BarChart3, label: "Dashboard", route: "/admin/dashboard", isActive: location.pathname === "/admin/dashboard", authorizedRoles: ['SystemAdmin', 'Management'] },
+    { icon: Package, label: "Order Management", route: "/admin/orders", isActive: location.pathname === "/admin/orders", authorizedRoles: ['SystemAdmin', 'Management'] },
+    { icon: Calendar, label: "Rail Scheduling", route: "/admin/rail-scheduling", isActive: location.pathname === "/admin/rail-scheduling", authorizedRoles: ['SystemAdmin', 'Management'] },
+    { icon: Truck, label: "Last-Mile Delivery", route: "/admin/last-mile", isActive: location.pathname === "/admin/last-mile", authorizedRoles: ['SystemAdmin', 'Management'] },
+    { icon: Package, label: "Store Management", route: "/admin/stores", isActive: location.pathname === "/admin/stores", authorizedRoles: ['SystemAdmin', 'Management'] },
+    { icon: Users, label: "Admin Management", route: "/admin/admin-management", isActive: location.pathname === "/admin/admin-management", authorizedRoles: ['SystemAdmin'] },
+    { icon: Truck, label: "Router Management", route: "/admin/routers", isActive: location.pathname === "/admin/routers", authorizedRoles: ['SystemAdmin', 'Management'] },
+    { icon: BarChart3, label: "Reports", route: "/admin/reports", isActive: location.pathname === "/admin/reports", authorizedRoles: ['SystemAdmin', 'Management'] },
+    { icon: Package, label: "Activity Logs", route: "/admin/logs", isActive: location.pathname === "/admin/logs", authorizedRoles: ['SystemAdmin', 'Management'] },
   ];
 
   return (
@@ -73,8 +76,6 @@ export default function Sidebar() {
           )}
         </div>
 
-      
-
         {/* Navigation */}
         <nav className={`flex-1 space-y-2
           ${/* Desktop styles */ ''}
@@ -83,6 +84,10 @@ export default function Sidebar() {
           px-4 pt-6 pb-4
         `}>
           {navItems.map((item, index) => {
+            // Check if user role is authorized to see this item
+            if (!user || !item.authorizedRoles.includes(user.role)) {
+              return null;
+            }
             const Icon = item.icon;
             return (
               <button
