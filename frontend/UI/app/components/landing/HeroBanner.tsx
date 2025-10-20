@@ -15,7 +15,7 @@ const HeroBanner = () => {
   };
 
   return (
-    <div className="hero-rainbow-overlay flex flex-wrap flex-col justify-center items-start mt-[10.5dvh] sm:mt-[22.5dvh] md:mt-[10dvh] lg:mt-[14dvh] min-h-[35dvh] w-full">
+    <div className="lg:pb-5 hero-rainbow-overlay flex flex-wrap flex-col justify-center items-start mt-[10.5dvh] sm:mt-[22.5dvh] md:mt-[10dvh] lg:mt-[14dvh] min-h-[35dvh] w-full">
       <div className="mx-3.5 sm:mx-8 md:mx-6 flex flex-wrap flex-row justify-center items-start">
         <div className="flex-5 md:flex-6 lg:flex-1 text-start md:mt-6">
           <div>

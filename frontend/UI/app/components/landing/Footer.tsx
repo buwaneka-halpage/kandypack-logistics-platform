@@ -18,7 +18,7 @@ const Footer = () => {
             </p>
           </div>
           <div className="flex-1 text-[8px] sm:text-[12px] cursor-default text-white">
-            <h3 className="font-bold lg:text-[16px]">Explore</h3>
+            <h3 className="font-bold lg:text-[15px]">Explore</h3>
             <nav className="flex flex-col justify-center items-start my-1 text-[7px] leading-3 lg:leading-5">
               <a className="cursor-pointer sm:text-[10px] lg:text-[13px]">
                 About Us
@@ -32,7 +32,7 @@ const Footer = () => {
             </nav>
           </div>
           <div className="flex-1 text-[8px] sm:text-[12px] cursor-default text-white">
-            <h3 className="font-bold lg:text-[16px]">Legal</h3>
+            <h3 className="font-bold lg:text-[15px]">Legal</h3>
             <nav className="flex flex-col justify-center items-start my-1 text-[7px] leading-3 lg:leading-5">
               <a className="cursor-pointer sm:text-[10px] lg:text-[13px]">
                 Terms
@@ -43,7 +43,7 @@ const Footer = () => {
             </nav>
           </div>
           <div className="flex-3 text-[8px] sm:text-[12px] cursor-default text-white">
-            <h3 className="font-bold lg:text-[16px]">Social Media</h3>
+            <h3 className="font-bold lg:text-[15px]">Social Media</h3>
             <div className="flex flex-row justify-start items-center my-1 gap-x-1 lg:gap-x-4">
               <img
                 className="size-5 lg:size-10"
@@ -73,7 +73,7 @@ const Footer = () => {
             style={{ border: "0.5px solid white" }}
             className="mt-[8px] lg:mt-[16px]"
           />
-          <h1 className="font-semibold text-[8px] sm:text-[10px] lg:text-[13px] text-[#F67366] absolute bottom-4 left-[45%]">
+          <h1 className="font-semibold text-[8px] sm:text-[10px] lg:text-[13px] text-[#F67366] absolute bottom-4 lg:bottom-2 left-[45%]">
             KandyPack.lk
           </h1>
         </div>

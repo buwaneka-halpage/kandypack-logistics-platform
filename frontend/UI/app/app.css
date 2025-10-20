@@ -131,6 +131,25 @@ body {
   filter: blur(24px);
 }
 
+.banner-rainbow-overlay {
+  position: relative;
+  isolation: isolate; /* Ensures z-index stacking works as expected */
+}
+
+.banner-rainbow-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, #f67366, #0000ff, white);
+  background-size: 400% 400%;
+  animation: rainbow 8s ease infinite;
+  mix-blend-mode: overlay;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 2;
+  filter: blur(24px);
+}
+
 @keyframes rainbow {
   0% {
     background-position: 0% 50%;
@@ -144,10 +163,30 @@ body {
 }
 
 .hero-bg {
-  background-image: url("/heroBg.png");
+  background-image: url("/heroBg-removebg.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.image-scroll-left-to-right {
+  position: relative;
+  animation-name: moveleftToRight;
+  animation-timeline: scroll();
+  animation-duration: 1s;
+  animation-fill-mode: forwards;
+  animation-range: entry 0% cover 100%;
+}
+
+@keyframes moveleftToRight {
+  0% {
+    transform: translateX(-100%); /* Start fully off-screen right */
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0); /* End at natural position */
+    opacity: 1;
+  }
 }
 
 /* 
