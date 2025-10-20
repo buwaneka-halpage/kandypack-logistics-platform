@@ -85,10 +85,12 @@ const AdminOverview: React.FC = () => {
           return acc;
         }, { storeManagers: 0, warehouseStaff: 0, management: 0, customers: 0 });
 
-        // Process trucks - assuming trucks with status 'available' or without active route
+        // Process trucks - check is_active field
+        console.log('Trucks data:', trucks);
         const availableTrucks = (trucks || []).filter((t: any) => 
-          t.status === 'available' || t.availability === 'available'
+          t.is_active === true || t.is_active === 1
         ).length;
+        console.log('Available trucks count:', availableTrucks, 'Total trucks:', (trucks || []).length);
 
         // Process routes - count active routes (today's routes)
         const today = new Date().toISOString().split('T')[0];
