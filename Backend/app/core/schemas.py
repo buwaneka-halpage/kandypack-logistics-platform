@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Annotated
 from app.core.database import engine
 import app.core.model as model
@@ -10,14 +10,12 @@ import enum
 model.Base.metadata.create_all(bind= engine)
 
 class OrderStatus(enum.Enum):
-    PLACED = "Placed"
-    SCHEDULED_RAIL = "Scheduled for Railway"
-    IN_WAREHOUSE = "IN Warehouse"
-    SCHEDULED_ROAD =  "Scheduled for road"
-    DELIVERED = "Delivered"
-    FAILED = "Failed"
-
-    model_config = {"from_attributes": True}
+    PLACED = "PLACED"
+    SCHEDULED_RAIL = "SCHEDULED_RAIL"
+    IN_WAREHOUSE = "IN_WAREHOUSE"
+    SCHEDULED_ROAD = "SCHEDULED_ROAD"
+    DELIVERED = "DELIVERED"
+    FAILED = "FAILED"
 
 
 class ScheduleStatus(str, enum.Enum):
@@ -25,8 +23,6 @@ class ScheduleStatus(str, enum.Enum):
     IN_PROGRESS = "IN_PROGRESS"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED" 
-
-    model_config = {"from_attributes": True}
 
 
 # user 
@@ -82,16 +78,16 @@ class CustomerCreate(BaseModel):
 
 # order 
 class order(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     order_id : str 
     customer_id: str 
     order_date: datetime
     deliver_address  : str 
-    status : str 
+    status : str  # Accept string for responses (enum values will be serialized to strings)
     deliver_city_id: str 
     full_price  : float 
     warehouse_id: str | None = None
-
-    model_config = {"from_attributes": True}
 
 class store(BaseModel):
     store_id : str 
@@ -100,6 +96,17 @@ class store(BaseModel):
     address : str 
     contact_person : str 
     station_id : str 
+
+    model_config = {"from_attributes": True}
+
+class StoreWithCity(BaseModel):
+    store_id : str 
+    name : str 
+    telephone_number : str 
+    address : str 
+    contact_person : str 
+    station_id : str
+    city_name: str | None = None  # Nested city name from station relationship
 
     model_config = {"from_attributes": True}
 
@@ -179,6 +186,8 @@ class Train(BaseModel):
 
 
 class Train_Schedules(BaseModel):
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+    
     schedule_id : str 
     train_id : str 
     station_id : str 
@@ -186,9 +195,6 @@ class Train_Schedules(BaseModel):
     departure_time : time
     arrival_time : time
     status : ScheduleStatus
-
-    model_config = {"from_attributes": True, "orm_mode": True, "use_enum_values": True}
-    
 
 class RailwayAllocationBase(BaseModel):
     allocation_id : str 
@@ -260,6 +266,8 @@ class AssistantResponse(AssistantBase):
     model_config = {"from_attributes": True}
 
 class Truck_Schedule(BaseModel):
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+    
     schedule_id : str 
     route_id : str 
     truck_id : str 
@@ -269,8 +277,6 @@ class Truck_Schedule(BaseModel):
     departure_time : time
     duration : int  
     status : ScheduleStatus
-
-    model_config = {"from_attributes": True, "orm_mode" : True} 
     
 class Truck_allocationBase(BaseModel):
     allocation_id : str 

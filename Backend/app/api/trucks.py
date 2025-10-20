@@ -7,44 +7,43 @@ from app.core import model, schemas
 from app.core.auth import get_current_user, check_role_permission
 
 
-router = APIRouter(prefix="/turks")
+router = APIRouter(prefix="/trucks")
 model.Base.metadata.create_all(bind=engine)
 db_dependency = Annotated[Session, Depends(get_db)]
 
 
 @router.get("/",status_code=status.HTTP_200_OK,response_model=List[schemas.Trucks])
-def get_all_turks(db: db_dependency,  current_user: dict = Depends(get_current_user)):
+def get_all_trucks(db: db_dependency,  current_user: dict = Depends(get_current_user)):
+    """Get all trucks (SystemAdmin, Management, Assistant can view)"""
     role = current_user.get("role")
    
-    if not check_role_permission(role, ["Assistant", "Management"]):
+    # Allow SystemAdmin, Management, and Assistant roles
+    if not check_role_permission(role, ["Assistant", "Management", "StoreManager", "Driver"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Assistant, Management or SystemAdmin role required"
+            detail="You don't have permission to view trucks"
         )
+    
     trucks = db.query(model.Trucks).all()
-    if not trucks:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No trucks found."
-        )
-    return trucks
+    
+    # Return empty list instead of 404 if no trucks found
+    return trucks if trucks else []
 
 @router.get("/available",status_code=status.HTTP_200_OK,response_model=List[schemas.Trucks])
-def get_available_trucks(db: db_dependency, current_user: dict = Depends(get_current_user) ):
+def get_available_trucks(db: db_dependency, current_user: dict = Depends(get_current_user)):
+    """Get all available (is_active=True) trucks"""
     role = current_user.get("role")
    
-    if not check_role_permission(role, ["Assistant", "Management"]):
+    if not check_role_permission(role, ["Assistant", "Management", "StoreManager", "Driver"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Assistant, Management or SystemAdmin role required"
+            detail="You don't have permission to view trucks"
         )
+    
     trucks = db.query(model.Trucks).filter(model.Trucks.is_active == True).all()
-    if not trucks:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No Available trucks found."
-        )
-    return trucks
+    
+    # Return empty list instead of 404 if no available trucks found
+    return trucks if trucks else []
 @router.put("/{truck_id}", status_code=status.HTTP_200_OK, response_model=schemas.Trucks)
 def update_truck(
     truck_id: str,

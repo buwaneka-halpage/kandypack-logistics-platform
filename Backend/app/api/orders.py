@@ -55,6 +55,12 @@ def get_all_Orders(db: db_dependency,  current_user: dict = Depends(get_current_
     orders_= db.query(model.Orders).all()
     if orders_ is None:
         raise HTTPException(status_code=404, detail=f"Order history not found")
+    
+    # Convert enum status to string value
+    for order in orders_:
+        if isinstance(order.status, model.OrderStatus):
+            order.status = order.status.value
+    
     return orders_
 
 
@@ -70,6 +76,11 @@ def get_order(order_id: str, db: db_dependency, current_user: dict = Depends(get
     order = db.query(model.Orders).filter(model.Orders.order_id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
+    
+    # Convert enum status to string value
+    if isinstance(order.status, model.OrderStatus):
+        order.status = order.status.value
+    
     return order
 
 
@@ -123,15 +134,19 @@ def update_order(order_id: str, order_update: schemas.update_order, db: db_depen
     if "status" in update_data:
         update_data["status"] = update_data["status"].value
     if "order_date" in update_data:
-        #validate date 
-        sl_tz = pytz.timezone("Asia/Colombo")
-        now = datetime.now(sl_tz)
-        order_date_obj = order.order_date
-        if order_date_obj.tzinfo is None:
-            order_date_obj = sl_tz.localize(order_date_obj)
-        # order_date_obj = datetime.fromisoformat(update_data["order_date"])
-        if order_date_obj < now + timedelta(days=7):
-            raise HTTPException(status_code=400, detail="order_date must be at least 7 days from today")
+        # Only validate date if it's actually being changed
+        new_order_date = update_data["order_date"]
+        existing_order_date = order.order_date.date() if hasattr(order.order_date, 'date') else order.order_date
+        
+        if new_order_date != existing_order_date:
+            # Validate that the NEW date is at least 7 days in the future
+            sl_tz = pytz.timezone("Asia/Colombo")
+            now = datetime.now(sl_tz)
+            new_date_obj = datetime.combine(new_order_date, datetime.min.time())
+            new_date_obj = sl_tz.localize(new_date_obj)
+            
+            if new_date_obj < now + timedelta(days=7):
+                raise HTTPException(status_code=400, detail="order_date must be at least 7 days from today")
     update_data["order_id"] = order_id
     for key, value in update_data.items():
         setattr(order, key, value)

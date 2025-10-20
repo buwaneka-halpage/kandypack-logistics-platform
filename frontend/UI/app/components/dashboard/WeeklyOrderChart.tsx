@@ -3,6 +3,9 @@ import { ChevronDown, TrendingUp, AlertCircle } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardAction } from '~/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '~/components/ui/chart';
+import { OrdersAPI } from '~/services/api';
+import { useAuth } from '~/hooks/useAuth';
+import { hasPermission, UserRole } from '~/types/roles';
 
 interface ChartDataPoint {
   day: string;
@@ -15,11 +18,19 @@ interface WeeklyData {
 }
 
 const WeeklyOrderChart: React.FC = () => {
+  const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('This Week');
   const [selectedMetric, setSelectedMetric] = useState<'orders' | 'revenue'>('orders');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isUsingDummyData, setIsUsingDummyData] = useState<boolean>(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Check permissions
+  const canViewOrders = user && (
+    hasPermission(user.role as UserRole, 'order', 'read') ||
+    hasPermission(user.role as UserRole, '*', 'read')
+  );
   
   // Comprehensive dummy data for different time periods
   const dummyData: WeeklyData = {
@@ -58,34 +69,108 @@ const WeeklyOrderChart: React.FC = () => {
 
   // Simulate API call with fallback to dummy data
   const fetchChartData = async (period: string) => {
+    if (!canViewOrders) {
+      setError('You do not have permission to view order data');
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
+    setError(null);
     
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Calculate date range based on period
+      const endDate = new Date();
+      let startDate = new Date();
       
-      // Simulate API call (replace with actual backend call when ready)
-      // const response = await fetch(`/api/dashboard/orders?period=${period}`);
-      // if (response.ok) {
-      //   const data = await response.json();
-      //   setChartData(data.chartData);
-      //   setIsUsingDummyData(false);
-      //   return;
-      // }
+      switch (period) {
+        case 'This Week':
+          startDate.setDate(endDate.getDate() - 7);
+          break;
+        case 'Last Week':
+          startDate.setDate(endDate.getDate() - 14);
+          endDate.setDate(endDate.getDate() - 7);
+          break;
+        case 'Last Month':
+          startDate.setMonth(endDate.getMonth() - 1);
+          break;
+        case 'Last 3 Months':
+          startDate.setMonth(endDate.getMonth() - 3);
+          break;
+      }
+
+      // Fetch orders from API with date filtering
+      const filters: any = {
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0]
+      };
+
+      // Add warehouse filter for warehouse-scoped roles
+      if (user?.warehouseId && user.role !== UserRole.SYSTEM_ADMIN && user.role !== UserRole.MANAGEMENT) {
+        filters.warehouse_id = user.warehouseId;
+      }
+
+      const ordersData = await OrdersAPI.getAll(filters);
       
-      // Fallback to dummy data when backend is not available
-      console.log('Backend not available, using dummy data for period:', period);
-      setChartData(dummyData[period] || dummyData['This Week']);
-      setIsUsingDummyData(true);
+      // Process data into chart format
+      const chartData = processOrdersToChartData(ordersData, period);
+      setChartData(chartData);
+      setIsUsingDummyData(false);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching chart data:', error);
-      // Use dummy data as fallback
+      setError(error.message || 'Failed to load chart data');
+      // Fallback to dummy data on error
       setChartData(dummyData[period] || dummyData['This Week']);
       setIsUsingDummyData(true);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper function to process orders into chart data
+  const processOrdersToChartData = (orders: any[], period: string): ChartDataPoint[] => {
+    if (!orders || orders.length === 0) {
+      return dummyData[period] || dummyData['This Week'];
+    }
+
+    // Group orders by day/week/month based on period
+    const groupedData: { [key: string]: { orders: number; revenue: number } } = {};
+    
+    orders.forEach((order: any) => {
+      const orderDate = new Date(order.created_at || order.order_date);
+      let key: string;
+
+      switch (period) {
+        case 'This Week':
+        case 'Last Week':
+          key = orderDate.toLocaleDateString('en-US', { weekday: 'short' });
+          break;
+        case 'Last Month':
+          const weekNum = Math.ceil(orderDate.getDate() / 7);
+          key = `Week ${weekNum}`;
+          break;
+        case 'Last 3 Months':
+          key = orderDate.toLocaleDateString('en-US', { month: 'short' });
+          break;
+        default:
+          key = orderDate.toLocaleDateString();
+      }
+
+      if (!groupedData[key]) {
+        groupedData[key] = { orders: 0, revenue: 0 };
+      }
+
+      groupedData[key].orders += 1;
+      groupedData[key].revenue += order.total_price || order.total_cost || 0;
+    });
+
+    // Convert to array format
+    return Object.entries(groupedData).map(([day, data]) => ({
+      day,
+      orders: data.orders,
+      revenue: Math.round(data.revenue)
+    }));
   };
 
   // Load data when period changes
@@ -152,9 +237,18 @@ const WeeklyOrderChart: React.FC = () => {
                   <span>Demo Data</span>
                 </div>
               )}
+              {!canViewOrders && (
+                <div className="flex items-center space-x-1 px-2 py-1 bg-status-cancelled text-dashboard-white rounded text-xs w-fit">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>No Permission</span>
+                </div>
+              )}
             </div>
             <CardDescription className="mt-1">
               Track {selectedMetric === 'orders' ? 'order volume' : 'revenue'} trends across the selected period
+              {user?.warehouseId && user.role !== UserRole.SYSTEM_ADMIN && user.role !== UserRole.MANAGEMENT && (
+                <span className="text-dashboard-accent"> (Warehouse-scoped)</span>
+              )}
             </CardDescription>
           </div>
           

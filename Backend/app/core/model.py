@@ -11,12 +11,12 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 class OrderStatus(enum.Enum):
-    PLACED = "Placed"
-    SCHEDULED_RAIL = "Scheduled for Railway"
-    IN_WAREHOUSE = "IN Warehouse"
-    SCHEDULED_ROAD =  "Scheduled for road"
-    DELIVERED = "Delivered"
-    FAILED = "Failed"
+    PLACED = "PLACED"
+    SCHEDULED_RAIL = "SCHEDULED_RAIL"
+    IN_WAREHOUSE = "IN_WAREHOUSE"
+    SCHEDULED_ROAD = "SCHEDULED_ROAD"
+    DELIVERED = "DELIVERED"
+    FAILED = "FAILED"
 
 
 class ScheduleStatus(str, enum.Enum):
