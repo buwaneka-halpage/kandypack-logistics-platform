@@ -67,6 +67,7 @@ interface Order {
   status: string;
   deliver_city_id: string;
   full_price: number;
+  warehouse_id?: string | null;
 }
 
 interface Customer {
@@ -75,6 +76,26 @@ interface Customer {
 }
 
 type OrderStatus = "DISPATCHED" | "DELIVERED" | "PENDING" | "PLACED" | "SCHEDULED_RAIL" | "IN_WAREHOUSE" | "SCHEDULED_ROAD" | "FAILED";
+
+// Status mapping - Frontend keys to Backend enum values
+const STATUS_TO_ENUM: Record<string, string> = {
+  "PLACED": "Placed",
+  "SCHEDULED_RAIL": "Scheduled for Railway",
+  "IN_WAREHOUSE": "IN Warehouse",
+  "SCHEDULED_ROAD": "Scheduled for road",
+  "DELIVERED": "Delivered",
+  "FAILED": "Failed"
+};
+
+// Reverse mapping - Backend enum values to Frontend keys
+const ENUM_TO_STATUS: Record<string, string> = {
+  "Placed": "PLACED",
+  "Scheduled for Railway": "SCHEDULED_RAIL",
+  "IN Warehouse": "IN_WAREHOUSE",
+  "Scheduled for road": "SCHEDULED_ROAD",
+  "Delivered": "DELIVERED",
+  "Failed": "FAILED"
+};
 
 const getStatusVariant = (status: string) => {
   const upperStatus = status.toUpperCase();
@@ -223,7 +244,23 @@ export function OrderManagement() {
       setActionLoading(true);
       setActionError(null);
       
-      await OrdersAPI.update(selectedOrder.order_id, editForm);
+      // Backend expects full order update schema
+      const statusEnumValue = STATUS_TO_ENUM[selectedOrder.status] || selectedOrder.status;
+      
+      const updatePayload = {
+        order_id: selectedOrder.order_id, // Required by schema inheritance
+        customer_id: selectedOrder.customer_id, // Required by schema inheritance
+        order_date: selectedOrder.order_date.split('T')[0], // Convert to date only
+        deliver_address: editForm.deliver_address,
+        status: statusEnumValue, // Send as enum VALUE
+        deliver_city_id: editForm.deliver_city_id,
+        full_price: editForm.full_price,
+        warehouse_id: selectedOrder.warehouse_id || null // Optional field
+      };
+      
+      console.log('Update order payload:', updatePayload);
+      
+      await OrdersAPI.update(selectedOrder.order_id, updatePayload);
       
       // Update local state
       setOrders(orders.map(o => 
@@ -236,7 +273,19 @@ export function OrderManagement() {
       setSelectedOrder(null);
     } catch (err: any) {
       console.error('Error updating order:', err);
-      setActionError(err.message || 'Failed to update order');
+      console.error('Error details:', { message: err.message, data: err.data, status: err.status });
+      
+      // Handle Pydantic validation errors (array of error objects)
+      let errorMessage = 'Failed to update order';
+      if (err.data?.detail && Array.isArray(err.data.detail)) {
+        errorMessage = err.data.detail.map((e: any) => `${e.loc?.join('.')}: ${e.msg}`).join(', ');
+      } else if (typeof err.data?.detail === 'string') {
+        errorMessage = err.data.detail;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setActionError(errorMessage);
     } finally {
       setActionLoading(false);
     }
@@ -249,7 +298,24 @@ export function OrderManagement() {
       setActionLoading(true);
       setActionError(null);
       
-      await OrdersAPI.update(selectedOrder.order_id, { status: newStatus });
+      // Backend expects full order update schema with status as enum VALUE (not key)
+      const statusEnumValue = STATUS_TO_ENUM[newStatus] || newStatus;
+      
+      const updatePayload = {
+        order_id: selectedOrder.order_id, // Required by schema inheritance
+        customer_id: selectedOrder.customer_id, // Required by schema inheritance
+        order_date: selectedOrder.order_date.split('T')[0], // Convert to date only
+        deliver_address: selectedOrder.deliver_address,
+        status: statusEnumValue, // Send as enum VALUE ("Placed", "Scheduled for Railway", etc.)
+        deliver_city_id: selectedOrder.deliver_city_id || '',
+        full_price: selectedOrder.full_price,
+        warehouse_id: selectedOrder.warehouse_id || null // Optional field
+      };
+      
+      console.log('Update status payload:', updatePayload);
+      console.log('Status mapping:', { newStatus, statusEnumValue });
+      
+      await OrdersAPI.update(selectedOrder.order_id, updatePayload);
       
       // Update local state
       setOrders(orders.map(o => 
@@ -262,7 +328,19 @@ export function OrderManagement() {
       setSelectedOrder(null);
     } catch (err: any) {
       console.error('Error updating status:', err);
-      setActionError(err.message || 'Failed to update status');
+      console.error('Error details:', { message: err.message, data: err.data, status: err.status });
+      
+      // Handle Pydantic validation errors (array of error objects)
+      let errorMessage = 'Failed to update status';
+      if (err.data?.detail && Array.isArray(err.data.detail)) {
+        errorMessage = err.data.detail.map((e: any) => `${e.loc?.join('.')}: ${e.msg}`).join(', ');
+      } else if (typeof err.data?.detail === 'string') {
+        errorMessage = err.data.detail;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setActionError(errorMessage);
     } finally {
       setActionLoading(false);
     }
