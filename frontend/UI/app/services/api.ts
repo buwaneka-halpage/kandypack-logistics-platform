@@ -221,6 +221,11 @@ export const AuthAPI = {
 
 // Orders API
 export const OrdersAPI = {
+  // Get customer's own orders (for logged-in customers)
+  async getMyOrders() {
+    return httpClient.get<any[]>('/orders/my-orders');
+  },
+
   async getAll(params?: { status?: string; customer_id?: string; warehouse_id?: string }) {
     return httpClient.get<any[]>('/orders', params);
   },

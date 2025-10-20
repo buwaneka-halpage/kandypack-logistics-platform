@@ -43,6 +43,23 @@ def get_all_orders_history(db: db_dependency, current_user: dict = Depends(get_c
 
     return results
 
+@router.get("/my-orders", response_model=List[schemas.order], status_code=status.HTTP_200_OK)
+def get_customer_orders(db: db_dependency, current_user: dict = Depends(get_current_customer)):
+    """Get orders for the currently logged-in customer"""
+    customer_id = current_user.get("user_id")
+    
+    orders = db.query(model.Orders).filter(
+        model.Orders.customer_id == customer_id
+    ).all()
+    
+    # Convert enum status to string value
+    for order in orders:
+        if isinstance(order.status, model.OrderStatus):
+            order.status = order.status.value
+    
+    return orders
+
+
 @router.get("/", response_model=List[schemas.order], status_code=status.HTTP_200_OK)
 def get_all_Orders(db: db_dependency,  current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
