@@ -12,4 +12,5 @@ passlib
 bcrypt 
 python-multipart
 python-dotenv 
+dotenv
 
