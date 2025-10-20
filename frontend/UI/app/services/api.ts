@@ -308,23 +308,23 @@ export const CitiesAPI = {
 // Railway Stations API
 export const RailwayStationsAPI = {
   async getAll() {
-    return httpClient.get<any[]>('/railway-stations');
+    return httpClient.get<any[]>('/railway_stations');
   },
 
   async getById(stationId: string) {
-    return httpClient.get<any>(`/railway-stations/${stationId}`);
+    return httpClient.get<any>(`/railway_stations/${stationId}`);
   },
 
   async create(stationData: any) {
-    return httpClient.post<any>('/railway-stations', stationData);
+    return httpClient.post<any>('/railway_stations', stationData);
   },
 
   async update(stationId: string, updateData: any) {
-    return httpClient.put<any>(`/railway-stations/${stationId}`, updateData);
+    return httpClient.put<any>(`/railway_stations/${stationId}`, updateData);
   },
 
   async delete(stationId: string) {
-    return httpClient.delete<any>(`/railway-stations/${stationId}`);
+    return httpClient.delete<any>(`/railway_stations/${stationId}`);
   },
 };
 
@@ -423,23 +423,23 @@ export const TrainsAPI = {
 // Train Schedules API
 export const TrainSchedulesAPI = {
   async getAll() {
-    return httpClient.get<any[]>('/train-schedules');
+    return httpClient.get<any[]>('/trainSchedules');
   },
 
   async getById(scheduleId: string) {
-    return httpClient.get<any>(`/train-schedules/${scheduleId}`);
+    return httpClient.get<any>(`/trainSchedules/${scheduleId}`);
   },
 
   async create(scheduleData: any) {
-    return httpClient.post<any>('/train-schedules', scheduleData);
+    return httpClient.post<any>('/trainSchedules', scheduleData);
   },
 
   async update(scheduleId: string, updateData: any) {
-    return httpClient.put<any>(`/train-schedules/${scheduleId}`, updateData);
+    return httpClient.put<any>(`/trainSchedules/${scheduleId}`, updateData);
   },
 
   async delete(scheduleId: string) {
-    return httpClient.delete<any>(`/train-schedules/${scheduleId}`);
+    return httpClient.delete<any>(`/trainSchedules/${scheduleId}`);
   },
 };
 
