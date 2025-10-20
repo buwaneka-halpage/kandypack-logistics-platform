@@ -93,24 +93,32 @@ interface City {
 
 type OrderStatus = "DISPATCHED" | "DELIVERED" | "PENDING" | "PLACED" | "SCHEDULED_RAIL" | "IN_WAREHOUSE" | "SCHEDULED_ROAD" | "FAILED";
 
-// Status mapping - Frontend keys to Backend enum values
+// Status formatting - Convert database format to user-friendly display
+const formatStatus = (status: string): string => {
+  return status
+    .replace(/_/g, ' ')  // Replace underscores with spaces
+    .toLowerCase()       // Convert to lowercase
+    .replace(/\b\w/g, c => c.toUpperCase()); // Capitalize first letter of each word
+};
+
+// Status mapping - Frontend keys to Backend enum values (database format)
 const STATUS_TO_ENUM: Record<string, string> = {
-  "PLACED": "Placed",
-  "SCHEDULED_RAIL": "Scheduled for Railway",
-  "IN_WAREHOUSE": "IN Warehouse",
-  "SCHEDULED_ROAD": "Scheduled for road",
-  "DELIVERED": "Delivered",
-  "FAILED": "Failed"
+  "PLACED": "PLACED",
+  "SCHEDULED_RAIL": "SCHEDULED_RAIL",
+  "IN_WAREHOUSE": "IN_WAREHOUSE",
+  "SCHEDULED_ROAD": "SCHEDULED_ROAD",
+  "DELIVERED": "DELIVERED",
+  "FAILED": "FAILED"
 };
 
 // Reverse mapping - Backend enum values to Frontend keys
 const ENUM_TO_STATUS: Record<string, string> = {
-  "Placed": "PLACED",
-  "Scheduled for Railway": "SCHEDULED_RAIL",
-  "IN Warehouse": "IN_WAREHOUSE",
-  "Scheduled for road": "SCHEDULED_ROAD",
-  "Delivered": "DELIVERED",
-  "Failed": "FAILED"
+  "PLACED": "PLACED",
+  "SCHEDULED_RAIL": "SCHEDULED_RAIL",
+  "IN_WAREHOUSE": "IN_WAREHOUSE",
+  "SCHEDULED_ROAD": "SCHEDULED_ROAD",
+  "DELIVERED": "DELIVERED",
+  "FAILED": "FAILED"
 };
 
 const getStatusVariant = (status: string) => {
@@ -652,7 +660,7 @@ export function OrderManagement() {
                       variant="outline" 
                       className={getStatusColor(order.status)}
                     >
-                      {order.status.replace(/_/g, ' ')}
+                      {formatStatus(order.status)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -776,7 +784,7 @@ export function OrderManagement() {
                     variant="outline" 
                     className={`${getStatusColor(selectedOrder.status)} mt-1`}
                   >
-                    {selectedOrder.status.replace(/_/g, ' ')}
+                    {formatStatus(selectedOrder.status)}
                   </Badge>
                 </div>
               </div>

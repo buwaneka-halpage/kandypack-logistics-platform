@@ -10,14 +10,12 @@ import enum
 model.Base.metadata.create_all(bind= engine)
 
 class OrderStatus(enum.Enum):
-    PLACED = "Placed"
-    SCHEDULED_RAIL = "Scheduled for Railway"
-    IN_WAREHOUSE = "IN Warehouse"
-    SCHEDULED_ROAD =  "Scheduled for road"
-    DELIVERED = "Delivered"
-    FAILED = "Failed"
-
-    model_config = {"from_attributes": True}
+    PLACED = "PLACED"
+    SCHEDULED_RAIL = "SCHEDULED_RAIL"
+    IN_WAREHOUSE = "IN_WAREHOUSE"
+    SCHEDULED_ROAD = "SCHEDULED_ROAD"
+    DELIVERED = "DELIVERED"
+    FAILED = "FAILED"
 
 
 class ScheduleStatus(str, enum.Enum):
@@ -25,8 +23,6 @@ class ScheduleStatus(str, enum.Enum):
     IN_PROGRESS = "IN_PROGRESS"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED" 
-
-    model_config = {"from_attributes": True}
 
 
 # user 
@@ -86,12 +82,12 @@ class order(BaseModel):
     customer_id: str 
     order_date: datetime
     deliver_address  : str 
-    status : str 
+    status : OrderStatus
     deliver_city_id: str 
     full_price  : float 
     warehouse_id: str | None = None
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True, "use_enum_values": True}
 
 class store(BaseModel):
     store_id : str 
@@ -198,7 +194,7 @@ class Train_Schedules(BaseModel):
     arrival_time : time
     status : ScheduleStatus
 
-    model_config = {"from_attributes": True, "orm_mode": True, "use_enum_values": True}
+    model_config = {"from_attributes": True, "use_enum_values": True}
     
 
 class RailwayAllocationBase(BaseModel):
@@ -281,7 +277,7 @@ class Truck_Schedule(BaseModel):
     duration : int  
     status : ScheduleStatus
 
-    model_config = {"from_attributes": True, "orm_mode" : True} 
+    model_config = {"from_attributes": True, "use_enum_values": True} 
     
 class Truck_allocationBase(BaseModel):
     allocation_id : str 
