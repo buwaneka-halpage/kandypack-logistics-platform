@@ -10,11 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Loader2, Trash2, ShoppingCart, MapPin, Wallet, FileText, Check } from "lucide-react";
+import { Loader2, Trash2, ShoppingCart, MapPin, Wallet, FileText, Check, AlertCircle } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { ProductsAPI, CitiesAPI, OrdersAPI } from "~/services/api";
 import { useAuth } from "~/hooks/useAuth";
 import { useNavigate } from "react-router";
+import { toast } from "~/hooks/use-toast";
 
 interface Product {
   product_type_id: string;
@@ -78,9 +79,9 @@ export default function CustomerNewOrder() {
         setProducts(productsData);
         setCities(citiesData);
         
-        // Set default order date to 7 days from now
+        // Set default order date to 8 days from now (to ensure it's at least 7 days considering time)
         const minDate = new Date();
-        minDate.setDate(minDate.getDate() + 7);
+        minDate.setDate(minDate.getDate() + 8);
         setOrderDate(minDate.toISOString().split('T')[0]);
         
         setError(null);
@@ -99,15 +100,27 @@ export default function CustomerNewOrder() {
 
   const handleAddToCart = () => {
     if (!selectedProductId) {
-      alert("Please select a product");
+      toast({
+        title: "Product Required",
+        description: "Please select a product",
+        variant: "destructive",
+      });
       return;
     }
     if (quantity <= 0) {
-      alert("Please enter a valid quantity");
+      toast({
+        title: "Invalid Quantity",
+        description: "Please enter a valid quantity (greater than 0)",
+        variant: "destructive",
+      });
       return;
     }
     if (unitPrice <= 0) {
-      alert("Please enter a valid unit price");
+      toast({
+        title: "Invalid Price",
+        description: "Please enter a valid unit price (greater than 0)",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -122,9 +135,19 @@ export default function CustomerNewOrder() {
       const newCart = [...cart];
       newCart[existingIndex].quantity += quantity;
       setCart(newCart);
+      
+      toast({
+        title: "Cart Updated",
+        description: `${product.product_name} quantity updated in cart`,
+      });
     } else {
       // Add new item
       setCart([...cart, { product, quantity, unitPrice }]);
+      
+      toast({
+        title: "Added to Cart",
+        description: `${product.product_name} added to cart successfully`,
+      });
     }
 
     // Reset form
@@ -134,34 +157,79 @@ export default function CustomerNewOrder() {
   };
 
   const handleRemoveFromCart = (index: number) => {
+    const removedItem = cart[index];
     setCart(cart.filter((_, i) => i !== index));
+    
+    toast({
+      title: "Item Removed",
+      description: `${removedItem.product.product_name} removed from cart`,
+    });
   };
 
   const handleNext = () => {
+    // Step 1: Product Selection Validation
     if (currentStep === 1 && cart.length === 0) {
-      alert("Please add at least one product to your cart");
+      toast({
+        title: "Cart is Empty",
+        description: "Please add at least one product to your cart before continuing",
+        variant: "destructive",
+      });
       return;
     }
+    
+    // Step 2: Delivery Details Validation
     if (currentStep === 2) {
       if (!firstName.trim() || !lastName.trim()) {
-        alert("Please enter your full name");
+        toast({
+          title: "Name Required",
+          description: "Please enter your full name",
+          variant: "destructive",
+        });
         return;
       }
       if (!houseNumber.trim() || !street.trim() || !addressLine1.trim()) {
-        alert("Please enter your complete address");
+        toast({
+          title: "Address Incomplete",
+          description: "Please enter your complete address",
+          variant: "destructive",
+        });
         return;
       }
       if (!selectedCityId) {
-        alert("Please select a city");
+        toast({
+          title: "City Required",
+          description: "Please select a delivery city",
+          variant: "destructive",
+        });
         return;
       }
       if (!mobileNumber.trim()) {
-        alert("Please enter your mobile number");
+        toast({
+          title: "Mobile Number Required",
+          description: "Please enter your mobile number",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validate mobile number format (Sri Lankan format)
+      const mobileRegex = /^(\+94|0)?[0-9]{9,10}$/;
+      if (!mobileRegex.test(mobileNumber)) {
+        toast({
+          title: "Invalid Mobile Number",
+          description: "Please enter a valid Sri Lankan mobile number",
+          variant: "destructive",
+        });
         return;
       }
     }
+    
     if (currentStep < 4) {
       setCurrentStep((currentStep + 1) as Step);
+      toast({
+        title: "Progress Saved",
+        description: `Proceeding to step ${currentStep + 1}`,
+      });
     }
   };
 
@@ -173,23 +241,32 @@ export default function CustomerNewOrder() {
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0) {
-      alert("Please add at least one product to your cart");
+      toast({
+        title: "Cart is Empty",
+        description: "Please add at least one product to your cart",
+        variant: "destructive",
+      });
       return;
     }
 
     try {
       setSubmitting(true);
       
-      const fullAddress = `${houseNumber}, ${street}, ${addressLine1}${addressLine2 ? ', ' + addressLine2 : ''}, ${postalCode}`;
+      // Construct full delivery address with recipient name and contact
+      const recipientName = `${firstName} ${lastName}`;
+      const cityName = cities.find((c) => c.city_id === selectedCityId)?.city_name || "";
+      const fullAddress = `${recipientName}, ${mobileNumber}, ${houseNumber}, ${street}, ${addressLine1}${addressLine2 ? ', ' + addressLine2 : ''}, ${cityName}, ${postalCode}`;
       
-      // Set order date to 7 days from now
-      const minDate = new Date();
-      minDate.setDate(minDate.getDate() + 7);
+      // Set order date to 8 days from now (backend requires at least 7 days from current time)
+      // Using 8 days to account for timezone differences and ensure validation passes
+      const orderDate = new Date();
+      orderDate.setDate(orderDate.getDate() + 8);
+      orderDate.setHours(12, 0, 0, 0); // Set to noon to avoid any timezone edge cases
       
       const orderData = {
         deliver_address: fullAddress,
         deliver_city_id: selectedCityId,
-        order_date: minDate.toISOString(),
+        order_date: orderDate.toISOString(),
         items: cart.map(item => ({
           product_type_id: item.product.product_type_id,
           quantity: item.quantity,
@@ -199,12 +276,22 @@ export default function CustomerNewOrder() {
 
       await OrdersAPI.createWithItems(orderData);
       
-      alert("Order placed successfully!");
-      // Navigate to track orders page
-      navigate("/customer/track-order");
+      toast({
+        title: "Order Placed Successfully! 🎉",
+        description: "Your order has been placed and will be delivered in 7+ days",
+      });
+      
+      // Navigate to track orders page after a short delay
+      setTimeout(() => {
+        navigate("/customer/track-order");
+      }, 1500);
     } catch (err: any) {
       console.error("Error placing order:", err);
-      alert(err.message || "Failed to place order. Please try again.");
+      toast({
+        title: "Order Failed",
+        description: err.message || "Failed to place order. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -212,7 +299,7 @@ export default function CustomerNewOrder() {
 
   const getMinDate = () => {
     const minDate = new Date();
-    minDate.setDate(minDate.getDate() + 7);
+    minDate.setDate(minDate.getDate() + 8); // 8 days to ensure at least 7 days from current time
     return minDate.toISOString().split('T')[0];
   };
 
