@@ -1,7 +1,7 @@
 -- Users (Multiple users for each role: SystemAdmin, StoreManager, WarehouseStaff, Management, Driver, Assistant)
 INSERT INTO users (user_id, user_name, password_hash, role, created_at) VALUES
 -- System Admins (2 users - highest level access)
-('a0b1c2d3-e4f5-6789-abcd-ef0123456789', 'admin', 'hashed_password_admin', 'SystemAdmin', '2025-10-13 09:00:00'),
+('a0b1c2d3-e4f5-6789-abcd-ef0123456789', 'admin', '$pbkdf2-sha256$29000$v5fyXotxzplTqhVijLGW0g$9nBBcMVnp7g1HP5gic6/UAm4r5kfo4rWC5bstL/slIM', 'SystemAdmin', '2025-10-13 09:00:00'),
 ('a1a2b3c4-f5g6-7890-bcde-ef1234567890', 'sysadmin', 'hashed_password_admin', 'SystemAdmin', '2025-10-13 09:01:00'),
 -- Store Managers (3 users)
 ('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'store_manager1', 'hashed_password_1', 'StoreManager', '2025-10-13 10:00:00'),
