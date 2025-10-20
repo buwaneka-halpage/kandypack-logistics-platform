@@ -35,11 +35,10 @@ interface TruckSchedule {
   route_id: string;
   driver_id: string;
   assistant_id: string;
-  date: string;
-  start_time: string;
-  end_time: string;
-  allocated_capacity: number;
-  available_capacity: number;
+  scheduled_date: string;  // Backend returns this field
+  departure_time: string;  // Backend returns this field
+  duration: number;        // Backend returns duration in minutes
+  status: string;
 }
 
 interface Truck {
@@ -250,14 +249,14 @@ export default function LastMileDelivery() {
                         {/* Date */}
                         <TableCell>
                           <div className="text-sm text-gray-700">
-                            {schedule.date}
+                            {schedule.scheduled_date}
                           </div>
                         </TableCell>
 
                         {/* Time */}
                         <TableCell>
                           <div className="text-sm text-gray-700">
-                            {schedule.start_time} - {schedule.end_time}
+                            {schedule.departure_time} ({schedule.duration} min)
                           </div>
                         </TableCell>
 
@@ -324,7 +323,7 @@ export default function LastMileDelivery() {
                         {/* Available Capacity */}
                         <TableCell>
                           <div className="text-sm text-gray-700">
-                            {schedule.available_capacity}
+                            {truck?.capacity || "N/A"}
                           </div>
                         </TableCell>
 

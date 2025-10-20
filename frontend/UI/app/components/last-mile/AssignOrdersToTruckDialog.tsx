@@ -32,11 +32,10 @@ interface TruckSchedule {
   route_id: string;
   driver_id: string;
   assistant_id: string;
-  date: string;
-  start_time: string;
-  end_time: string;
-  allocated_capacity: number;
-  available_capacity: number;
+  scheduled_date: string;  // Backend returns this field
+  departure_time: string;  // Backend returns this field
+  duration: number;        // Backend returns duration in minutes
+  status: string;
 }
 
 interface AssignOrdersToTruckDialogProps {
@@ -90,7 +89,8 @@ export function AssignOrdersToTruckDialog({
       setOrders(availableOrders);
     } catch (err: any) {
       console.error("Error fetching orders:", err);
-      setError(err.message || "Failed to load orders");
+      // Parse API error into readable string
+      setError(parseApiError(err) || "Failed to load orders");
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ export function AssignOrdersToTruckDialog({
           order_id: orderId,
           schedule_id: schedule.schedule_id,
           allocation_type: 'Truck',
-          shipment_date: schedule.date,
+          shipment_date: schedule.scheduled_date,
         })
       );
 
@@ -144,14 +144,56 @@ export function AssignOrdersToTruckDialog({
 
     } catch (err: any) {
       console.error("Error assigning orders:", err);
-      
-      // Extract error message from API response
-      const errorMessage = err.data?.detail || err.message || "Failed to assign orders";
-      setError(errorMessage);
+      // Extract and parse API error into readable string
+      setError(parseApiError(err) || "Failed to assign orders");
     } finally {
       setSubmitting(false);
     }
   };
+
+  // Helper to safely parse API / backend errors into user-friendly strings
+  function parseApiError(err: any): string | null {
+    if (!err) return null;
+
+    // Axios-like error with response.data
+    if (err.response && err.response.data) {
+      const data = err.response.data;
+      // Pydantic validation errors often are list of objects under 'detail'
+      if (Array.isArray(data.detail)) {
+        try {
+          // Map detail objects to "loc: msg" strings
+          return data.detail
+            .map((d: any) => {
+              if (typeof d === 'string') return d;
+              const loc = Array.isArray(d.loc) ? d.loc.join('.') : d.loc;
+              return `${loc}: ${d.msg}`;
+            })
+            .join(' | ');
+        } catch (e) {
+          return JSON.stringify(data.detail);
+        }
+      }
+
+      // If detail is a string
+      if (typeof data.detail === 'string') return data.detail;
+
+      // Try other fields
+      if (typeof data.message === 'string') return data.message;
+      return JSON.stringify(data);
+    }
+
+    // Some libs attach data directly on err.data
+    if (err.data) {
+      const d = err.data;
+      if (Array.isArray(d)) return d.map((x: any) => (x.msg ? x.msg : String(x))).join(' | ');
+      if (typeof d === 'string') return d;
+      if (d.detail) return JSON.stringify(d.detail);
+    }
+
+    // Fallback to message
+    if (err.message) return err.message;
+    return String(err);
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -208,14 +250,14 @@ export function AssignOrdersToTruckDialog({
               </div>
               <div>
                 <span className="font-medium">Date:</span>{" "}
-                {formatDate(schedule.date)}
+                {formatDate(schedule.scheduled_date)}
               </div>
               <div>
-                <span className="font-medium">Start Time:</span>{" "}
-                {schedule.start_time}
+                <span className="font-medium">Departure:</span>{" "}
+                {schedule.departure_time}
               </div>
               <div>
-                <span className="font-medium">End Time:</span> {schedule.end_time}
+                <span className="font-medium">Duration:</span> {schedule.duration} min
               </div>
             </div>
           </div>
