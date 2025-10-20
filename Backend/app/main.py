@@ -4,8 +4,21 @@ from app.api import api_router
 import app.core.model as model
 from typing import Annotated
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware 
 
 app = FastAPI()
+
+origins = [
+
+] 
+
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins = origins,
+    # allow_method = ["*"],
+    # allow_headers = ["*"]
+
+)
 
 model.Base.metadata.create_all(bind=engine)
 db_dependancy = Annotated[Session, Depends(get_db)]
