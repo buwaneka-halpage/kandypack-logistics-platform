@@ -279,6 +279,10 @@ export const UsersAPI = {
     return httpClient.get<any[]>('/users');
   },
 
+  async getStoreManagers() {
+    return httpClient.get<any[]>('/users/store-managers/list');
+  },
+
   async getById(userId: string) {
     return httpClient.get<any>(`/users/${userId}`);
   },

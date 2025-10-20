@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { Plus, Loader2, Pencil, Trash2, AlertCircle } from "lucide-react";
-import { StoresAPI, RailwayStationsAPI } from "~/services/api"; // Assuming APIs are in this file
+import { StoresAPI, RailwayStationsAPI, UsersAPI } from "~/services/api"; // Assuming APIs are in this file
 
 // Import shadcn/ui components
 import { Badge } from "~/components/ui/badge";
@@ -47,45 +47,53 @@ import DashboardLayout from "../dashboard/DashboardLayout";
 
 // TypeScript interfaces
 interface Store {
-  store_id: string;
-  name: string;
-  telephone_number: string;
-  address: string;
-  contact_person: string;
-  station_id: string;
-  city_name: string;
+  store_id: string;
+  name: string;
+  telephone_number: string;
+  address: string;
+  contact_person: string;
+  station_id: string;
+  city_name: string;
+  manager_name: string | null;
 }
 
 interface RailwayStation {
-  station_id: string;
-  station_name: string;
-  city_id: string;
+  station_id: string;
+  station_name: string;
+  city_id: string;
+}
+
+interface StoreManager {
+  user_id: string;
+  user_name: string;
+  role: string;
 }
 
 interface StoreFormData {
   store_id: string;
-  name: string;
-  telephone_number: string;
-  address: string;
-  contact_person: string;
-  station_id: string;
+  name: string;
+  telephone_number: string;
+  address: string;
+  contact_person: string | null;
+  station_id: string;
 }
 
 const EMPTY_FORM_DATA: StoreFormData = {
   store_id: "string",
-  name: "",
-  telephone_number: "",
-  address: "",
-  contact_person: "",
-  station_id: "",
+  name: "",
+  telephone_number: "",
+  address: "",
+  contact_person: "unassigned",
+  station_id: "",
 };
 
 export function StoreManagement() {
-  const [stores, setStores] = useState<Store[]>([]);
-  const [stations, setStations] = useState<RailwayStation[]>([]);
-  const [stationMap, setStationMap] = useState<Map<string, string>>(new Map());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [stations, setStations] = useState<RailwayStation[]>([]);
+  const [storeManagers, setStoreManagers] = useState<StoreManager[]>([]);
+  const [stationMap, setStationMap] = useState<Map<string, string>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Dialog states
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -94,33 +102,35 @@ export function StoreManagement() {
   const [storeToDelete, setStoreToDelete] = useState<Store | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false); // For delete loading
 
-  // Fetch data from API
-  async function fetchData() {
-    try {
-      setLoading(true);
-      const [storesData, stationsData] = await Promise.all([
-        StoresAPI.getAll(),
-        RailwayStationsAPI.getAll(),
-      ]);
+  // Fetch data from API
+  async function fetchData() {
+    try {
+      setLoading(true);
+      const [storesData, stationsData, managersData] = await Promise.all([
+        StoresAPI.getAll(),
+        RailwayStationsAPI.getAll(),
+        UsersAPI.getStoreManagers(),
+      ]);
 
-      setStores(storesData);
-      setStations(stationsData);
+      setStores(storesData);
+      setStations(stationsData);
+      setStoreManagers(managersData);
 
-      // Create lookup map for stations
-      const newStationMap = new Map<string, string>();
-      stationsData.forEach((station: RailwayStation) => {
-        newStationMap.set(station.station_id, station.station_name);
-      });
-      setStationMap(newStationMap);
+      // Create lookup map for stations
+      const newStationMap = new Map<string, string>();
+      stationsData.forEach((station: RailwayStation) => {
+        newStationMap.set(station.station_id, station.station_name);
+      });
+      setStationMap(newStationMap);
 
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching data:", err);
-      setError("Failed to load data. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  }
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Failed to load data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
     fetchData();
@@ -198,30 +208,38 @@ export function StoreManagement() {
               <p className="text-gray-600">No stores found. Add one to get started!</p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50">
-                  <TableHead className="font-semibold text-gray-700">Store Name</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Contact Person</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Telephone</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Address</TableHead>
-                  <TableHead className="font-semibold text-gray-700">Station</TableHead>
-                  <TableHead className="font-semibold text-gray-700">City</TableHead>
-                  <TableHead className="font-semibold text-gray-700 w-[180px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {stores.map((store) => (
-                  <TableRow key={store.store_id} className="hover:bg-gray-50">
-                    <TableCell className="font-medium text-gray-900">{store.name}</TableCell>
-                    <TableCell className="text-gray-700">{store.contact_person}</TableCell>
-                    <TableCell className="text-gray-700">{store.telephone_number}</TableCell>
-                    <TableCell className="text-gray-700">{store.address}</TableCell>
-                    <TableCell className="text-gray-700">
-                      {stationMap.get(store.station_id) || store.station_id}
-                    </TableCell>
-                    <TableCell className="text-gray-700">{store.city_name}</TableCell>
-                    <TableCell className="space-x-2">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="font-semibold text-gray-700">Store Name</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Store Manager</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Telephone</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Address</TableHead>
+                  <TableHead className="font-semibold text-gray-700">Station</TableHead>
+                  <TableHead className="font-semibold text-gray-700">City</TableHead>
+                  <TableHead className="font-semibold text-gray-700 w-[180px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stores.map((store) => (
+                  <TableRow key={store.store_id} className="hover:bg-gray-50">
+                    <TableCell className="font-medium text-gray-900">{store.name}</TableCell>
+                    <TableCell className="text-gray-700">
+                      {store.manager_name ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {store.manager_name}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic">Not assigned</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-gray-700">{store.telephone_number}</TableCell>
+                    <TableCell className="text-gray-700">{store.address}</TableCell>
+                    <TableCell className="text-gray-700">
+                      {stationMap.get(store.station_id) || store.station_id}
+                    </TableCell>
+                    <TableCell className="text-gray-700">{store.city_name}</TableCell>
+                    <TableCell className="space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -247,14 +265,15 @@ export function StoreManagement() {
         </div>
       </div>
 
-      {/* Add/Edit Store Dialog */}
-      <StoreFormDialog
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        onSuccess={handleFormSuccess}
-        store={selectedStore}
-        stations={stations}
-      />
+      {/* Add/Edit Store Dialog */}
+      <StoreFormDialog
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSuccess={handleFormSuccess}
+        store={selectedStore}
+        stations={stations}
+        storeManagers={storeManagers}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
@@ -288,71 +307,88 @@ export function StoreManagement() {
 // --- Helper Component: StoreFormDialog ---
 
 interface StoreFormDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-  store: Store | null;
-  stations: RailwayStation[];
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  store: Store | null;
+  stations: RailwayStation[];
+  storeManagers: StoreManager[];
 }
 
 function StoreFormDialog({
-  isOpen,
-  onClose,
-  onSuccess,
-  store,
-  stations,
+  isOpen,
+  onClose,
+  onSuccess,
+  store,
+  stations,
+  storeManagers,
 }: StoreFormDialogProps) {
   const [formData, setFormData] = useState<StoreFormData>(EMPTY_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Populate form when 'store' (for editing) changes
-  useEffect(() => {
-    if (store) {
-      setFormData({
-        store_id: "string",
-        name: store.name,
-        telephone_number: store.telephone_number,
-        address: store.address,
-        contact_person: store.contact_person,
-        station_id: store.station_id,
-      });
-    } else {
-      setFormData(EMPTY_FORM_DATA); // Reset for 'Add New'
-    }
-    setFormError(null); // Reset error on open
-  }, [store, isOpen]);
+  // Populate form when 'store' (for editing) changes
+  useEffect(() => {
+    if (store) {
+      setFormData({
+        store_id: "string",
+        name: store.name,
+        telephone_number: store.telephone_number,
+        address: store.address,
+        // Convert null to "unassigned" for the Select component
+        contact_person: store.contact_person || "unassigned",
+        station_id: store.station_id,
+      });
+    } else {
+      setFormData(EMPTY_FORM_DATA); // Reset for 'Add New'
+    }
+    setFormError(null); // Reset error on open
+  }, [store, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleStationChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, station_id: value }));
-  };
+  const handleStationChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, station_id: value }));
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setFormError(null);
+  const handleManagerChange = (value: string) => {
+    // Convert "unassigned" back to null for the database
+    setFormData((prev) => ({ 
+      ...prev, 
+      contact_person: value === "unassigned" ? null : value 
+    }));
+  };
 
-    try {
-      if (store) {
-        // Update existing store
-        await StoresAPI.update(store.store_id, formData);
-      } else {
-        // Create new store
-        await StoresAPI.create(formData);
-      }
-      onSuccess(); // Notify parent to refetch
-    } catch (err) {
-      console.error("Error submitting form:", err);
-      setFormError("Failed to save store. Please check the details and try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setFormError(null);
+
+    try {
+      // Prepare data for submission - convert "unassigned" to null
+      const submitData = {
+        ...formData,
+        contact_person: formData.contact_person === "unassigned" ? null : formData.contact_person
+      };
+
+      if (store) {
+        // Update existing store
+        await StoresAPI.update(store.store_id, submitData);
+      } else {
+        // Create new store
+        await StoresAPI.create(submitData);
+      }
+      onSuccess(); // Notify parent to refetch
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      setFormError("Failed to save store. Please check the details and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -379,19 +415,27 @@ function StoreFormDialog({
               required
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="contact_person" className="text-right">
-              Contact
-            </Label>
-            <Input
-              id="contact_person"
-              name="contact_person"
-              value={formData.contact_person}
-              onChange={handleChange}
-              className="col-span-3"
-              required
-            />
-          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="contact_person" className="text-right">
+              Store Manager
+            </Label>
+            <Select
+              value={formData.contact_person || "unassigned"}
+              onValueChange={handleManagerChange}
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select store manager" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unassigned">No manager assigned</SelectItem>
+                {storeManagers.map((manager) => (
+                  <SelectItem key={manager.user_id} value={manager.user_id}>
+                    {manager.user_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="telephone_number" className="text-right">
               Telephone

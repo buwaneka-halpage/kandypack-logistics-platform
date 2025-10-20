@@ -63,13 +63,36 @@ def get_customer_orders(db: db_dependency, current_user: dict = Depends(get_curr
 @router.get("/", response_model=List[schemas.order], status_code=status.HTTP_200_OK)
 def get_all_Orders(db: db_dependency,  current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
+    user_id = current_user.get("user_id")
+    
     if not check_role_permission(role, ["StoreManager", "Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="StoreManager, Management or SystemAdmin role required"
         )
     
-    orders_= db.query(model.Orders).all()
+    # If StoreManager, filter orders by their assigned warehouse
+    if role == "StoreManager":
+        # Find stores where this user is the contact_person (store manager)
+        assigned_stores = db.query(model.Stores).filter(
+            model.Stores.contact_person == user_id
+        ).all()
+        
+        if not assigned_stores:
+            # Store manager not assigned to any warehouse
+            return []
+        
+        # Get store IDs
+        store_ids = [store.store_id for store in assigned_stores]
+        
+        # Get orders assigned to these warehouses
+        orders_ = db.query(model.Orders).filter(
+            model.Orders.warehouse_id.in_(store_ids)
+        ).all()
+    else:
+        # Management and SystemAdmin can see all orders
+        orders_ = db.query(model.Orders).all()
+    
     if orders_ is None:
         raise HTTPException(status_code=404, detail=f"Order history not found")
     

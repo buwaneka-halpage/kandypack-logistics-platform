@@ -25,7 +25,7 @@ def get_all_stores(db: db_dependency, current_user: dict = Depends(get_current_u
             detail=f"stores not found."
         )
     
-    # Enrich stores with city names
+    # Enrich stores with city names and manager names
     result = []
     for store in stores:
         store_dict = {
@@ -35,12 +35,21 @@ def get_all_stores(db: db_dependency, current_user: dict = Depends(get_current_u
             "address": store.address,
             "contact_person": store.contact_person,
             "station_id": store.station_id,
-            "city_name": None
+            "city_name": None,
+            "manager_name": None
         }
         
         # Get city name through station relationship
         if store.station and store.station.city:
             store_dict["city_name"] = store.station.city.city_name
+        
+        # Get manager name from users table
+        if store.contact_person:
+            manager = db.query(model.Users).filter(
+                model.Users.user_id == store.contact_person
+            ).first()
+            if manager:
+                store_dict["manager_name"] = manager.user_name
         
         result.append(store_dict)
     

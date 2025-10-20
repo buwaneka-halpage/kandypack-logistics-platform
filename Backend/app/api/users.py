@@ -87,6 +87,15 @@ async def get_all_users(db: db_dependency, current_user: dict = Security(get_cur
     return users
 
 
+@router.get("/store-managers/list", response_model=List[schemas.UserResponse])
+async def get_store_managers(db: db_dependency, current_user: dict = Security(get_current_user)):
+    """Get all users with StoreManager role for warehouse assignment"""
+    store_managers = db.query(model.Users).filter(
+        model.Users.role == "StoreManager"
+    ).all()
+    return store_managers
+
+
 @router.get("/{user_id}", response_model=schemas.UserResponse)
 async def get_user(user_id: str, db: db_dependency, current_user: dict = Security(get_current_user)):
     """Get a specific user by ID (requires authentication)"""
