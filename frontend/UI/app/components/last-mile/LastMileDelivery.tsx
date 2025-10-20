@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { MoreHorizontal, Plus, Loader2 } from "lucide-react";
+import { MoreHorizontal, Plus, Loader2, Package } from "lucide-react";
 import { TruckSchedulesAPI, TrucksAPI, RoutesAPI, DriversAPI, AssistantsAPI } from "~/services/api";
+import { AssignOrdersToTruckDialog } from "./AssignOrdersToTruckDialog";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -78,55 +79,60 @@ export default function LastMileDelivery() {
   const [selectedAreaFilter, setSelectedAreaFilter] = useState<string>("all");
   const [selectedTimeFilter, setSelectedTimeFilter] = useState<string>("all");
 
+  // Dialog state for assigning orders
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<TruckSchedule | null>(null);
+
+  // Fetch data from API
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [schedulesData, trucksData, routesData, driversData, assistantsData] = await Promise.all([
+        TruckSchedulesAPI.getAll(),
+        TrucksAPI.getAll(),
+        RoutesAPI.getAll(),
+        DriversAPI.getAll(),
+        AssistantsAPI.getAll()
+      ]);
+      
+      setSchedules(schedulesData);
+      
+      // Create lookup maps
+      const truckMap = new Map<string, Truck>();
+      trucksData.forEach((truck: Truck) => {
+        truckMap.set(truck.truck_id, truck);
+      });
+      setTrucks(truckMap);
+      
+      const routeMap = new Map<string, Route>();
+      routesData.forEach((route: Route) => {
+        routeMap.set(route.route_id, route);
+      });
+      setRoutes(routeMap);
+      
+      const driverMap = new Map<string, string>();
+      driversData.forEach((driver: Driver) => {
+        driverMap.set(driver.driver_id, driver.driver_name);
+      });
+      setDrivers(driverMap);
+      
+      const assistantMap = new Map<string, string>();
+      assistantsData.forEach((assistant: Assistant) => {
+        assistantMap.set(assistant.assistant_id, assistant.assistant_name);
+      });
+      setAssistants(assistantMap);
+      
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching truck schedules:", err);
+      setError("Failed to load truck schedules. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch data from API
   useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const [schedulesData, trucksData, routesData, driversData, assistantsData] = await Promise.all([
-          TruckSchedulesAPI.getAll(),
-          TrucksAPI.getAll(),
-          RoutesAPI.getAll(),
-          DriversAPI.getAll(),
-          AssistantsAPI.getAll()
-        ]);
-        
-        setSchedules(schedulesData);
-        
-        // Create lookup maps
-        const truckMap = new Map<string, Truck>();
-        trucksData.forEach((truck: Truck) => {
-          truckMap.set(truck.truck_id, truck);
-        });
-        setTrucks(truckMap);
-        
-        const routeMap = new Map<string, Route>();
-        routesData.forEach((route: Route) => {
-          routeMap.set(route.route_id, route);
-        });
-        setRoutes(routeMap);
-        
-        const driverMap = new Map<string, string>();
-        driversData.forEach((driver: Driver) => {
-          driverMap.set(driver.driver_id, driver.driver_name);
-        });
-        setDrivers(driverMap);
-        
-        const assistantMap = new Map<string, string>();
-        assistantsData.forEach((assistant: Assistant) => {
-          assistantMap.set(assistant.assistant_id, assistant.assistant_name);
-        });
-        setAssistants(assistantMap);
-        
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching truck schedules:", err);
-        setError("Failed to load truck schedules. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    
     fetchData();
   }, []);
 
@@ -327,7 +333,12 @@ export default function LastMileDelivery() {
                           <Button 
                             className="bg-primary-navy hover:bg-primary-navy/90 text-white text-sm px-4"
                             size="sm"
+                            onClick={() => {
+                              setSelectedSchedule(schedule);
+                              setDialogOpen(true);
+                            }}
                           >
+                            <Package className="w-4 h-4 mr-2" />
                             Assign Orders
                           </Button>
                         </TableCell>
@@ -340,6 +351,17 @@ export default function LastMileDelivery() {
           </div>
         </div>
       </div>
+
+      {/* Assign Orders Dialog */}
+      <AssignOrdersToTruckDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        schedule={selectedSchedule}
+        onSuccess={() => {
+          // Refresh schedules after successful assignment
+          fetchData();
+        }}
+      />
     </DashboardLayout>
   );
 }

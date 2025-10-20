@@ -516,23 +516,23 @@ export const TrucksAPI = {
 // Truck Schedules API
 export const TruckSchedulesAPI = {
   async getAll() {
-    return httpClient.get<any[]>('/truck-schedules');
+    return httpClient.get<any[]>('/truckSchedules/');
   },
 
   async getById(scheduleId: string) {
-    return httpClient.get<any>(`/truck-schedules/${scheduleId}`);
+    return httpClient.get<any>(`/truckSchedules/${scheduleId}`);
   },
 
   async create(scheduleData: any) {
-    return httpClient.post<any>('/truck-schedules', scheduleData);
+    return httpClient.post<any>('/truckSchedules/', scheduleData);
   },
 
   async update(scheduleId: string, updateData: any) {
-    return httpClient.put<any>(`/truck-schedules/${scheduleId}`, updateData);
+    return httpClient.put<any>(`/truckSchedules/${scheduleId}`, updateData);
   },
 
   async delete(scheduleId: string) {
-    return httpClient.delete<any>(`/truck-schedules/${scheduleId}`);
+    return httpClient.delete<any>(`/truckSchedules/${scheduleId}`);
   },
 };
 
