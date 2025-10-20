@@ -72,7 +72,7 @@ class Stores(Base):
     name = Column(String(100), nullable=False)
     telephone_number = Column(String(15), nullable=False)
     address = Column(String(255), nullable=False)
-    contact_person = Column(String(100), nullable=False)
+    contact_person = Column(String(36),ForeignKey("users.user_id"),index=True, default= generate_uuid )
     station_id = Column(String(36), ForeignKey("railway_stations.station_id"), nullable=False)
     station = relationship("RailwayStations")
     __table_args__ = (
