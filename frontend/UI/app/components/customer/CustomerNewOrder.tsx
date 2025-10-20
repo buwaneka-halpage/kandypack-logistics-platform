@@ -51,7 +51,7 @@ export default function CustomerNewOrder() {
   // Form fields
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
-  const [unitPrice, setUnitPrice] = useState<number>(1000);
+  const [unitPrice, setUnitPrice] = useState<number>(0);
   
   // Delivery fields
   const [firstName, setFirstName] = useState<string>("");
@@ -317,6 +317,20 @@ export default function CustomerNewOrder() {
                       value={quantity}
                       onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
                       placeholder="kg"
+                      className="bg-gray-50 mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="unitPrice">Unit Price (Rs.)</Label>
+                    <Input
+                      id="unitPrice"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={unitPrice}
+                      onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 0)}
+                      placeholder="Enter unit price"
                       className="bg-gray-50 mt-1"
                     />
                   </div>
