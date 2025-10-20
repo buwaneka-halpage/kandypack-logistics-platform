@@ -6,7 +6,7 @@ Successfully implemented universal SystemAdmin privileges across the entire back
 ## Implementation Method
 Used the `check_role_permission()` helper function which automatically grants SystemAdmin access to any endpoint without needing to manually add "SystemAdmin" to every role list.
 
-## Files Updated (21 Total)
+## Files Updated (22 Total)
 
 ### Core Authentication
 1. ✅ **app/core/auth.py**
@@ -14,7 +14,7 @@ Used the `check_role_permission()` helper function which automatically grants Sy
    - Added `is_admin_or_management(role)` helper function
    - Updated `require_management()` to include SystemAdmin
 
-### API Endpoints (20 files)
+### API Endpoints (21 files)
 
 #### Critical Operations (Management-only → Management + SystemAdmin)
 2. ✅ **app/api/reports.py** - 8 endpoints updated
@@ -104,6 +104,13 @@ Used the `check_role_permission()` helper function which automatically grants Sy
 14. ✅ **app/api/cities.py** - 2 endpoints updated
     - GET `/cities/` - All cities (StoreManager, Management → + SystemAdmin)
     - GET `/cities/{city_id}` - Single city (StoreManager, Management → + SystemAdmin)
+
+#### Customer Management
+15. ✅ **app/api/customers.py** - 4 endpoints updated
+    - GET `/customers/` - All customers (Management → + SystemAdmin)
+    - GET `/customers/{customer_id}` - Single customer (Management → + SystemAdmin)
+    - PUT `/customers/{customer_id}` - Update customer (Management → + SystemAdmin)
+    - DELETE `/customers/{customer_id}` - Delete customer (Management → + SystemAdmin)
 
 ## Total Changes
 - **21 files updated**

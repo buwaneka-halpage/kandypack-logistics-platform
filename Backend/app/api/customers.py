@@ -12,7 +12,8 @@ from app.core.auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     require_management,
     get_current_customer,
-    get_current_user
+    get_current_user,
+    check_role_permission
 )
 from datetime import timedelta
 
@@ -50,10 +51,10 @@ async def login(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestF
 async def get_all_customers(db: db_dependency, current_user: dict = Depends(get_current_user)):
     # check the role 
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access Customers"
+            detail="Management or SystemAdmin role required"
         )
     customers = db.query(model.Customers).all()
     if not customers:
@@ -63,10 +64,10 @@ async def get_all_customers(db: db_dependency, current_user: dict = Depends(get_
 @router.get("/{customer_id}", response_model=schemas.CustomerBase, status_code=status.HTTP_200_OK)
 async def get_customer(customer_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access customers"
+            detail="Management or SystemAdmin role required"
         )
     customer = db.query(model.Customers).filter(model.Customers.customer_id == customer_id).first()
     if not customer:
@@ -88,10 +89,10 @@ async def create_customer(customer: schemas.CustomerCreate, db: db_dependency, c
 @router.put("/{customer_id}", response_model=schemas.CustomerBase, status_code=status.HTTP_200_OK)
 async def update_customer(customer_id: str, customer_update: schemas.customerUpdate, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access customers"
+            detail="Management or SystemAdmin role required"
         )
     customer = db.query(model.Customers).filter(model.Customers.customer_id == customer_id).first()
     if not customer:
@@ -110,10 +111,10 @@ async def update_customer(customer_id: str, customer_update: schemas.customerUpd
 @router.delete("/{customer_id}", status_code=status.HTTP_200_OK)
 async def delete_customer(customer_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if role not in ["Management"]:
+    if not check_role_permission(role, ["Management"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You cannot access customers"
+            detail="Management or SystemAdmin role required"
         )
     customer = db.query(model.Customers).filter(model.Customers.customer_id == customer_id).first()
     if not customer:
