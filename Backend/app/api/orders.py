@@ -62,7 +62,7 @@ def get_all_Orders(db: db_dependency,  current_user: dict = Depends(get_current_
             order.status = order.status.value
     
     return orders_
-
+    
 @router.get("/last-mile-delivery", status_code=status.HTTP_200_OK)
 def get_last_mile_delivery(db: db_dependency, current_user: dict = Depends(get_current_user)):
     """Get last mile delivery information based on user role"""
