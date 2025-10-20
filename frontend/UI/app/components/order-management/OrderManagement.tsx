@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { MoreHorizontal, ChevronDown, Loader2 } from "lucide-react";
+import { MoreHorizontal, ChevronDown, Loader2, X } from "lucide-react";
 import { OrdersAPI, CustomersAPI } from "~/services/api";
 
 import { Badge } from "~/components/ui/badge";
@@ -18,6 +18,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -107,6 +127,25 @@ export function OrderManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // CRUD state
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    deliver_address: '',
+    deliver_city_id: '',
+    full_price: 0,
+  });
+  
+  // Status update state
+  const [newStatus, setNewStatus] = useState<string>('');
+
   // Fetch orders and customers
   useEffect(() => {
     async function fetchData() {
@@ -146,6 +185,110 @@ export function OrderManagement() {
   useEffect(() => {
     setCurrentPage(1);
   }, [statusFilter, dateFilter, cityFilter]);
+
+  // CRUD Handlers
+  const handleViewDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleEditOrder = (order: Order) => {
+    setSelectedOrder(order);
+    setEditForm({
+      deliver_address: order.deliver_address,
+      deliver_city_id: order.deliver_city_id || '',
+      full_price: order.full_price,
+    });
+    setIsEditDialogOpen(true);
+    setActionError(null);
+  };
+
+  const handleUpdateStatus = (order: Order) => {
+    setSelectedOrder(order);
+    setNewStatus(order.status);
+    setIsStatusDialogOpen(true);
+    setActionError(null);
+  };
+
+  const handleDeleteOrder = (order: Order) => {
+    setSelectedOrder(order);
+    setIsDeleteDialogOpen(true);
+    setActionError(null);
+  };
+
+  const confirmEditOrder = async () => {
+    if (!selectedOrder) return;
+    
+    try {
+      setActionLoading(true);
+      setActionError(null);
+      
+      await OrdersAPI.update(selectedOrder.order_id, editForm);
+      
+      // Update local state
+      setOrders(orders.map(o => 
+        o.order_id === selectedOrder.order_id 
+          ? { ...o, ...editForm }
+          : o
+      ));
+      
+      setIsEditDialogOpen(false);
+      setSelectedOrder(null);
+    } catch (err: any) {
+      console.error('Error updating order:', err);
+      setActionError(err.message || 'Failed to update order');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const confirmUpdateStatus = async () => {
+    if (!selectedOrder) return;
+    
+    try {
+      setActionLoading(true);
+      setActionError(null);
+      
+      await OrdersAPI.update(selectedOrder.order_id, { status: newStatus });
+      
+      // Update local state
+      setOrders(orders.map(o => 
+        o.order_id === selectedOrder.order_id 
+          ? { ...o, status: newStatus }
+          : o
+      ));
+      
+      setIsStatusDialogOpen(false);
+      setSelectedOrder(null);
+    } catch (err: any) {
+      console.error('Error updating status:', err);
+      setActionError(err.message || 'Failed to update status');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const confirmDeleteOrder = async () => {
+    if (!selectedOrder) return;
+    
+    try {
+      setActionLoading(true);
+      setActionError(null);
+      
+      await OrdersAPI.delete(selectedOrder.order_id);
+      
+      // Remove from local state
+      setOrders(orders.filter(o => o.order_id !== selectedOrder.order_id));
+      
+      setIsDeleteDialogOpen(false);
+      setSelectedOrder(null);
+    } catch (err: any) {
+      console.error('Error deleting order:', err);
+      setActionError(err.message || 'Failed to delete order');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // Filter orders based on selected filters
   const filteredOrders = orders.filter((order) => {
@@ -330,11 +473,20 @@ export function OrderManagement() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit order</DropdownMenuItem>
-                        <DropdownMenuItem>Track delivery</DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          Cancel order
+                        <DropdownMenuItem onClick={() => handleViewDetails(order)}>
+                          View details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditOrder(order)}>
+                          Edit order
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateStatus(order)}>
+                          Update status
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-red-600"
+                          onClick={() => handleDeleteOrder(order)}
+                        >
+                          Delete order
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -394,6 +546,240 @@ export function OrderManagement() {
           </Pagination>
         </div>
       )}
+
+      {/* View Details Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+            <DialogDescription>
+              Complete information for order {selectedOrder?.order_id}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Order ID</Label>
+                  <p className="text-sm text-gray-700 mt-1">{selectedOrder.order_id}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Customer</Label>
+                  <p className="text-sm text-gray-700 mt-1">
+                    {customers.get(selectedOrder.customer_id) || selectedOrder.customer_id}
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Order Date</Label>
+                  <p className="text-sm text-gray-700 mt-1">{formatDate(selectedOrder.order_date)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Status</Label>
+                  <Badge 
+                    variant="outline" 
+                    className={`${getStatusColor(selectedOrder.status)} mt-1`}
+                  >
+                    {selectedOrder.status.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Delivery Address</Label>
+                <p className="text-sm text-gray-700 mt-1">{selectedOrder.deliver_address}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">City</Label>
+                  <p className="text-sm text-gray-700 mt-1">{selectedOrder.deliver_city_id || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Price</Label>
+                  <p className="text-sm text-gray-700 mt-1">Rs {selectedOrder.full_price.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Order Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Order</DialogTitle>
+            <DialogDescription>
+              Update order details for {selectedOrder?.order_id}
+            </DialogDescription>
+          </DialogHeader>
+          {actionError && (
+            <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded text-sm">
+              {actionError}
+            </div>
+          )}
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="deliver_address">Delivery Address</Label>
+              <Input
+                id="deliver_address"
+                value={editForm.deliver_address}
+                onChange={(e) => setEditForm({ ...editForm, deliver_address: e.target.value })}
+                placeholder="Enter delivery address"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="deliver_city_id">City</Label>
+              <Select 
+                value={editForm.deliver_city_id} 
+                onValueChange={(value) => setEditForm({ ...editForm, deliver_city_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select city" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="kandy">Kandy</SelectItem>
+                  <SelectItem value="colombo">Colombo</SelectItem>
+                  <SelectItem value="galle">Galle</SelectItem>
+                  <SelectItem value="negombo">Negombo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="full_price">Price (Rs)</Label>
+              <Input
+                id="full_price"
+                type="number"
+                value={editForm.full_price}
+                onChange={(e) => setEditForm({ ...editForm, full_price: parseFloat(e.target.value) || 0 })}
+                placeholder="Enter price"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsEditDialogOpen(false)}
+              disabled={actionLoading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmEditOrder}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Status Dialog */}
+      <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Order Status</DialogTitle>
+            <DialogDescription>
+              Change the status for order {selectedOrder?.order_id}
+            </DialogDescription>
+          </DialogHeader>
+          {actionError && (
+            <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded text-sm">
+              {actionError}
+            </div>
+          )}
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={newStatus} onValueChange={setNewStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PLACED">Placed</SelectItem>
+                  <SelectItem value="SCHEDULED_RAIL">Scheduled Rail</SelectItem>
+                  <SelectItem value="IN_WAREHOUSE">In Warehouse</SelectItem>
+                  <SelectItem value="SCHEDULED_ROAD">Scheduled Road</SelectItem>
+                  <SelectItem value="DELIVERED">Delivered</SelectItem>
+                  <SelectItem value="FAILED">Failed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsStatusDialogOpen(false)}
+              disabled={actionLoading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmUpdateStatus}
+              disabled={actionLoading}
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Update Status'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Order Alert Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete order {selectedOrder?.order_id}. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {actionError && (
+            <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded text-sm">
+              {actionError}
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDeleteOrder();
+              }}
+              disabled={actionLoading}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Order'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       </div>
     </DashboardLayout>
   );
