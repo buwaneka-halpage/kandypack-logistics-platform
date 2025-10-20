@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Loader2, Trash2, ShoppingCart } from "lucide-react";
+import { Loader2, Trash2, ShoppingCart, MapPin, Wallet, FileText, Check } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { ProductsAPI, CitiesAPI, OrdersAPI } from "~/services/api";
 import { useAuth } from "~/hooks/useAuth";
@@ -34,10 +34,13 @@ interface CartItem {
   unitPrice: number;
 }
 
+type Step = 1 | 2 | 3 | 4;
+
 export default function CustomerNewOrder() {
   const { user } = useAuth();
   const navigate = useNavigate();
   
+  const [currentStep, setCurrentStep] = useState<Step>(1);
   const [products, setProducts] = useState<Product[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -48,10 +51,21 @@ export default function CustomerNewOrder() {
   // Form fields
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
-  const [unitPrice, setUnitPrice] = useState<number>(0);
-  const [deliveryAddress, setDeliveryAddress] = useState<string>("");
+  const [unitPrice, setUnitPrice] = useState<number>(1000);
+  
+  // Delivery fields
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
+  const [houseNumber, setHouseNumber] = useState<string>("");
+  const [street, setstreet] = useState<string>("");
+  const [addressLine1, setAddressLine1] = useState<string>("");
+  const [addressLine2, setAddressLine2] = useState<string>("");
   const [selectedCityId, setSelectedCityId] = useState<string>("");
+  const [postalCode, setPostalCode] = useState<string>("");
+  const [mobileNumber, setMobileNumber] = useState<string>("");
   const [orderDate, setOrderDate] = useState<string>("");
+  
+  const [paymentMethod, setPaymentMethod] = useState<string>("pay-on-delivery");
 
   useEffect(() => {
     async function fetchData() {
@@ -123,31 +137,59 @@ export default function CustomerNewOrder() {
     setCart(cart.filter((_, i) => i !== index));
   };
 
-  const handlePlaceOrder = async () => {
-    if (cart.length === 0) {
+  const handleNext = () => {
+    if (currentStep === 1 && cart.length === 0) {
       alert("Please add at least one product to your cart");
       return;
     }
-    if (!deliveryAddress.trim()) {
-      alert("Please enter a delivery address");
-      return;
+    if (currentStep === 2) {
+      if (!firstName.trim() || !lastName.trim()) {
+        alert("Please enter your full name");
+        return;
+      }
+      if (!houseNumber.trim() || !street.trim() || !addressLine1.trim()) {
+        alert("Please enter your complete address");
+        return;
+      }
+      if (!selectedCityId) {
+        alert("Please select a city");
+        return;
+      }
+      if (!mobileNumber.trim()) {
+        alert("Please enter your mobile number");
+        return;
+      }
     }
-    if (!selectedCityId) {
-      alert("Please select a city");
-      return;
+    if (currentStep < 4) {
+      setCurrentStep((currentStep + 1) as Step);
     }
-    if (!orderDate) {
-      alert("Please select an order date");
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep((currentStep - 1) as Step);
+    }
+  };
+
+  const handlePlaceOrder = async () => {
+    if (cart.length === 0) {
+      alert("Please add at least one product to your cart");
       return;
     }
 
     try {
       setSubmitting(true);
       
+      const fullAddress = `${houseNumber}, ${street}, ${addressLine1}${addressLine2 ? ', ' + addressLine2 : ''}, ${postalCode}`;
+      
+      // Set order date to 7 days from now
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + 7);
+      
       const orderData = {
-        deliver_address: deliveryAddress,
+        deliver_address: fullAddress,
         deliver_city_id: selectedCityId,
-        order_date: new Date(orderDate).toISOString(),
+        order_date: minDate.toISOString(),
         items: cart.map(item => ({
           product_type_id: item.product.product_type_id,
           quantity: item.quantity,
@@ -158,14 +200,6 @@ export default function CustomerNewOrder() {
       await OrdersAPI.createWithItems(orderData);
       
       alert("Order placed successfully!");
-      // Reset form
-      setCart([]);
-      setDeliveryAddress("");
-      setSelectedCityId("");
-      const minDate = new Date();
-      minDate.setDate(minDate.getDate() + 7);
-      setOrderDate(minDate.toISOString().split('T')[0]);
-      
       // Navigate to track orders page
       navigate("/customer/track-order");
     } catch (err: any) {
