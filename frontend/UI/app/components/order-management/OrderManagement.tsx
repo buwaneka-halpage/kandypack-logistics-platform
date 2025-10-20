@@ -1028,14 +1028,14 @@ export function OrderManagement() {
             <div className="grid gap-2">
               <Label htmlFor="warehouse_select">Select Warehouse/Store</Label>
               <Select 
-                value={selectedWarehouseId} 
-                onValueChange={(value) => setSelectedWarehouseId(value)}
+                value={selectedWarehouseId || "none"} 
+                onValueChange={(value) => setSelectedWarehouseId(value === "none" ? "" : value)}
               >
                 <SelectTrigger id="warehouse_select">
                   <SelectValue placeholder="Select a warehouse/store" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None (Clear assignment)</SelectItem>
+                  <SelectItem value="none">None (Clear assignment)</SelectItem>
                   {stores.map((store) => {
                     const storeCity = getWarehouseCity(store.store_id);
                     return (
@@ -1046,7 +1046,7 @@ export function OrderManagement() {
                   })}
                 </SelectContent>
               </Select>
-              {selectedWarehouseId && (() => {
+              {selectedWarehouseId && selectedWarehouseId !== "none" && (() => {
                 const selectedStore = stores.find(s => s.store_id === selectedWarehouseId);
                 const selectedCity = getWarehouseCity(selectedWarehouseId);
                 return (
