@@ -552,7 +552,14 @@ export const AllocationsAPI = {
     allocation_type: 'Rail' | 'Truck';
     shipment_date: string;
   }) {
-    return httpClient.post<any>('/allocations', allocationData);
+    // Backend expects query parameters, not body
+    const params = new URLSearchParams({
+      order_id: allocationData.order_id,
+      schedule_id: allocationData.schedule_id,
+      allocation_type: allocationData.allocation_type,
+      shipment_date: allocationData.shipment_date,
+    });
+    return httpClient.post<any>(`/allocations?${params.toString()}`);
   },
 
   async update(allocationId: string, updateData: any) {

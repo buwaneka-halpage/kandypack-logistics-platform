@@ -130,9 +130,10 @@ export function AssignOrdersDialog({
             const response: any = await httpClient.get(`/orders/${order.order_id}/space`);
             spacesMap.set(order.order_id, response.space || 0);
           } catch (err) {
-            console.error(`Failed to get space for order ${order.order_id}:`, err);
-            // Use estimated space based on full_price (rough estimate)
-            spacesMap.set(order.order_id, order.full_price / 100);
+            console.warn(`Failed to get space for order ${order.order_id}, using estimate:`, err);
+            // Use estimated space based on full_price (rough estimate: 1 unit per 10 LKR)
+            const estimatedSpace = order.full_price / 10;
+            spacesMap.set(order.order_id, estimatedSpace);
           }
         })
       );
