@@ -39,9 +39,10 @@ CREATE TABLE stores (
     name VARCHAR(100) NOT NULL,
     telephone_number VARCHAR(15) NOT NULL,
     address VARCHAR(255) NOT NULL,
-    contact_person VARCHAR(100) NOT NULL,
+    contact_person CHAR(36) NULL,  -- Store Manager user_id (nullable - not all stores have managers)
     station_id CHAR(36) NOT NULL,
     FOREIGN KEY (station_id) REFERENCES railway_stations(station_id),
+    FOREIGN KEY (contact_person) REFERENCES users(user_id) ON DELETE SET NULL,
     CONSTRAINT valid_store_phone CHECK (telephone_number REGEXP '^\\+?[0-9\\-]+$')
 );
 
