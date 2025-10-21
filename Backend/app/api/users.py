@@ -47,13 +47,31 @@ async def login(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestF
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     token = create_access_token(data={"sub": user.user_id, "role": user.role}, expires_delta=access_token_expires)
 
-    return {
+    # Base response
+    response = {
         "access_token": token,
         "token_type": "bearer",
         "user_id": user.user_id, 
-        "username": user.user_name,
+        "user_name": user.user_name,  # Changed from 'username' to match frontend expectations
         "role": user.role,
     }
+    
+    # For Store Managers, include warehouse assignment
+    if user.role == "StoreManager":
+        assigned_store = db.query(model.Stores).filter(
+            model.Stores.contact_person == user.user_id
+        ).first()
+        
+        if assigned_store:
+            response["warehouse_id"] = assigned_store.store_id
+            response["warehouse_name"] = assigned_store.name
+            
+            # Get city name for better display
+            if assigned_store.station and assigned_store.station.city:
+                city_name = assigned_store.station.city.city_name
+                response["warehouse_name"] = f"{city_name} Warehouse"
+    
+    return response
 
 
 @router.post("/", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
