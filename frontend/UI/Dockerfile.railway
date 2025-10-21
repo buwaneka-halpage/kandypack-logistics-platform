@@ -1,0 +1,41 @@
+# Railway-optimized Frontend Dockerfile
+
+# Build stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps
+
+COPY . .
+
+# Build with Railway environment variables
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --only=production --legacy-peer-deps
+
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/public ./public
+
+# Railway provides PORT environment variable
+ENV PORT=3000
+EXPOSE $PORT
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:$PORT || exit 1
+
+ENV NODE_ENV=production
+
+CMD ["npm", "start"]
+
