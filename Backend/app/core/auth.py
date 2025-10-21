@@ -93,8 +93,32 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
     user = _get_user_by_id(db, user_id)
     if user is None:
         raise credentials_exception
-    # print(user.role)
-    return {"user_id": user.user_id, "username": user.user_name, "role": user.role}
+    
+    # Base user info
+    user_data = {
+        "user_id": user.user_id,
+        "username": user.user_name,
+        "role": user.role,
+        "name": user.user_name
+    }
+    
+    # For Store Managers, include warehouse assignment
+    if user.role == "StoreManager":
+        # Find the store where this user is the contact_person (store manager)
+        assigned_store = db.query(model.Stores).filter(
+            model.Stores.contact_person == user.user_id
+        ).first()
+        
+        if assigned_store:
+            user_data["warehouseId"] = assigned_store.store_id
+            user_data["warehouseName"] = assigned_store.name
+            
+            # Optionally get city name for better display
+            if assigned_store.station and assigned_store.station.city:
+                city_name = assigned_store.station.city.city_name
+                user_data["warehouseName"] = f"{city_name} Warehouse"
+    
+    return user_data
 
 # get customer 
 async def get_current_customer(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme_customer)) -> Dict:
