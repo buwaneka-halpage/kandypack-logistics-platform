@@ -15,7 +15,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 @router.get("/", response_model=List[schemas.route], status_code=status.HTTP_200_OK)
 def get_all_routes(db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if not check_role_permission(role, ["Assistant", "Management"]):
+    if not check_role_permission(role, ["Assistant", "Management", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Assistant, Management or SystemAdmin role required"
@@ -31,7 +31,7 @@ def get_all_routes(db: db_dependency, current_user: dict = Depends(get_current_u
 @router.get("/{route_id}", response_model=schemas.route, status_code=status.HTTP_200_OK)
 def get_route_by_id(route_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if not check_role_permission(role, ["Assistant", "Management"]):
+    if not check_role_permission(role, ["Assistant", "Management", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Assistant, Management or SystemAdmin role required"
@@ -44,7 +44,7 @@ def get_route_by_id(route_id: str, db: db_dependency, current_user: dict = Depen
 @router.post("/", response_model=schemas.route, status_code=status.HTTP_201_CREATED)
 def create_route(route: schemas.route_create, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if not check_role_permission(role, ["Assistant", "Management"]):
+    if not check_role_permission(role, ["Assistant", "Management", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Assistant, Management or SystemAdmin role required"
@@ -70,7 +70,7 @@ def create_route(route: schemas.route_create, db: db_dependency, current_user: d
 @router.put("/{route_id}", response_model=schemas.route, status_code=status.HTTP_200_OK)
 def update_route(route_id: str, route_update: schemas.route_update, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if not check_role_permission(role, ["Assistant", "Management"]):
+    if not check_role_permission(role, ["Assistant", "Management", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Assistant, Management or SystemAdmin role required"
@@ -92,7 +92,7 @@ def update_route(route_id: str, route_update: schemas.route_update, db: db_depen
 @router.delete("/{route_id}", status_code=status.HTTP_200_OK)
 def delete_route(route_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
-    if not check_role_permission(role, ["Assistant", "Management"]):
+    if not check_role_permission(role, ["Assistant", "Management", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Assistant, Management or SystemAdmin role required"

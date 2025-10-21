@@ -21,7 +21,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 def get_all_truck_schedules(db: db_dependency, current_user: dict = Depends(get_current_user)):
     role = current_user.get("role")
    
-    if not check_role_permission(role, ["Assistant", "Management", "Driver", "WarehouseStaff"]):
+    if not check_role_permission(role, ["Assistant", "Management", "Driver", "WarehouseStaff", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Assistant, Management, Driver, WarehouseStaff or SystemAdmin role required"
@@ -41,7 +41,7 @@ def get_all_truck_schedules(db: db_dependency, current_user: dict = Depends(get_
 def get_truck_schedule_by_id( schedule_id: str,db: db_dependency, current_user: dict = Depends(get_current_user)):
     
     role = current_user.get("role")
-    if not check_role_permission(role, ["Assistant", "Management", "Driver", "WarehouseStaff"]):
+    if not check_role_permission(role, ["Assistant", "Management", "Driver", "WarehouseStaff", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Assistant, Management, Driver, WarehouseStaff or SystemAdmin role required"
@@ -61,10 +61,10 @@ def get_truck_schedule_by_id( schedule_id: str,db: db_dependency, current_user: 
 @router.post("/", response_model=schemas.Truck_Schedule, status_code=status.HTTP_201_CREATED)
 def create_truck_schedule(new_truck_schedule: schemas.Truck_Schedule, db: db_dependency, current_user: dict = Depends(get_current_user)):
     # Role check
-    if not check_role_permission(current_user.get("role"), ["Assistant"]):
+    if not check_role_permission(current_user.get("role"), ["Assistant", "Management", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Assistant or SystemAdmin role required"
+            detail="Assistant, Management or SystemAdmin role required"
         )
 
     # Basic validations
@@ -208,12 +208,12 @@ def create_truck_schedule(new_truck_schedule: schemas.Truck_Schedule, db: db_dep
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 @router.put("/{schedule_id}", response_model=schemas.Truck_Schedule, status_code=status.HTTP_200_OK)
-def update_truck_schedule(schedule_id: str, update_data: schemas.Truck_Schedule, db: db_dependency, current_user: dict = Depends(get_current_user)):
+def update_truck_schedule(schedule_id: str, update_data: schemas.Truck_Schedule_Update, db: db_dependency, current_user: dict = Depends(get_current_user)):
 
-    if current_user.get("role") not in  [ "Assistant", "Management"]:
+    if not check_role_permission(current_user.get("role"), ["Assistant", "Management", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only Management and assistant can update truck schedules"
+            detail="Only Management, Assistant or SystemAdmin can update truck schedules"
         )
 
     # Check if schedule exists
@@ -308,10 +308,10 @@ def update_truck_schedule(schedule_id: str, update_data: schemas.Truck_Schedule,
 @router.delete("/{schedule_id}", status_code=status.HTTP_200_OK)
 def delete_truck_schedule(schedule_id: str, db: db_dependency, current_user: dict = Depends(get_current_user)):
     # Check role
-    if current_user.get("role") not in  [ "Assistant", "Management"]:
+    if not check_role_permission(current_user.get("role"), ["Assistant", "Management", "SystemAdmin"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only Management and assistant can update truck schedules"
+            detail="Only Management, Assistant or SystemAdmin can delete truck schedules"
         )
     
     # Fetch the schedule

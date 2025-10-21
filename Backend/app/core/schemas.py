@@ -281,6 +281,18 @@ class Truck_Schedule(BaseModel):
     departure_time : time
     duration : int  
     status : ScheduleStatus
+
+class Truck_Schedule_Update(BaseModel):
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+    
+    route_id : str | None = None
+    truck_id : str | None = None
+    driver_id : str | None = None
+    assistant_id : str | None = None
+    scheduled_date : date | None = None
+    departure_time : time | None = None
+    duration : int | None = None
+    status : ScheduleStatus | None = None
     
 class Truck_allocationBase(BaseModel):
     allocation_id : str 

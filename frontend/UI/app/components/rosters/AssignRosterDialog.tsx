@@ -233,8 +233,8 @@ export default function AssignRosterDialog({
       const schedule = schedules.find((s) => s.schedule_id === formData.schedule_id);
       
       // Update the truck schedule with driver and assistant assignments
+      // Only send the fields that need to be updated to avoid validation errors
       await TruckSchedulesAPI.update(formData.schedule_id, {
-        ...schedule,
         driver_id: formData.driver_id,
         assistant_id: formData.assistant_id,
       });
