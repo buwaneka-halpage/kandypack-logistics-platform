@@ -11,3 +11,7 @@ healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
+[service]
+# This tells Railway the service is in frontend/UI directory
+name = "frontend"
+
