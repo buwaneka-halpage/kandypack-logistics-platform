@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: kandypack-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-kandypackdb}
+      MYSQL_USER: ${MYSQL_USER:-kandypack}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-kandypackpassword}
+      TZ: Asia/Colombo
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./Backend/schemas:/docker-entrypoint-initdb.d
+    networks:
+      - kandypack-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Backend API
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: kandypack-backend
+    restart: unless-stopped
+    environment:
+      # Database Configuration
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER:-kandypack}:${MYSQL_PASSWORD:-kandypackpassword}@mysql:3306/${MYSQL_DATABASE:-kandypackdb}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-kandypackdb}
+      DB_USER: ${MYSQL_USER:-kandypack}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-kandypackpassword}
+      
+      # JWT Configuration
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      
+      # Application Configuration
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DEBUG: ${DEBUG:-false}
+      
+      # Timezone
+      TZ: Asia/Colombo
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./Backend/app:/app/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - kandypack-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/docs')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend/UI
+      dockerfile: Dockerfile
+    container_name: kandypack-frontend
+    restart: unless-stopped
+    environment:
+      # API Configuration
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+      
+      # Node Environment
+      NODE_ENV: production
+      
+      # Timezone
+      TZ: Asia/Colombo
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    networks:
+      - kandypack-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx Reverse Proxy (Optional - for production)
+  nginx:
+    image: nginx:alpine
+    container_name: kandypack-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - kandypack-network
+    profiles:
+      - production
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  kandypack-network:
+    driver: bridge
+
