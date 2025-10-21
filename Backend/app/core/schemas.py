@@ -104,9 +104,10 @@ class StoreWithCity(BaseModel):
     name : str 
     telephone_number : str 
     address : str 
-    contact_person : str 
+    contact_person : str | None = None  # Allow null for unassigned managers
     station_id : str
     city_name: str | None = None  # Nested city name from station relationship
+    manager_name: str | None = None  # Manager's username
 
     model_config = {"from_attributes": True}
 
@@ -308,7 +309,7 @@ class StoreCreate(BaseModel):
     name : str 
     telephone_number : str
     address : str
-    contact_person: str 
+    contact_person: str | None = None  # Allow null for unassigned managers
     station_id : str 
 
     model_config = {"from_attributes": True}
@@ -318,7 +319,7 @@ class StoreUpdate(BaseModel):
     name : str 
     telephone_number : str
     address : str
-    contact_person: str 
+    contact_person: str | None = None  # Allow null for unassigned managers
     station_id : str 
 
     model_config = {"from_attributes": True}

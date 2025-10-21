@@ -112,6 +112,9 @@ export function StoreManagement() {
         UsersAPI.getStoreManagers(),
       ]);
 
+      console.log("Fetched stores data:", storesData); // Debug log
+      console.log("Store managers data:", managersData); // Debug log
+
       setStores(storesData);
       setStations(stationsData);
       setStoreManagers(managersData);
@@ -374,13 +377,20 @@ function StoreFormDialog({
         contact_person: formData.contact_person === "unassigned" ? null : formData.contact_person
       };
 
+      console.log("Submitting store data:", submitData); // Debug log
+
       if (store) {
         // Update existing store
-        await StoresAPI.update(store.store_id, submitData);
+        const result = await StoresAPI.update(store.store_id, submitData);
+        console.log("Update result:", result); // Debug log
       } else {
         // Create new store
-        await StoresAPI.create(submitData);
+        const result = await StoresAPI.create(submitData);
+        console.log("Create result:", result); // Debug log
       }
+      
+      // Close dialog and refresh
+      onClose();
       onSuccess(); // Notify parent to refetch
     } catch (err) {
       console.error("Error submitting form:", err);
