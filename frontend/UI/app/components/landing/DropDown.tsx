@@ -30,7 +30,7 @@ const DropDown = ({ name, textColor, textSize }: DropDownProps) => {
         >
           {name} <ChevronDown className="inline-block w-3 h-3 ml-1" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="z-[200]">
+        <DropdownMenuContent className="z-[200] bg-white border-none shadow-lg/30 shadow-gray-400 ">
           <DropdownMenuItem className={textSize}>About Us</DropdownMenuItem>
           <DropdownMenuItem className={textSize}>Our Mission</DropdownMenuItem>
           <DropdownMenuItem className={textSize}>Our Team</DropdownMenuItem>

@@ -5,7 +5,7 @@ import SmallButton from "./SmallButton";
 const Header = () => {
   return (
     <header
-      className="flex flex-wrap flex-col justify-center max-h-[8dvh] sm:max-h-[18dvh] md:max-h-[8dvh] lg:max-h-[12dvh] bg-white w-full fixed top-0 shadow-sm shadow-gray-200"
+      className="flex flex-wrap flex-col justify-center max-h-[8dvh] sm:max-h-[18dvh] md:max-h-[8dvh] lg:max-h-[12dvh] bg-white w-full fixed top-0 shadow-sm shadow-gray-200 lg:shadow-sm"
       style={{ zIndex: 100 }}
     >
       <div className="flex flex-wrap flex-row justify-around items-center">

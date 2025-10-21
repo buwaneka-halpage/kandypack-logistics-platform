@@ -3,6 +3,7 @@ import SmallButton from "./SmallButton";
 import { MapPin, Weight } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
+import "app/app.css";
 
 const HeroBanner = () => {
   const [origin, setOrigin] = useState("");
@@ -14,7 +15,7 @@ const HeroBanner = () => {
   };
 
   return (
-    <div className="flex flex-wrap flex-col justify-center items-start mt-[10.5dvh] sm:mt-[22.5dvh] md:mt-[10dvh] lg:mt-[12dvh] min-h-[35dvh] w-full">
+    <div className="lg:pb-5 hero-rainbow-overlay flex flex-wrap flex-col justify-center items-start mt-[10.5dvh] sm:mt-[22.5dvh] md:mt-[10dvh] lg:mt-[14dvh] min-h-[35dvh] w-full">
       <div className="mx-3.5 sm:mx-8 md:mx-6 flex flex-wrap flex-row justify-center items-start">
         <div className="flex-5 md:flex-6 lg:flex-1 text-start md:mt-6">
           <div>
@@ -41,7 +42,7 @@ const HeroBanner = () => {
               island-wide footprint.
             </p>
           </div>
-          <div className="flex flex-wrap flex-row justify-start items-center mt-4 gap-2">
+          <div className="flex flex-wrap flex-row justify-start items-center mt-4 gap-2 lg:gap-5 lg:mt-13.5">
             <Link to="/login">
               <MainButton
                 name="Join Now"
@@ -56,23 +57,18 @@ const HeroBanner = () => {
             <MainButton
               name="Play Demo"
               textColor="#2C2D5B"
-              bgColor="white"
+              bgColor="#f0f0f0"
               paddingX="5px"
               paddingY="8px"
               textSize="50%"
             />
           </div>
         </div>
-        <div className="flex-10 sm:flex-10 md:flex-8 lg:flex-1">
-          <img
-            className="w-100 h-55 sm:w-100 sm:h-70 md:w-150 md:h-90 lg:w-150 lg:h-100"
-            src="/heroBg.png"
-            alt="Hero Background"
-          />
-        </div>
+
+        <div className="hero-bg rounded-2xl flex-10 sm:flex-10 md:flex-8 lg:flex-1 w-100 h-55 sm:w-100 sm:h-70 md:w-150 md:h-90 lg:w-150 lg:h-105 lg:ml-5"></div>
       </div>
 
-      <div className="flex-1 flex flex-wrap flex-row justify-center items-center min-h-[8dvh] mt-1 sm:mt-0 sm:mb-3 mx-3.5 sm:gap-2 sm:mx-8 md:mx-6 md:gap-10">
+      <div className="flex-1 flex flex-wrap flex-row justify-center items-center min-h-[8dvh] mt-1 sm:mt-0 sm:mb-3 mx-3.5 sm:gap-2 sm:mx-8 md:mx-6 md:gap-10 lg:gap-20">
         <div
           className="flex-1 flex flex-wrap flex-col justify-center items-center"
           style={{ lineHeight: "15px" }}
@@ -88,7 +84,7 @@ const HeroBanner = () => {
           </div>
           <div className="md:mt-2">
             <input
-              className="text-[8px] sm:text-[10px] md:text-[12px] lg:text-[16px] w-22 sm:w-40 text-center min-h-[20px] md:min-h-[30px] placeholder:text-gray-500 placeholder:text-center"
+              className="border-none outline-none animated-input text-[8px] sm:text-[10px] md:text-[12px] lg:text-[16px] w-22 sm:w-40 text-center min-h-[20px] md:min-h-[30px] placeholder:text-gray-500 placeholder:text-center"
               type="text"
               placeholder="Enter Location"
               value={origin}
@@ -113,12 +109,11 @@ const HeroBanner = () => {
           </div>
           <div className="md:mt-2">
             <input
-              className="text-[8px] sm:text-[10px] md:text-[12px] lg:text-[16px] w-22 sm:w-40 text-center min-h-[20px] md:min-h-[30px] placeholder:text-gray-500 placeholder:text-center"
+              className="border-none outline-none animated-input text-[8px] sm:text-[10px] md:text-[12px] lg:text-[16px] w-22 sm:w-40 text-center min-h-[20px] md:min-h-[30px] placeholder:text-gray-500 placeholder:text-center"
               type="text"
               placeholder="Enter Location"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
-              style={{ border: "1px solid #D3D3D3", borderRadius: "5px" }}
             />
           </div>
         </div>
@@ -138,7 +133,7 @@ const HeroBanner = () => {
           </div>
           <div className="md:mt-2">
             <input
-              className="text-[8px] sm:text-[10px] md:text-[12px] lg:text-[16px] w-22 sm:w-40 text-center min-h-[20px] md:min-h-[30px] placeholder:text-gray-500 placeholder:text-center"
+              className="border-none outline-none animated-input text-[8px] sm:text-[10px] md:text-[12px] lg:text-[16px] w-22 sm:w-40 text-center min-h-[20px] md:min-h-[30px] placeholder:text-gray-500 placeholder:text-center input-field"
               type="text"
               placeholder="Weight (Kg)"
               value={weight}
@@ -148,7 +143,7 @@ const HeroBanner = () => {
           </div>
         </div>
 
-        <div className="flex-2">
+        <div className="flex-2 lg:ml-[-25px]">
           <SmallButton
             name="Check"
             textColor="white"
