@@ -1,0 +1,46 @@
+# Frontend Railway Ignore
+
+# Documentation
+*.md
+!README.md
+*.pdf
+
+# Dependencies (will be reinstalled)
+node_modules/
+
+# Build output (will be rebuilt)
+build/
+dist/
+.next/
+
+# Testing
+coverage/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Development
+.env.local
+.env.development.local
+.env.test.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+temp/
+tmp/
+

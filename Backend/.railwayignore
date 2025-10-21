@@ -1,0 +1,44 @@
+# Backend Railway Ignore
+
+# Documentation
+*.md
+*.pdf
+
+# Testing
+tests/
+test_*.py
+*_test.py
+
+# Development
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Database
+*.db
+*.sqlite
+*.sql
+
+# Logs
+*.log
+
+# Temporary
+temp/
+tmp/
+
