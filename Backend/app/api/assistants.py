@@ -139,14 +139,16 @@ async def update_assistant(
         
         # Update weekly working hours if provided
         if assistant_update.weekly_working_hours is not None:
-            # previous working hours 
+            # Calculate total working hours
             current_working_hours = assistant.weekly_working_hours
-            additional_working_hours =assistant_update.weekly_working_hours
+            additional_working_hours = assistant_update.weekly_working_hours
             total_working_hours = current_working_hours + additional_working_hours
-            if not (0 <= total_working_hours <= 60):  # Assistants can work up to 60 hours
+            
+            # Assistants can work maximum 60 hours per week
+            if not (0 <= total_working_hours <= 60):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Weekly working hours must be between 0 and 60"
+                    detail="Total working hours must be between 0 and 60 for assistants"
                 )
             assistant.weekly_working_hours = total_working_hours
         
