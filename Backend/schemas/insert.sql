@@ -91,32 +91,33 @@ INSERT INTO railway_stations (station_id, station_name, city_id) VALUES
 ('s5a6b7c8-b9c0-1234-cde1-5678901234', 'Chilaw Station', 'c5d6e7f8-a9b0-1234-cde4-5678901234');
 
 -- Stores (25 stores, one per city)
+-- First 3 stores have Store Managers assigned (using user_id, not name!)
 INSERT INTO stores (store_id, name, telephone_number, address, contact_person, station_id) VALUES
-('st1a2b3c4-d5e6-7890-abcd-1234567890', 'Colombo Central Store', '+94112345670', '10 Station Rd, Colombo', 'Nimal Wijesinghe', 's1a2b3c4-d5e6-7890-abcd-1234567890'),
-('st2b3c4d5-e6f7-8901-bcde-2345678901', 'Galle Store', '+94912345671', '20 Fort Rd, Galle', 'Sunil Perera', 's2a3b4c5-e6f7-8901-bcde-2345678901'),
-('st3c4d5e6-f7g8-9012-cdef-3456789012', 'Kandy Store', '+94812345672', '30 Temple Rd, Kandy', 'Ruwan Jayasinghe', 's3a4b5c6-f7g8-9012-cdef-3456789012'),
-('st4d5e6f7-g8h9-0123-def0-4567890123', 'Jaffna Store', '+94212345673', '40 Northern Blvd, Jaffna', 'Lanka Weerakoon', 's4a5b6c7-g8h9-0123-def0-4567890123'),
-('st5e6f7g8-h9i0-1234-efa1-5678901234', 'Negombo Store', '+94312345674', '50 Coastal Rd, Negombo', 'Saman Kumara', 's5a6b7c8-h9i0-1234-efa1-5678901234'),
-('st6f7g8h9-i0j1-2345-fab2-6789012345', 'Trincomalee Store', '+94262345675', '60 Harbor St, Trincomalee', 'Ama Silva', 's6a7b8c9-i0j1-2345-fab2-6789012345'),
-('st7g8h9i0-j1k2-3456-abc3-7890123456', 'Batticaloa Store', '+94652345676', '70 Lagoon St, Batticaloa', 'Kamal Fernando', 's7a8b9c0-j1k2-3456-abc3-7890123456'),
-('st8h9i0j1-k2l3-4567-bcd4-8901234567', 'Matara Store', '+94912345677', '80 Coastal Blvd, Matara', 'Ravi Fonseka', 's8a9b0c1-k2l3-4567-bcd4-8901234567'),
-('st9i0j1k2-l3m4-5678-cde5-9012345678', 'Anuradhapura Store', '+94252345678', '90 Ancient City Ave, Anuradhapura', 'Nuwan Wijeratne', 's9a0b1c2-l3m4-5678-cde5-9012345678'),
-('st0j1k2l3-m4n5-6789-def6-0123456789', 'Polonnaruwa Store', '+94272345679', '100 Ancient Rd, Polonnaruwa', 'Lakmal Perera', 's0a1b2c3-m4n5-6789-def6-0123456789'),
-('st1k2l3m4-n5o6-7890-efa7-1234567890', 'Kurunegala Store', '+94372345680', '110 North Western Blvd, Kurunegala', 'Mohan Dissanayake', 's1a2b3c4-n5o6-7890-efa7-1234567890'),
-('st2l3m4n5-o6p7-8901-abc8-2345678901', 'Gampaha Store', '+94332345681', '120 Junction Rd, Gampaha', 'Priya Raman', 's2a3b4c5-o6p7-8901-abc8-2345678901'),
-('st3m4n5o6-p7q8-9012-bcd9-3456789012', 'Ratnapura Store', '+94452345682', '130 Gem Rd, Ratnapura', 'Thilak Senanayake', 's3a4b5c6-p7q8-9012-bcd9-3456789012'),
-('st4n5o6p7-q8r9-0123-cde0-4567890123', 'Badulla Store', '+94552345683', '140 Hill Country Rd, Badulla', 'Gayan Wickramasinghe', 's4a5b6c7-q8r9-0123-cde0-4567890123'),
-('st5o6p7q8-r9s0-1234-def1-5678901234', 'Monaragala Store', '+94552345684', '150 Uva Rd, Monaragala', 'Sita Rajapaksa', 's5a6b7c8-r9s0-1234-def1-5678901234'),
-('st6p7q8r9-s0t1-2345-efa2-6789012345', 'Kalutara Store', '+94342345685', '160 Southern Hwy, Kalutara', 'Arun Kumaran', 's6a7b8c9-s0t1-2345-efa2-6789012345'),
-('st7q8r9s0-t1u2-3456-fab3-7890123456', 'Puttalam Store', '+94322345686', '170 Lagoon Blvd, Puttalam', 'Dilshan Herath', 's7a8b9c0-t1u2-3456-fab3-7890123456'),
-('st8r9s0t1-u2v3-4567-abc4-8901234567', 'Hambantota Store', '+94472345687', '180 Southern Hwy, Hambantota', 'Nisha Fernando', 's8a9b0c1-u2v3-4567-abc4-8901234567'),
-('st9s0t1u2-v3w4-5678-bcd5-9012345678', 'Vavuniya Store', '+94242345688', '190 Transit Rd, Vavuniya', 'Rohan Silva', 's9a0b1c2-v3w4-5678-bcd5-9012345678'),
-('st0t1u2v3-w4x5-6789-cde6-0123456789', 'Mannar Store', '+94232345689', '200 Island Rd, Mannar', 'Malini Jayawardena', 's0a1b2c3-w4x5-6789-cde6-0123456789'),
-('st1u2v3w4-x5y6-7890-def7-1234567890', 'Dambulla Store', '+94662345690', '210 Cave Rd, Dambulla', 'Vijay Kumar', 's1a2b3c4-x5y6-7890-def7-1234567890'),
-('st2v3w4x5-y6z7-8901-efa8-2345678901', 'Ampara Store', '+94632345691', '220 Eastern Rd, Ampara', 'Chandrika Bandara', 's2a3b4c5-y6z7-8901-efa8-2345678901'),
-('st3w4x5y6-z7a8-9012-abc9-3456789012', 'Nuwara Eliya Store', '+94522345692', '230 Hill Station Rd, Nuwara Eliya', 'Suresh Pillai', 's3a4b5c6-z7a8-9012-abc9-3456789012'),
-('st4x5y6z7-a8b9-0123-bcd0-4567890123', 'Kegalle Store', '+94352345693', '240 Central Rd, Kegalle', 'Geetha Alwis', 's4a5b6c7-a8b9-0123-bcd0-4567890123'),
-('st5y6z7a8-b9c0-1234-cde1-5678901234', 'Chilaw Store', '+94322345694', '250 Coastal Rd, Chilaw', 'Kavindra De Silva', 's5a6b7c8-b9c0-1234-cde1-5678901234');
+('st1a2b3c4-d5e6-7890-abcd-1234567890', 'Colombo Central Store', '+94112345670', '10 Station Rd, Colombo', 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', 's1a2b3c4-d5e6-7890-abcd-1234567890'),
+('st2b3c4d5-e6f7-8901-bcde-2345678901', 'Galle Store', '+94912345671', '20 Fort Rd, Galle', 'a2b3c4d5-f6a7-8901-bcde-ef2345678901', 's2a3b4c5-e6f7-8901-bcde-2345678901'),
+('st3c4d5e6-f7g8-9012-cdef-3456789012', 'Kandy Store', '+94812345672', '30 Temple Rd, Kandy', 'a3b4c5d6-a7b8-9012-cdef-ef3456789012', 's3a4b5c6-f7g8-9012-cdef-3456789012'),
+('st4d5e6f7-g8h9-0123-def0-4567890123', 'Jaffna Store', '+94212345673', '40 Northern Blvd, Jaffna', NULL, 's4a5b6c7-g8h9-0123-def0-4567890123'),
+('st5e6f7g8-h9i0-1234-efa1-5678901234', 'Negombo Store', '+94312345674', '50 Coastal Rd, Negombo', NULL, 's5a6b7c8-h9i0-1234-efa1-5678901234'),
+('st6f7g8h9-i0j1-2345-fab2-6789012345', 'Trincomalee Store', '+94262345675', '60 Harbor St, Trincomalee', NULL, 's6a7b8c9-i0j1-2345-fab2-6789012345'),
+('st7g8h9i0-j1k2-3456-abc3-7890123456', 'Batticaloa Store', '+94652345676', '70 Lagoon St, Batticaloa', NULL, 's7a8b9c0-j1k2-3456-abc3-7890123456'),
+('st8h9i0j1-k2l3-4567-bcd4-8901234567', 'Matara Store', '+94912345677', '80 Coastal Blvd, Matara', NULL, 's8a9b0c1-k2l3-4567-bcd4-8901234567'),
+('st9i0j1k2-l3m4-5678-cde5-9012345678', 'Anuradhapura Store', '+94252345678', '90 Ancient City Ave, Anuradhapura', NULL, 's9a0b1c2-l3m4-5678-cde5-9012345678'),
+('st0j1k2l3-m4n5-6789-def6-0123456789', 'Polonnaruwa Store', '+94272345679', '100 Ancient Rd, Polonnaruwa', NULL, 's0a1b2c3-m4n5-6789-def6-0123456789'),
+('st1k2l3m4-n5o6-7890-efa7-1234567890', 'Kurunegala Store', '+94372345680', '110 North Western Blvd, Kurunegala', NULL, 's1a2b3c4-n5o6-7890-efa7-1234567890'),
+('st2l3m4n5-o6p7-8901-abc8-2345678901', 'Gampaha Store', '+94332345681', '120 Junction Rd, Gampaha', NULL, 's2a3b4c5-o6p7-8901-abc8-2345678901'),
+('st3m4n5o6-p7q8-9012-bcd9-3456789012', 'Ratnapura Store', '+94452345682', '130 Gem Rd, Ratnapura', NULL, 's3a4b5c6-p7q8-9012-bcd9-3456789012'),
+('st4n5o6p7-q8r9-0123-cde0-4567890123', 'Badulla Store', '+94552345683', '140 Hill Country Rd, Badulla', NULL, 's4a5b6c7-q8r9-0123-cde0-4567890123'),
+('st5o6p7q8-r9s0-1234-def1-5678901234', 'Monaragala Store', '+94552345684', '150 Uva Rd, Monaragala', NULL, 's5a6b7c8-r9s0-1234-def1-5678901234'),
+('st6p7q8r9-s0t1-2345-efa2-6789012345', 'Kalutara Store', '+94342345685', '160 Southern Hwy, Kalutara', NULL, 's6a7b8c9-s0t1-2345-efa2-6789012345'),
+('st7q8r9s0-t1u2-3456-fab3-7890123456', 'Puttalam Store', '+94322345686', '170 Lagoon Blvd, Puttalam', NULL, 's7a8b9c0-t1u2-3456-fab3-7890123456'),
+('st8r9s0t1-u2v3-4567-abc4-8901234567', 'Hambantota Store', '+94472345687', '180 Southern Hwy, Hambantota', NULL, 's8a9b0c1-u2v3-4567-abc4-8901234567'),
+('st9s0t1u2-v3w4-5678-bcd5-9012345678', 'Vavuniya Store', '+94242345688', '190 Transit Rd, Vavuniya', NULL, 's9a0b1c2-v3w4-5678-bcd5-9012345678'),
+('st0t1u2v3-w4x5-6789-cde6-0123456789', 'Mannar Store', '+94232345689', '200 Island Rd, Mannar', NULL, 's0a1b2c3-w4x5-6789-cde6-0123456789'),
+('st1u2v3w4-x5y6-7890-def7-1234567890', 'Dambulla Store', '+94662345690', '210 Cave Rd, Dambulla', NULL, 's1a2b3c4-x5y6-7890-def7-1234567890'),
+('st2v3w4x5-y6z7-8901-efa8-2345678901', 'Ampara Store', '+94632345691', '220 Eastern Rd, Ampara', NULL, 's2a3b4c5-y6z7-8901-efa8-2345678901'),
+('st3w4x5y6-z7a8-9012-abc9-3456789012', 'Nuwara Eliya Store', '+94522345692', '230 Hill Station Rd, Nuwara Eliya', NULL, 's3a4b5c6-z7a8-9012-abc9-3456789012'),
+('st4x5y6z7-a8b9-0123-bcd0-4567890123', 'Kegalle Store', '+94352345693', '240 Central Rd, Kegalle', NULL, 's4a5b6c7-a8b9-0123-bcd0-4567890123'),
+('st5y6z7a8-b9c0-1234-cde1-5678901234', 'Chilaw Store', '+94322345694', '250 Coastal Rd, Chilaw', NULL, 's5a6b7c8-b9c0-1234-cde1-5678901234');
 
 -- Orders (8 orders: 3 unassigned for Management, 5 assigned to warehouses)
 INSERT INTO orders (order_id, customer_id, order_date, deliver_address, status, deliver_city_id, full_price, warehouse_id) VALUES
